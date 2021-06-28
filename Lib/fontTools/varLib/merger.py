@@ -15,11 +15,7 @@ from fontTools.varLib.models import nonNone, allNone, allEqual, allEqualTo
 from fontTools.varLib.varStore import VarStoreInstancer
 from functools import reduce
 from fontTools.otlLib.builder import buildSinglePos
-from fontTools.otlLib.optimize.gpos import (
-    compact_pair_pos,
-    GPOS_COMPACT_MODE_DEFAULT,
-    GPOS_COMPACT_MODE_ENV_KEY,
-)
+from fontTools.otlLib.optimize.gpos import MODE_OPTION, compact_pair_pos
 
 log = logging.getLogger("fontTools.varLib.merger")
 
@@ -847,8 +843,8 @@ def merge(merger, self, lst):
 			self.SubTableCount -= 1
 
 		# Compact the merged subtables
-		mode = os.environ.get(GPOS_COMPACT_MODE_ENV_KEY, GPOS_COMPACT_MODE_DEFAULT)
-		if mode and mode != "0":
+		mode = merger.font.config.get(MODE_OPTION)
+		if mode and mode != 0:
 			log.info("Compacting GPOS...")
 			self.SubTable = compact_pair_pos(merger.font, mode, self.SubTable)
 			self.SubTableCount = len(self.SubTable)

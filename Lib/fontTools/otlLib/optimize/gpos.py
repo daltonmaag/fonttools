@@ -8,14 +8,14 @@ from typing import DefaultDict, Dict, Iterable, List, Sequence, Tuple
 from fontTools.misc.intTools import bit_count, bit_indices
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables import otBase, otTables
+from fontTools.config import OPTIONS
 
-GPOS_COMPACT_MODE_ENV_KEY = "FONTTOOLS_GPOS_COMPACT_MODE"
-GPOS_COMPACT_MODE_DEFAULT = "0"
+MODE_OPTION = OPTIONS["otlLib.optimize.gpos.mode"]
 
 log = logging.getLogger("fontTools.otlLib.optimize.gpos")
 
 
-def compact(font: TTFont, mode: str) -> TTFont:
+def compact(font: TTFont, mode: int) -> TTFont:
     # Plan:
     #  1. Find lookups of Lookup Type 2: Pair Adjustment Positioning Subtable
     #     https://docs.microsoft.com/en-us/typography/opentype/spec/gpos#lookup-type-2-pair-adjustment-positioning-subtable
@@ -31,13 +31,13 @@ def compact(font: TTFont, mode: str) -> TTFont:
     return font
 
 
-def compact_lookup(font: TTFont, mode: str, lookup: otTables.Lookup) -> None:
+def compact_lookup(font: TTFont, mode: int, lookup: otTables.Lookup) -> None:
     new_subtables = compact_pair_pos(font, mode, lookup.SubTable)
     lookup.SubTable = new_subtables
     lookup.SubTableCount = len(new_subtables)
 
 
-def compact_ext_lookup(font: TTFont, mode: str, lookup: otTables.Lookup) -> None:
+def compact_ext_lookup(font: TTFont, mode: int, lookup: otTables.Lookup) -> None:
     new_subtables = compact_pair_pos(
         font, mode, [ext_subtable.ExtSubTable for ext_subtable in lookup.SubTable]
     )
@@ -52,7 +52,7 @@ def compact_ext_lookup(font: TTFont, mode: str, lookup: otTables.Lookup) -> None
 
 
 def compact_pair_pos(
-    font: TTFont, mode: str, subtables: Sequence[otTables.PairPos]
+    font: TTFont, mode: int, subtables: Sequence[otTables.PairPos]
 ) -> Sequence[otTables.PairPos]:
     new_subtables = []
     for subtable in subtables:
@@ -65,7 +65,7 @@ def compact_pair_pos(
 
 
 def compact_class_pairs(
-    font: TTFont, mode: str, subtable: otTables.PairPos
+    font: TTFont, mode: int, subtable: otTables.PairPos
 ) -> List[otTables.PairPos]:
     from fontTools.otlLib.builder import buildPairPosClassesSubtable
 
@@ -86,16 +86,16 @@ def compact_class_pairs(
                 getattr(class2, "Value2", None),
             )
 
-    if len(mode) == 1 and mode in "123456789":
+    if mode in range(10):
         grouped_pairs = cluster_pairs_by_class2_coverage_custom_cost(
-            font, all_pairs, int(mode)
+            font, all_pairs, mode
         )
         for pairs in grouped_pairs:
             subtables.append(
                 buildPairPosClassesSubtable(pairs, font.getReverseGlyphMap())
             )
     else:
-        raise ValueError(f"Bad {GPOS_COMPACT_MODE_ENV_KEY}={mode}")
+        raise ValueError(f"Bad {MODE_OPTION.name}={mode}")
     return subtables
 
 
@@ -128,7 +128,9 @@ def _getClassRanges(glyphIDs: Iterable[int]):
 
 # Adapted from https://github.com/fonttools/fonttools/blob/f64f0b42f2d1163b2d85194e0979def539f5dca3/Lib/fontTools/ttLib/tables/otTables.py#L960-L989
 def _classDef_bytes(
-    class_data: List[Tuple[List[Tuple[int, int]], int, int]], class_ids: List[int], coverage=False
+    class_data: List[Tuple[List[Tuple[int, int]], int, int]],
+    class_ids: List[int],
+    coverage=False,
 ):
     if not class_ids:
         return 0
@@ -267,7 +269,9 @@ def cluster_pairs_by_class2_coverage_custom_cost(
                 # uint16	glyphArray[glyphCount]	Array of glyph IDs — in numerical order
                 + sum(len(all_class1[i]) for i in self.indices) * 2
             )
-            ranges = sorted(chain.from_iterable(all_class1_data[i][0] for i in self.indices))
+            ranges = sorted(
+                chain.from_iterable(all_class1_data[i][0] for i in self.indices)
+            )
             merged_range_count = 0
             last = None
             for (start, end) in ranges:

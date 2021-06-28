@@ -1,3 +1,4 @@
+from fontTools.config import Config
 from fontTools.misc import xmlWriter
 from fontTools.misc.py23 import Tag, byteord, tostr
 from fontTools.misc.loggingTools import deprecateArgument
@@ -22,7 +23,7 @@ class TTFont(object):
 			sfntVersion="\000\001\000\000", flavor=None, checkChecksums=0,
 			verbose=None, recalcBBoxes=True, allowVID=False, ignoreDecompileErrors=False,
 			recalcTimestamp=True, fontNumber=-1, lazy=None, quiet=None,
-			_tableCache=None):
+			_tableCache=None, config={}):
 
 		"""The constructor can be called with a few different arguments.
 		When reading a font from disk, 'file' should be either a pathname
@@ -92,6 +93,7 @@ class TTFont(object):
 		self.recalcTimestamp = recalcTimestamp
 		self.tables = {}
 		self.reader = None
+		self.config = Config(config)
 
 		# Permit the user to reference glyphs that are not int the font.
 		self.last_vid = 0xFFFE # Can't make it be 0xFFFF, as the world is full unsigned short integer counters that get incremented after the last seen GID value.
