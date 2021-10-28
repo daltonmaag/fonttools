@@ -1101,16 +1101,6 @@ There are some differences between the way MutatorMath and fontTools.varlib hand
  -  The goals of Varlib and MutatorMath are different, so not all
     attributes are always needed.
 
-8.2 Older versions
-------------------
-
--  In some implementations that preceed Variable Fonts, the `copyInfo`
-   flag in a source indicated the source was to be treated as the default.
-   This is no longer compatible with the assumption that the default font
-   is located on the default value of each axis.
--  Older implementations did not require axis records to be present in
-   the designspace file. The axis extremes for instance were generated 
-   from the locations used in the sources. This is no longer possible.
 
 8.3 Rules and generating static UFO instances
 ---------------------------------------------
@@ -1139,11 +1129,55 @@ it can become complex very quickly. So proceed with caution.
  -  The swap function also needs to take care of swapping the names in
     kerning data and any GPOS code.
 
+9 Version history
+=================
 
-.. 9-this-document
+9.1 Version 5.0
+---------------
 
-9 This document
-===============
+The format was developed to describe the entire design space of a reasonably regular
+font family in one file, with global data about the family to reduce repetition in
+sub-sections. "Reasonably regular" is broadly meant to mean that the sources and
+instances across the previously multiple Designspace files are in distinct locations
+and derive their metadata (like style name) in a regular way based on their axis
+positions. Axis mappings must be the same across the entire space.
+
+1. Each axis can have labels attached to stops within the axis range, analogous to the
+   `OpenType STAT <https://docs.microsoft.com/en-us/typography/opentype/spec/stat>`_
+   table. Free-standing labels for locations are also allowed. The data is intended
+   to be compiled into a ``STAT`` table.
+2. The axes can be discrete, to say that they do not interpolate, like a distinctly
+   constructed upright and italic variant of a family.
+3. The data can be used to derive style and PostScript names for instances.
+4. A new ``variable-fonts`` element can subdivide the Designspace into multiple subsets that
+   mix and match the globally available axes. It is possible for these sub-spaces to have
+   a different default location from the global default location. It is required if the
+   Designspace contains a discrete axis and you want to produce a variable font.
+
+What is currently not supported is e.g.
+
+1. A setup where different sources sit at the same logical location in the design space,
+   think "Thingamabob Regular" and "Thingamabob SmallCaps Regular".
+2. Anisotropic locations for axis labels.
+3. Variation sub-spaces without at least one interpolating axis.
+4. More than one discrete axis-subset per axis in the ``variable-font`` element.
+
+9.2 Older versions
+------------------
+
+-  In some implementations that preceed Variable Fonts, the `copyInfo`
+   flag in a source indicated the source was to be treated as the default.
+   This is no longer compatible with the assumption that the default font
+   is located on the default value of each axis.
+-  Older implementations did not require axis records to be present in
+   the designspace file. The axis extremes for instance were generated
+   from the locations used in the sources. This is no longer possible.
+
+
+.. 10-this-document
+
+10 This document
+================
 
 -  Changes are to be expected.
 

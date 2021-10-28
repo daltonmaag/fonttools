@@ -1,0 +1,247 @@
+@startuml v5_class_diagram
+
+title Designspace v5 Class Diagram \n\n
+
+' left to right direction
+
+skinparam class {
+BackgroundColor<<New>> PaleGreen
+' TODO
+' AttributeFontColor<<New>> red
+' AttributeFontStyle<<New>> bold
+
+}
+
+class Designspace {
++ formatVersion: str = None
++ rulesProcessingLast: bool = False
++ lib: Dict = {}
+
++ findDefault()
+}
+
+abstract class AbstractAxis {
++ tag: str
++ name: str
++ labelNames: Dict[str, str]
++ hidden: bool
++ map: List[Tuple[float, float]]
++ <color:green><b><<New>> axisOrdering: int
+' + <color:green><b><<New>> labels = labels or []
+}
+Designspace *-- "*" AbstractAxis: axes >
+note right of AbstractAxis::axisOrdering
+STAT Axis Record field
+end note
+
+class ContinuousAxis {
++ minimum: float
++ maximum: float
++ default: float
+}
+AbstractAxis <|--- ContinuousAxis
+note bottom of ContinuousAxis
+This is the usual
+Axis, with a range
+of values.
+end note
+
+class DiscreteAxis <<New>> {
++ values: List[float]
+}
+AbstractAxis <|--- DiscreteAxis
+note bottom of DiscreteAxis
+A discrete axis is not
+interpolatable, e.g.
+Uprights vs Italics, and
+so has "discrete" stops
+instead of a continuous
+range of values.
+end note
+
+class AxisLabel <<New>> {
++ userMinimum: Optional[float]
++ userValue: float
++ userMaximum: Optional[float]
++ name: str
++ elidable: bool
++ olderSibling: bool
++ linkedUserValue: Optional[float]
++ labelNames: Dict[str, str]
+
+getFormat(): 1 | 2 | 3
+}
+note right of AxisLabel
+Label for a
+stop on an Axis
+(STAT format
+1,2,3)
+end note
+AbstractAxis *-- "*" AxisLabel: <<New>> \n axisLabels >
+
+class LocationLabel <<New>> {
++ name: str
++ location: Dict[str, float]
++ elidable: bool
++ olderSibling: bool
++ labelNames: Dict[str, str]
+}
+note right of LocationLabel
+Label for a
+freestanding
+location
+(STAT format 4)
+end note
+Designspace *--- "*" LocationLabel: <<New>> \n locationLabels >
+
+class Rule {
++ name: str
++ conditionSets: List[ConditionSet]
++ subs: Dict[str, str]
+}
+Designspace *- "*" Rule: rules >
+
+class Source {
++ name: Optional[str]
++ filename: str
++ path: str
++ layerName: Optional[str]
++ location: Location
+....
++ font: Optional[Font]
+....
++ familyName: Optional[str]
++ styleName: Optional[str]
+....
++ <color:brown><s><<Deprecated>> copyLib: bool
++ <color:brown><s><<Deprecated>> copyInfo: bool
++ <color:brown><s><<Deprecated>> copyGroups: bool
++ <color:brown><s><<Deprecated>> copyFeatures: bool
+....
++ <color:orange><b><<Changed>> muteKerning: bool
++ <color:orange><b><<Changed>> muteInfo: bool
++ <color:orange><b><<Changed>> mutedGlyphNames: List[str]
+----
+}
+Designspace *-- "*" Source: sources >
+note right of Source::copyLib
+These fields are already not meaningful
+anymore in version 4 (the default source
+will be used as "neutral" for groups, info
+and features. ''copyLib'' can be emulated
+by putting content in the designspace's lib.
+end note
+note right of Source::muteKerning
+These fields change from "only for
+mutatorMath" to "both mutatorMath
+and varLib", with the intent to make
+them work in the fontmake pipeline.
+The intent is to allow more obvious
+definitions of sparse sources.
+(to be discussed)
+end note
+
+class VariableFont <<New>> {
++ name: str
+' + axisSelection: List[AbstractAxisSubset]
++ lib: Dict
+}
+Designspace *--- "*" VariableFont: <<New>> \n variableFonts >
+note right of VariableFont
+A variable font is a
+subset of the designspace
+where everything interpolates
+(and so can be compiled into
+an OpenType variable font).
+end note
+
+abstract class AbstractAxisSubset <<New>> {
++ name: str
+}
+VariableFont *-- "*" AbstractAxisSubset: <<New>> \n axisSubsets >
+
+class AxisSubsetFull <<New>> {
+}
+AbstractAxisSubset <|-- AxisSubsetFull
+note right of AbstractAxisSubset
+An axis subset selects a range
+or a spot on each the available
+axes from the whole designspace.
+
+By default, only the default value
+of each axis is used to define the
+variable font.
+
+Continuous axes can be specified
+to include their full range instead;
+or a subset of the range.
+
+Discrete axes can be specified
+to include a different spot than the
+default.
+end note
+
+class AxisSubsetRange <<New>> {
++ userMinimum: float
++ userDefault: float
++ userMaximum: float
+}
+AbstractAxisSubset <|-- AxisSubsetRange
+
+class AxisSubsetStop <<New>> {
++ userValue: float
+}
+AbstractAxisSubset <|-- AxisSubsetStop
+
+class Instance {
++ filename: str
++ path: str
++ <color:orange><b><<Changed>> location: Union[Location, str]
+....
++ font: Optional[Font]
+....
++ <color:orange><b><<Changed>> name: Optional[str]
++ <color:orange><b><<Changed>> familyName: Optional[str]
++ <color:orange><b><<Changed>> styleName: Optional[str]
++ <color:orange><b><<Changed>> postScriptFontName: Optional[str]
++ <color:orange><b><<Changed>> styleMapFamilyName: Optional[str]
++ <color:orange><b><<Changed>> styleMapStyleName: Optional[str]
++ localisedFamilyName: Dict
++ localisedStyleName: Dict
++ localisedStyleMapFamilyName: Dict
++ localisedStyleMapStyleName: Dict
+....
++ <color:brown><s><<Deprecated>> glyphs: Dict
++ <color:brown><s><<Deprecated>> kerning: bool
++ <color:brown><s><<Deprecated>> info: bool
+....
++ lib: Dict
+----
+}
+Designspace *-- "*" Instance: instances >
+note right of Instance::location
+The location can now alternatively
+be a string = name of a LocationLabel
+(STAT format 4). The instance then
+adopts the location of that label.
+See the Decovar example file.
+end note
+note right of Instance::styleMapStyleName
+All the name field are now optional.
+Their default values will be computed
+using the provided STAT table data
+and the STAT rules from the spec.
+For styleMap{Family,Style}Name, they
+would be computed using the algorithm
+in fontmake.
+end note
+note right of Instance::glyphs
+This attribute has been replaced by rules
+end note
+note right of Instance::kerning
+All instances get kerning and info
+nowadays.
+(are we missing something here?)
+end note
+
+@enduml

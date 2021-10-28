@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
+
+import math
+from typing import Any, Dict, List, Literal, Mapping, MutableMapping, Optional, Tuple, Union
+from fontTools.designspaceLib.types import Location
 
 from fontTools.misc.loggingTools import LogMixin
 from fontTools.misc.textTools import tobytes, tostr
@@ -8,6 +12,7 @@ import os
 import posixpath
 from fontTools.misc import etree as ET
 from fontTools.misc import plistlib
+from fontTools.misc import etree as ElementTree
 
 """
     designSpaceDocument
@@ -269,6 +274,7 @@ class InstanceDescriptor(SimpleDescriptor):
         kerning=True,
         info=True,
         lib=None,
+        label=None,
     ):
         # the original path as found in the document
         self.filename = filename
@@ -290,6 +296,7 @@ class InstanceDescriptor(SimpleDescriptor):
         self.glyphs = glyphs or {}
         self.kerning = kerning
         self.info = info
+        self.label: Optional[str] = label
 
         self.lib = lib or {}
         """Custom data associated with this instance."""
@@ -345,7 +352,7 @@ class AxisDescriptor(SimpleDescriptor):
         Add more localisations?
     """
     flavor = "axis"
-    _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map']
+    _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map', 'labels']
 
     def __init__(
         self,
@@ -358,6 +365,8 @@ class AxisDescriptor(SimpleDescriptor):
         maximum=None,
         hidden=False,
         map=None,
+        labelOrdering=None,
+        labels=None,
     ):
         # opentype tag for this axis
         self.tag = tag
@@ -370,6 +379,8 @@ class AxisDescriptor(SimpleDescriptor):
         self.default = default
         self.hidden = hidden
         self.map = map or []
+        self.labelOrdering = labelOrdering
+        self.labels: List[AxisLabelDescriptor] = labels or []
 
     def serialize(self):
         # output to a dict, used in testing
@@ -382,6 +393,8 @@ class AxisDescriptor(SimpleDescriptor):
             default=self.default,
             hidden=self.hidden,
             map=self.map,
+            labelOrdering=self.labelOrdering,
+            labels=self.labels,
         )
 
     def map_forward(self, v):
@@ -397,6 +410,336 @@ class AxisDescriptor(SimpleDescriptor):
         if not self.map:
             return v
         return piecewiseLinearMap(v, {v: k for k, v in self.map})
+
+
+class DiscreteAxisDescriptor(SimpleDescriptor):
+    """Container for discrete axis data.
+
+    Use this for axes that do not interpolate.
+    """
+
+    flavor = "axis"
+    _attrs = ('tag', 'name', 'values', 'default', 'map', 'labels')
+
+    def __init__(
+        self,
+        *,
+        tag=None,
+        name=None,
+        labelNames=None,
+        values=None,
+        default=None,
+        hidden=False,
+        map=None,
+        labelOrdering=None,
+        labels=None,
+    ):
+        # opentype tag for this axis
+        self.tag = tag
+        # name of the axis used in locations
+        self.name = name
+        # names for UI purposes, if this is not a standard axis,
+        self.labelNames = labelNames or {}
+        self.default = default
+        self.values = values
+        self.hidden = hidden
+        self.map: List[Tuple[float, float]] = map or []
+        self.labelOrdering: Optional[int] = labelOrdering
+        self.labels: List[AxisLabelDescriptor] = labels or []
+
+    def map_forward(self, value):
+        """Maps value from axis mapping's input to output.
+
+        Returns value unchanged if no mapping entry is found.
+        """
+        return next((v for k, v in self.map if k == value), value)
+
+    def map_backward(self, value):
+        """Maps value from axis mapping's output to input.
+
+        Returns value unchanged if no mapping entry is found.
+        """
+        return next((k for k, v in self.map if v == value), value)
+
+
+class AxisLabelDescriptor(SimpleDescriptor):
+    """Container for axis label data.
+
+    Analogue of OpenType's STAT data for a single axis (formats 1, 2 and 3).
+    All values are user values.
+    """
+
+    flavor = "label"
+    _attrs = ('userMinimum', 'userValue', 'userMaximum', 'name', 'elidable', 'olderSibling', 'linkedUserValue', 'labelNames')
+    _xml_attrs = {'userminimum', 'uservalue', 'usermaximum', 'name', 'elidable', 'oldersibling', 'linkeduservalue'}
+
+    def __init__(
+        self,
+        *,
+        name,
+        userValue,
+        userMinimum=None,
+        userMaximum=None,
+        elidable=False,
+        olderSibling=False,
+        linkedUserValue=None,
+        labelNames=None,
+    ):
+        self.userMinimum: Optional[float] = userMinimum
+        self.userValue: float = userValue
+        self.userMaximum: Optional[float] = userMaximum
+        self.name: str = name
+        self.elidable: bool = elidable
+        self.olderSibling: bool = olderSibling
+        self.linkedUserValue: Optional[float] = linkedUserValue
+        self.labelNames: MutableMapping[str, str] = labelNames or {}
+
+    @classmethod
+    def from_element(cls, element: ElementTree.Element) -> AxisLabelDescriptor:
+        unknown_attrs = set(element.attrib) - cls._xml_attrs
+        if unknown_attrs:
+            raise DesignSpaceDocumentError(f"Label element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+        name = element.get("name")
+        if name is None:
+            raise DesignSpaceDocumentError("label element must have a name attribute.")
+        value = element.get("uservalue")
+        if value is None:
+            raise DesignSpaceDocumentError("label element must have a uservalue attribute.")
+        value = float(value)
+        minimum = element.get("userminimum")
+        if minimum is not None:
+            minimum = float(minimum)
+        maximum = element.get("usermaximum")
+        if maximum is not None:
+            maximum = float(maximum)
+        linkedValue = element.get("linkeduservalue")
+        if linkedValue is not None:
+            linkedValue = float(linkedValue)
+        elidable = True if element.get("elidable") == "true" else False
+        olderSibling = True if element.get("oldersibling") == "true" else False
+        labelNames = {
+            lang: label_name.text or ""
+            for label_name in element.findall("labelname")
+            for attr, lang in label_name.items()
+            if attr == XML_LANG
+            # Note: elementtree reads the "xml:lang" attribute name as
+            # '{http://www.w3.org/XML/1998/namespace}lang'
+        }
+        return cls(
+            name=name,
+            userValue=value,
+            userMinimum=minimum,
+            userMaximum=maximum,
+            elidable=elidable,
+            olderSibling=olderSibling,
+            linkedUserValue=linkedValue,
+            labelNames=labelNames,
+        )
+
+    def getFormat(self) -> Union[Literal[1], Literal[2], Literal[3]]:
+        if self.linkedUserValue is not None:
+            return 3
+        if self.userMinimum is not None:
+            return 2
+        return 1
+
+    @property
+    def defaultName(self) -> str:
+        return self.labelNames.get("en") or self.name
+
+
+class LocationLabelDescriptor(SimpleDescriptor):
+    """Container for location label data.
+
+    Analogue of OpenType's STAT data for a free-floating location (format 4).
+    All values are user values.
+    """
+
+    flavor = "label"
+    _attrs = ('name', 'elidable', 'oldersibling', 'location', 'labelNames')
+    _xml_attrs = {'name', 'elidable', 'oldersibling'}
+
+    def __init__(
+        self,
+        *,
+        name,
+        location,
+        elidable=False,
+        olderSibling=False,
+        labelNames=None,
+    ):
+        self.name: str = name
+        self.location: Mapping[str, float] = location
+        self.elidable: bool = elidable
+        self.olderSibling: bool = olderSibling
+        self.labelNames: Dict[str, str] = labelNames or {}
+
+    @property
+    def defaultName(self) -> str:
+        return self.labelNames.get("en") or self.name
+
+    @classmethod
+    def from_element(cls, element: ElementTree.Element) -> LocationLabelDescriptor:
+        unknown_attrs = set(element.attrib) - cls._xml_attrs
+        if unknown_attrs:
+            raise DesignSpaceDocumentError(f"Label element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+        name = element.get("name")
+        if name is None:
+            raise DesignSpaceDocumentError("label element must have a name attribute.")
+        location = {
+            dimension.attrib["name"]: float(dimension.attrib["xvalue"])
+            for dimension in element.findall(".location/dimension")
+        }
+        elidable = True if element.get("elidable") == "true" else False
+        olderSibling = True if element.get("oldersibling") == "true" else False
+        labelNames = {
+            lang: label_name.text or ""
+            for label_name in element.findall("labelname")
+            for attr, lang in label_name.items()
+            if attr == XML_LANG
+            # Note: elementtree reads the "xml:lang" attribute name as
+            # '{http://www.w3.org/XML/1998/namespace}lang'
+        }
+        return cls(
+            name=name,
+            location=location,
+            elidable=elidable,
+            olderSibling=olderSibling,
+            labelNames=labelNames,
+        )
+
+    def __eq__(self, other):
+        if other.__class__ is not self.__class__:
+            return NotImplemented
+
+        return (
+            self.name,
+            self.location,
+            self.elidable,
+            self.olderSibling,
+            self.labelNames,
+        ) == (
+            other.name,
+            other.location,
+            other.elidable,
+            other.olderSibling,
+            other.labelNames,
+        )
+
+
+class VariableFontDescriptor(SimpleDescriptor):
+    """Container for variations, sub-spaces of the Designspace."""
+
+    flavor = "variable-font"
+    _attrs = ('name', 'axisSelection', 'lib')
+    _xml_attrs = {'name'}
+
+    def __init__(self, *, name, axisSelection, lib=None):
+        self.name: str = name
+        self.axisSelection: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = axisSelection
+        self.lib: MutableMapping[str, Any] = lib or {}
+
+    @classmethod
+    def from_element(cls, element: ElementTree.Element) -> AxisLabelDescriptor:
+        unknown_attrs = set(element.attrib) - cls._xml_attrs
+        if unknown_attrs:
+            raise DesignSpaceDocumentError(f"variable-font element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+        name = element.get("name")
+        if name is None:
+            raise DesignSpaceDocumentError("variable-font element must have a name attribute.")
+
+        axisSelectionElement = element.find(".axis-subsets")
+        if axisSelectionElement is None:
+            raise DesignSpaceDocumentError("variable-font element must contain an axes element.")
+        axisSelections = []
+        for axisSelection in axisSelectionElement.iterfind(".axis-subset"):
+            if "uservalue" in axisSelection.attrib:
+                axisSelections.append(DiscreteAxisSelector.from_element(axisSelection))
+            else:
+                axisSelections.append(AxisSelector.from_element(axisSelection))
+
+        lib = None
+        libElement = element.find(".lib")
+        if libElement is not None:
+            lib = plistlib.fromtree(libElement[0])
+
+        return cls(
+            name=name,
+            axisSelection=axisSelections,
+            lib=lib,
+        )
+
+
+class AxisSelector(SimpleDescriptor):
+    flavor = "axis-subset"
+    _attrs = ('name', 'userMinimum', 'userDefault', 'userMaximum')
+    _xml_attrs = {'name', 'userminimum', 'userdefault', 'usermaximum'}
+
+    def __init__(self, *, name, userMinimum=-math.inf, userDefault=None, userMaximum=math.inf):
+        self.name: str = name
+        self.userMinimum: float = userMinimum
+        self.userDefault: Optional[float] = userDefault
+        self.userMaximum: float = userMaximum
+
+        # TODO reject if range not wide (minimum==maximum) and tell the user to specify value=... instead
+
+    @classmethod
+    def from_element(cls, element: ElementTree.Element) -> AxisSelector:
+        unknown_attrs = set(element.attrib) - cls._xml_attrs
+        if unknown_attrs:
+            raise DesignSpaceDocumentError(f"Variation element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+        name = element.get("name")
+        if name is None:
+            raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
+
+        userMinimum = element.get("userminimum")
+        userDefault = element.get("userdefault")
+        userMaximum = element.get("usermaximum")
+        if all(v is not None for v in (userMinimum, userDefault, userMaximum)):
+            return cls(
+                name=name,
+                userMinimum=float(userMinimum),
+                userDefault=float(userDefault),
+                userMaximum=float(userMaximum),
+            )
+        if all(v is None for v in (userMinimum, userDefault, userMaximum)):
+            return cls(name=name)
+
+        raise DesignSpaceDocumentError(
+            "axis-subset element must have min/max/default values or none at all."
+        )
+
+
+class DiscreteAxisSelector(SimpleDescriptor):
+    flavor = "axis-subset"
+    _attrs = ('name', 'userValue')
+    _xml_attrs = {'name', 'uservalue'}
+
+    def __init__(self, *, name, userValue):
+        self.name: str = name
+        self.userValue: float = userValue
+
+    @classmethod
+    def from_element(cls, element: ElementTree.Element) -> AxisSelector:
+        unknown_attrs = set(element.attrib) - cls._xml_attrs
+        if unknown_attrs:
+            raise DesignSpaceDocumentError(f"axis-subset element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+        name = element.get("name")
+        if name is None:
+            raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
+        userValue = element.get("uservalue")
+        if userValue is None:
+            raise DesignSpaceDocumentError(
+                "The axis-subset element for a discrete subset must have a uservalue attribute."
+            )
+        userValue = float(userValue)
+
+        return cls(name=name, userValue=userValue)
 
 
 class BaseDocWriter(object):
@@ -713,6 +1056,9 @@ class BaseDocWriter(object):
 class BaseDocReader(LogMixin):
     ruleDescriptorClass = RuleDescriptor
     axisDescriptorClass = AxisDescriptor
+    discreteAxisDescriptorClass = DiscreteAxisDescriptor
+    labelDescriptorClass = AxisLabelDescriptor
+    variableFontsDescriptorClass = VariableFontDescriptor
     sourceDescriptorClass = SourceDescriptor
     instanceDescriptorClass = InstanceDescriptor
 
@@ -739,6 +1085,7 @@ class BaseDocReader(LogMixin):
     def read(self):
         self.readAxes()
         self.readRules()
+        self.readVariableFonts()
         self.readSources()
         self.readInstances()
         self.readLib()
@@ -813,14 +1160,19 @@ class BaseDocReader(LogMixin):
         axisElements = self.root.findall(".axes/axis")
         if not axisElements:
             return
+        is_v5: bool = self.documentObject.formatVersion.startswith("5")
         for axisElement in axisElements:
-            axisObject = self.axisDescriptorClass()
+            if is_v5 and "values" in axisElement.attrib:
+                axisObject = self.discreteAxisDescriptorClass()
+                axisObject.values = [float(s) for s in axisElement.attrib["values"].split(" ")]
+            else:
+                axisObject = self.axisDescriptorClass()
+                axisObject.minimum = float(axisElement.attrib.get("minimum"))
+                axisObject.maximum = float(axisElement.attrib.get("maximum"))
+            axisObject.default = float(axisElement.attrib.get("default"))
             axisObject.name = axisElement.attrib.get("name")
-            axisObject.minimum = float(axisElement.attrib.get("minimum"))
-            axisObject.maximum = float(axisElement.attrib.get("maximum"))
             if axisElement.attrib.get('hidden', False):
                 axisObject.hidden = True
-            axisObject.default = float(axisElement.attrib.get("default"))
             axisObject.tag = axisElement.attrib.get("tag")
             for mapElement in axisElement.findall('map'):
                 a = float(mapElement.attrib['input'])
@@ -832,8 +1184,26 @@ class BaseDocReader(LogMixin):
                 for key, lang in labelNameElement.items():
                     if key == XML_LANG:
                         axisObject.labelNames[lang] = tostr(labelNameElement.text)
+            labelElement = axisElement.find(".labels")
+            if labelElement is not None:
+                if "ordering" in labelElement.attrib:
+                    axisObject.labelOrdering = int(labelElement.attrib["ordering"])
+                for label in labelElement.findall(".label"):
+                    axisObject.labels.append(self.labelDescriptorClass.from_element(label))
             self.documentObject.axes.append(axisObject)
             self.axisDefaults[axisObject.name] = axisObject.default
+
+        for labelElement in self.root.findall(".axes/labels/label"):
+            location = LocationLabelDescriptor.from_element(labelElement)
+            self.documentObject.locationLabels.append(location)
+
+    def readVariableFonts(self):
+        if not self.documentObject.formatVersion.startswith("5"):
+            return
+
+        for variableFontElement in self.root.findall(".variable-fonts/variable-font"):
+            variableFont = self.variableFontsDescriptorClass.from_element(variableFontElement)
+            self.documentObject.variableFonts.append(variableFont)
 
     def readSources(self):
         for sourceCount, sourceElement in enumerate(self.root.findall(".sources/source")):
@@ -983,6 +1353,7 @@ class BaseDocReader(LogMixin):
             self.readInfoElement(infoElement, instanceObject)
         for libElement in instanceElement.findall('lib'):
             self.readLibElement(libElement, instanceObject)
+        instanceObject.label = instanceElement.attrib.get('label')
         self.documentObject.instances.append(instanceObject)
 
     def readLibElement(self, libElement, instanceObject):
@@ -1077,6 +1448,8 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.sources = []
         self.instances = []
         self.axes = []
+        self.locationLabels = []
+        self.variableFonts: List[VariableFontDescriptor] = []
         self.rules = []
         self.rulesProcessingLast = False
         self.default = None         # name of the default master
@@ -1238,6 +1611,11 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
                 axisDescriptor.default
             )
         return loc
+    
+    def labelForUserLocation(self, user_location: Location) -> Optional[LocationLabelDescriptor]:
+        return next(
+            (label for label in self.locationLabels if label.location == user_location), None
+        )
 
     def updateFilenameFromPath(self, masters=True, instances=True, force=False):
         # set a descriptor filename attr from the path and this document path
@@ -1280,6 +1658,25 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         return None
 
     def findDefault(self):
+        """Set and return SourceDescriptor at the default location or None.
+
+        The default location is the set of all `default` values in user space
+        of all axes.
+        """
+        self.default = None
+
+        # Convert the default location from user space to design space before comparing
+        # it against the SourceDescriptor locations (always in design space).
+        default_location_design = self.newDefaultLocation()
+
+        for sourceDescriptor in self.sources:
+            if sourceDescriptor.location == default_location_design:
+                self.default = sourceDescriptor
+                return sourceDescriptor
+
+        return None
+
+    def findDefaultForVariableFont(self, variableFont: VariableFontDescriptor) -> Optional[SourceDescriptor]:
         """Set and return SourceDescriptor at the default location or None.
 
         The default location is the set of all `default` values in user space
