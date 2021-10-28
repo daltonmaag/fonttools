@@ -210,6 +210,7 @@ def convert5to4(
 
         vf_doc.lib = {
             **doc.lib,
+            **vf.lib,
             DESIGNSPACE_STYLESPACE_INLINE_KEY: asdict(stylespace),
             "org.statmake.additionalLocations": axes_with_single_location,
         }

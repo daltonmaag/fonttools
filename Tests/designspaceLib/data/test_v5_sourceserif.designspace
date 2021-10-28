@@ -172,6 +172,8 @@
                 <axis-subset name="optical"/>
                 <axis-subset name="italic" uservalue="0"/>
             </axis-subsets>
+            <!-- The per-variable-font lib is to be merged into the global lib on
+                 conversion to a DS v4, overwriting keys in the global lib. -->
             <lib>
                 <dict>
                     <key>public.skipExportGlyphs</key>
