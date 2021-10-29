@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from attr import asdict
 from fontTools.designspaceLib import (
@@ -485,9 +485,9 @@ def get_axis_labels_for_user_location(
     return labels
 
 
-RibbiStyle = Union[
-    Literal["regular"], Literal["bold"], Literal["italic"], Literal["bold italic"]
-]
+# TODO(Python 3.8): use Literal
+# RibbiStyle = Union[Literal["regular"], Literal["bold"], Literal["italic"], Literal["bold italic"]]
+RibbiStyle = str
 
 
 # TODO: Also grab labels when no linkedUserValue is set? I.e. from well-known axis positions?

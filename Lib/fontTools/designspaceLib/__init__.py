@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Literal, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 from fontTools.designspaceLib.types import Location
 
 from fontTools.misc.loggingTools import LogMixin
@@ -512,7 +512,7 @@ class AxisLabelDescriptor(SimpleDescriptor):
         self.linkedUserValue: Optional[float] = linkedUserValue
         self.labelNames: MutableMapping[str, str] = labelNames or {}
 
-    def getFormat(self) -> Union[Literal[1], Literal[2], Literal[3]]:
+    def getFormat(self) -> int:
         if self.linkedUserValue is not None:
             return 3
         if self.userMinimum is not None:
