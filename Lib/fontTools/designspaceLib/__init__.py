@@ -1084,6 +1084,7 @@ class BaseDocReader(LogMixin):
 
     def read(self):
         self.readAxes()
+        self.readLabels()
         self.readRules()
         self.readVariableFonts()
         self.readSources()
@@ -1193,7 +1194,11 @@ class BaseDocReader(LogMixin):
             self.documentObject.axes.append(axisObject)
             self.axisDefaults[axisObject.name] = axisObject.default
 
-        for labelElement in self.root.findall(".axes/labels/label"):
+    def readLabels(self):
+        if not self.documentObject.formatVersion.startswith("5"):
+            return
+
+        for labelElement in self.root.findall(".labels/label"):
             location = LocationLabelDescriptor.from_element(labelElement)
             self.documentObject.locationLabels.append(location)
 
@@ -1611,7 +1616,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
                 axisDescriptor.default
             )
         return loc
-    
+
     def labelForUserLocation(self, user_location: Location) -> Optional[LocationLabelDescriptor]:
         return next(
             (label for label in self.locationLabels if label.location == user_location), None

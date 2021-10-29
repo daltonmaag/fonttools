@@ -16,108 +16,108 @@
     <axis default="0" maximum="1000" minimum="0" name="Worm Skeleton" tag="SKLB" />
     <axis default="0" maximum="1000" minimum="0" name="Slab" tag="TRMG" />
     <axis default="0" maximum="1000" minimum="0" name="Bifurcated" tag="TRME" />
-  
-    <!-- Labels without location or just partly specified location are at the default location plus the explicitly given sub-locations. -->
-    <labels>
-      <label name="Default" elidable="true" />
-      <label name="Open">
-        <labelname xml:lang="de">Offen</labelname>
-        <location>
-          <dimension name="Inline" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Worm">
-        <location>
-          <dimension name="Worm" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Checkered">
-        <location>
-          <dimension name="Inline Skeleton" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Checkered Reverse">
-        <location>
-          <dimension name="Inline Terminal" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Striped">
-        <location>
-          <dimension name="Stripes" xvalue="500" />
-        </location>
-      </label>
-      <label name="Rounded">
-        <location>
-          <dimension name="Rounded" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Flared">
-        <location>
-          <dimension name="Flared" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Flared Open">
-        <location>
-          <dimension name="Inline Skeleton" xvalue="1000" />
-          <dimension name="Flared" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Rounded Slab">
-        <location>
-          <dimension name="Rounded Slab" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Sheared">
-        <location>
-          <dimension name="Shearded" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Bifurcated">
-        <location>
-          <dimension name="Bifurcated" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Inline">
-        <location>
-          <dimension name="Inline Skeleton" xvalue="500" />
-          <dimension name="Open Inline Terminal" xvalue="500" />
-        </location>
-      </label>
-      <label name="Slab">
-        <location>
-          <dimension name="Slab" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Contrast">
-        <location>
-          <dimension name="Weight" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Fancy">
-        <location>
-          <dimension name="Inline Skeleton" xvalue="1000" />
-          <dimension name="Flared" xvalue="1000" />
-          <dimension name="Weight" xvalue="1000" />
-        </location>
-      </label>
-      <label name="Mayhem">
-        <location>
-          <dimension name="Inline Skeleton" xvalue="1000" />
-          <dimension name="Worm Skeleton" xvalue="1000" />
-          <dimension name="Rounded" xvalue="500" />
-          <dimension name="Flared" xvalue="500" />
-          <dimension name="Rounded Slab" xvalue="750" />
-          <dimension name="Bifurcated" xvalue="500" />
-          <dimension name="Open Inline Terminal" xvalue="250" />
-          <dimension name="Slab" xvalue="750" />
-          <dimension name="Inline Terminal" xvalue="250" />
-          <dimension name="Worm Terminal" xvalue="250" />
-          <dimension name="Weight" xvalue="750" />
-          <dimension name="Worm" xvalue="1000" />
-        </location>
-      </label>
-    </labels>
   </axes>
+
+  <!-- Labels without location or just partly specified location are at the default location plus the explicitly given sub-locations. -->
+  <labels>
+    <label name="Default" elidable="true" />
+    <label name="Open">
+      <labelname xml:lang="de">Offen</labelname>
+      <location>
+        <dimension name="Inline" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Worm">
+      <location>
+        <dimension name="Worm" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Checkered">
+      <location>
+        <dimension name="Inline Skeleton" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Checkered Reverse">
+      <location>
+        <dimension name="Inline Terminal" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Striped">
+      <location>
+        <dimension name="Stripes" xvalue="500" />
+      </location>
+    </label>
+    <label name="Rounded">
+      <location>
+        <dimension name="Rounded" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Flared">
+      <location>
+        <dimension name="Flared" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Flared Open">
+      <location>
+        <dimension name="Inline Skeleton" xvalue="1000" />
+        <dimension name="Flared" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Rounded Slab">
+      <location>
+        <dimension name="Rounded Slab" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Sheared">
+      <location>
+        <dimension name="Shearded" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Bifurcated">
+      <location>
+        <dimension name="Bifurcated" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Inline">
+      <location>
+        <dimension name="Inline Skeleton" xvalue="500" />
+        <dimension name="Open Inline Terminal" xvalue="500" />
+      </location>
+    </label>
+    <label name="Slab">
+      <location>
+        <dimension name="Slab" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Contrast">
+      <location>
+        <dimension name="Weight" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Fancy">
+      <location>
+        <dimension name="Inline Skeleton" xvalue="1000" />
+        <dimension name="Flared" xvalue="1000" />
+        <dimension name="Weight" xvalue="1000" />
+      </location>
+    </label>
+    <label name="Mayhem">
+      <location>
+        <dimension name="Inline Skeleton" xvalue="1000" />
+        <dimension name="Worm Skeleton" xvalue="1000" />
+        <dimension name="Rounded" xvalue="500" />
+        <dimension name="Flared" xvalue="500" />
+        <dimension name="Rounded Slab" xvalue="750" />
+        <dimension name="Bifurcated" xvalue="500" />
+        <dimension name="Open Inline Terminal" xvalue="250" />
+        <dimension name="Slab" xvalue="750" />
+        <dimension name="Inline Terminal" xvalue="250" />
+        <dimension name="Worm Terminal" xvalue="250" />
+        <dimension name="Weight" xvalue="750" />
+        <dimension name="Worm" xvalue="1000" />
+      </location>
+    </label>
+  </labels>
 
   <sources>
     <source filename="DecovarAlpha-Regular24.ufo" name="master_Regular" />

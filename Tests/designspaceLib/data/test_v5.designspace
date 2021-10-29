@@ -49,26 +49,26 @@
         <label uservalue="1" name="Italic" />
       </labels>
     </axis>
-
-    <!-- Freestanding lables within <axes> are analogues of STAT format 4 entries.
-         They give names to freestyle locations. -->
-    <labels>
-      <label name="asdf">
-        <location>
-          <dimension name="weight" xvalue="10"/>
-          <dimension name="width" xvalue="20"/>
-          <dimension name="Italic" xvalue="0"/>
-        </location>
-      </label>
-      <label name="dfdf">
-        <location>
-          <dimension name="weight" xvalue="100"/>
-          <dimension name="width" xvalue="200"/>
-          <dimension name="Italic" xvalue="1"/>
-        </location>
-      </label>
-    </labels>
   </axes>
+
+  <!-- Freestanding labels are analogues of STAT format 4 entries.
+        They give names to freestyle locations. -->
+  <labels>
+    <label name="asdf">
+      <location>
+        <dimension name="weight" xvalue="10"/>
+        <dimension name="width" xvalue="20"/>
+        <dimension name="Italic" xvalue="0"/>
+      </location>
+    </label>
+    <label name="dfdf">
+      <location>
+        <dimension name="weight" xvalue="100"/>
+        <dimension name="width" xvalue="200"/>
+        <dimension name="Italic" xvalue="1"/>
+      </location>
+    </label>
+  </labels>
 
   <rules processing="last">
     <rule name="named.rule.1">
@@ -109,7 +109,7 @@
 
   <variable-fonts>
     <!--
-      If this element is present, all output targets must be listed within it. 
+      If this element is present, all output targets must be listed within it.
       If it is not present, the full Designspace is the output, like in version 4.x.
 
       Continuous axes can be included either:
