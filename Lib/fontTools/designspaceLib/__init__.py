@@ -1676,25 +1676,6 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
         return None
 
-    def findDefaultForVariableFont(self, variableFont: VariableFontDescriptor) -> Optional[SourceDescriptor]:
-        """Set and return SourceDescriptor at the default location or None.
-
-        The default location is the set of all `default` values in user space
-        of all axes.
-        """
-        self.default = None
-
-        # Convert the default location from user space to design space before comparing
-        # it against the SourceDescriptor locations (always in design space).
-        default_location_design = self.newDefaultLocation()
-
-        for sourceDescriptor in self.sources:
-            if sourceDescriptor.location == default_location_design:
-                self.default = sourceDescriptor
-                return sourceDescriptor
-
-        return None
-
     def normalizeLocation(self, location):
         from fontTools.varLib.models import normalizeValue
 
