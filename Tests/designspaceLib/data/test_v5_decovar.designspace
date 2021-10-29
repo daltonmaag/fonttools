@@ -214,24 +214,29 @@
   </sources>
 
   <instances>
-    <!-- The instance name happens to be the same as the label -->
-    <!-- call label location instead? -->
-    <instance name="Default" filename="DecovarAlpha-Default.ufo" label="Default" />
-    <instance name="Open" filename="DecovarAlpha-Open.ufo" label="Open" />
-    <instance name="Worm" filename="DecovarAlpha-Worm.ufo" label="Worm" />
-    <instance name="Checkered" filename="DecovarAlpha-Checkered.ufo" label="Checkered" />
-    <instance name="Checkered Reverse" filename="DecovarAlpha-CheckeredReverse.ufo" label="Checkered Reverse" />
-    <instance name="Striped" filename="DecovarAlpha-Striped.ufo" label="Striped" />
-    <instance name="Rounded" filename="DecovarAlpha-Rounded.ufo" label="Rounded" />
-    <instance name="Flared" filename="DecovarAlpha-Flared.ufo" label="Flared" />
-    <instance name="Flared Open" filename="DecovarAlpha-FlaredOpen.ufo" label="Flared Open" />
-    <instance name="Rounded Slab" filename="DecovarAlpha-RoundedSlab.ufo" label="Rounded Slab" />
-    <instance name="Sheared" filename="DecovarAlpha-Sheared.ufo" label="Sheared" />
-    <instance name="Bifurcated" filename="DecovarAlpha-Bifurcated.ufo" label="Bifurcated" />
-    <instance name="Inline" filename="DecovarAlpha-Inline.ufo" label="Inline" />
-    <instance name="Slab" filename="DecovarAlpha-Slab.ufo" label="Slab" />
-    <instance name="Contrast" filename="DecovarAlpha-Contrast.ufo" label="Contrast" />
-    <instance name="Fancy" filename="DecovarAlpha-Fancy.ufo" label="Fancy" />
-    <instance name="Mayhem" filename="DecovarAlpha-Mayhem.ufo" label="Mayhem" />
+    <!--
+      This designspace defines LocationLabels (STAT format 4) for various
+      points within the design space. In order to define instances at these
+      locations, DS version 5 provides the `location="..."` attribute which
+      means that the instance is in the same location as the LocationLabel
+      with the given name.
+    -->
+    <instance location="Default" filename="DecovarAlpha-Default.ufo" />
+    <instance location="Open" filename="DecovarAlpha-Open.ufo" />
+    <instance location="Worm" filename="DecovarAlpha-Worm.ufo" />
+    <instance location="Checkered" filename="DecovarAlpha-Checkered.ufo" />
+    <instance location="Checkered Reverse" filename="DecovarAlpha-CheckeredReverse.ufo" />
+    <instance location="Striped" filename="DecovarAlpha-Striped.ufo" />
+    <instance location="Rounded" filename="DecovarAlpha-Rounded.ufo" />
+    <instance location="Flared" filename="DecovarAlpha-Flared.ufo" />
+    <instance location="Flared Open" filename="DecovarAlpha-FlaredOpen.ufo" />
+    <instance location="Rounded Slab" filename="DecovarAlpha-RoundedSlab.ufo" />
+    <instance location="Sheared" filename="DecovarAlpha-Sheared.ufo" />
+    <instance location="Bifurcated" filename="DecovarAlpha-Bifurcated.ufo" />
+    <instance location="Inline" filename="DecovarAlpha-Inline.ufo" />
+    <instance location="Slab" filename="DecovarAlpha-Slab.ufo" />
+    <instance location="Contrast" filename="DecovarAlpha-Contrast.ufo" />
+    <instance location="Fancy" filename="DecovarAlpha-Fancy.ufo" />
+    <instance location="Mayhem" filename="DecovarAlpha-Mayhem.ufo" />
   </instances>
 </designspace>

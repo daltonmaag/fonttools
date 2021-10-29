@@ -60,9 +60,10 @@ def convert5to4(
                 name=NameRecord({"en": axis.name, **axis.labelNames}),
                 tag=axis.tag,
                 locations=[
-                    _axis_label_to_stylespace_location(label) for label in axis.labels
+                    _axis_label_to_stylespace_location(label)
+                    for label in axis.axisLabels
                 ],
-                ordering=axis.labelOrdering,  # TODO: rename to axisOrdering
+                ordering=axis.axisOrdering,  # TODO: rename to axisOrdering
             )
             for axis in doc.axes
         ],
@@ -89,7 +90,7 @@ def convert5to4(
         #  - it's a single location = write in the lib org.statmake.additionalLocations of VF DS
         axes_with_range: Dict[str, AxisDescriptor] = {}
         axes_with_single_location: Dict[str, float] = {}
-        for axis_subset in vf.axisSelection:  # FIXME: rename to axisSubsets
+        for axis_subset in vf.axisSubsets:
             axis = doc.getAxis(axis_subset.name)
             if isinstance(axis_subset, RangeAxisSubsetDescriptor):
                 vf_axis = AxisDescriptor(
@@ -108,8 +109,8 @@ def convert5to4(
                         if axis_subset.userMinimum <= user <= axis_subset.userMaximum
                     ],
                     # Don't include any new-in-DS5 info
-                    labelOrdering=None,
-                    labels=None,
+                    axisOrdering=None,
+                    axisLabels=None,
                 )
                 axes_with_range[axis.name] = vf_axis
                 vf_doc.addAxis(vf_axis)
@@ -442,18 +443,18 @@ def get_sorted_axis_labels(
 
     # First, get the axis labels with explicit ordering...
     sorted_axes = sorted(
-        (axis for axis in axes if axis.labelOrdering is not None),
-        key=lambda a: a.labelOrdering,
+        (axis for axis in axes if axis.axisOrdering is not None),
+        key=lambda a: a.axisOrdering,
     )
     sorted_labels: dict[str, list[AxisLabelDescriptor]] = {
-        axis.name: axis.labels for axis in sorted_axes
+        axis.name: axis.axisLabels for axis in sorted_axes
     }
 
     # ... then append the others in the order they appear.
     # NOTE: This relies on Python 3.7+ dict's preserved insertion order.
     for axis in axes:
-        if axis.labelOrdering is None:
-            sorted_labels[axis.name] = axis.labels
+        if axis.axisOrdering is None:
+            sorted_labels[axis.name] = axis.axisLabels
 
     return sorted_labels
 
@@ -505,7 +506,7 @@ def get_ribbi_mapping(
     axis = axes_by_tag.get("wght")
     if axis is not None:
         rg_label = next(
-            (label for label in axis.labels if label.userValue == 400), None
+            (label for label in axis.axisLabels if label.userValue == 400), None
         )
         if rg_label is not None:
             rg_value = axis.map_forward(400)
@@ -519,7 +520,9 @@ def get_ribbi_mapping(
 
     axis = axes_by_tag.get("ital") or axes_by_tag.get("slnt")
     if axis is not None:
-        rg_label = next((label for label in axis.labels if label.userValue == 0), None)
+        rg_label = next(
+            (label for label in axis.axisLabels if label.userValue == 0), None
+        )
         if rg_label is not None and rg_label.linkedUserValue is not None:
             it_value = axis.map_forward(rg_label.linkedUserValue)
             it_location = {**default_location, axis.name: it_value}

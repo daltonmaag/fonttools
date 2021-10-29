@@ -48,6 +48,7 @@ end note
 
 class DiscreteAxis <<New>> {
 + values: List[float]
++ default: float
 }
 AbstractAxis <|--- DiscreteAxis
 note bottom of DiscreteAxis
@@ -58,6 +59,14 @@ so has "discrete" stops
 instead of a continuous
 range of values.
 end note
+note right of DiscreteAxis::default
+Does it make sense and
+is it beneficial to have a
+default value for discrete
+axes? See open question.
+end note
+
+ContinuousAxis .[hidden] DiscreteAxis
 
 class AxisLabel <<New>> {
 + userMinimum: Optional[float]
@@ -143,7 +152,7 @@ end note
 
 class VariableFont <<New>> {
 + name: str
-' + axisSelection: List[AbstractAxisSubset]
+' + axisSubsets: List[AbstractAxisSubset]
 + lib: Dict
 }
 Designspace *--- "*" VariableFont: <<New>> \n variableFonts >
@@ -160,9 +169,6 @@ abstract class AbstractAxisSubset <<New>> {
 }
 VariableFont *-- "*" AbstractAxisSubset: <<New>> \n axisSubsets >
 
-class AxisSubsetFull <<New>> {
-}
-AbstractAxisSubset <|-- AxisSubsetFull
 note right of AbstractAxisSubset
 An axis subset selects a range
 or a spot on each the available
@@ -181,17 +187,17 @@ to include a different spot than the
 default.
 end note
 
-class AxisSubsetRange <<New>> {
+class RangeAxisSubset <<New>> {
 + userMinimum: float
 + userDefault: float
 + userMaximum: float
 }
-AbstractAxisSubset <|-- AxisSubsetRange
+AbstractAxisSubset <|-- RangeAxisSubset
 
-class AxisSubsetStop <<New>> {
+class ValueAxisSubset <<New>> {
 + userValue: float
 }
-AbstractAxisSubset <|-- AxisSubsetStop
+AbstractAxisSubset <|-- ValueAxisSubset
 
 class Instance {
 + filename: str

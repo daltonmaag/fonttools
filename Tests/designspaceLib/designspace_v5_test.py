@@ -35,8 +35,8 @@ def test_read_v5_document_simple(datadir):
             default=0,
             labelNames={"en": "Wéíght", "fa-IR": "قطر"},
             map=[(200, 0), (300, 100), (400, 368), (600, 600), (700, 824), (900, 1000)],
-            labelOrdering=None,
-            labels=[
+            axisOrdering=None,
+            axisLabels=[
                 AxisLabel(
                     name="Extra Light",
                     userMinimum=200,
@@ -72,10 +72,12 @@ def test_read_v5_document_simple(datadir):
             hidden=True,
             labelNames={"fr": "Chasse"},
             map=[(0, 10), (15, 20), (401, 66), (1000, 990)],
-            labelOrdering=None,
-            labels=[
+            axisOrdering=None,
+            axisLabels=[
                 AxisLabel(name="Condensed", userValue=0),
-                AxisLabel(name="Normal", elidable=True, userValue=15),
+                AxisLabel(
+                    name="Normal", elidable=True, olderSibling=True, userValue=15
+                ),
                 AxisLabel(name="Wide", userValue=401),
                 AxisLabel(name="Extra Wide", userValue=1000),
             ],
@@ -85,8 +87,8 @@ def test_read_v5_document_simple(datadir):
             name="Italic",
             values=[0, 1],
             default=0,
-            labelOrdering=None,
-            labels=[
+            axisOrdering=None,
+            axisLabels=[
                 AxisLabel(name="Roman", userValue=0, elidable=True, linkedUserValue=1),
                 AxisLabel(name="Italic", userValue=1),
             ],
@@ -98,38 +100,41 @@ def test_read_v5_document_simple(datadir):
     expected_variable_fonts = [
         VariableFont(
             name="Test_WghtWdth",
-            axisSelection=[RangeAxisSubsetDescriptor(name="Weight"), RangeAxisSubsetDescriptor(name="Width")],
+            axisSubsets=[
+                RangeAxisSubsetDescriptor(name="Weight"),
+                RangeAxisSubsetDescriptor(name="Width"),
+            ],
             lib={"com.vtt.source": "sources/vtt/Test_WghtWdth.vtt"},
         ),
         VariableFont(
             name="Test_Wght",
-            axisSelection=[RangeAxisSubsetDescriptor(name="Weight")],
+            axisSubsets=[RangeAxisSubsetDescriptor(name="Weight")],
             lib={"com.vtt.source": "sources/vtt/Test_Wght.vtt"},
         ),
         VariableFont(
             name="TestCd_Wght",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Width", userValue=0),
             ],
         ),
         VariableFont(
             name="TestWd_Wght",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Width", userValue=1000),
             ],
         ),
         VariableFont(
             name="TestItalic_Wght",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
         VariableFont(
             name="TestRB_Wght",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(
                     name="Weight", userMinimum=400, userDefault=400, userMaximum=700
                 ),
@@ -214,7 +219,7 @@ def test_read_v5_document_decovar(datadir):
         ),
     ]
 
-    assert [i.label for i in doc.instances] == [
+    assert [i.location for i in doc.instances] == [
         "Default",
         "Open",
         "Worm",
@@ -247,7 +252,7 @@ def test_read_v5_document_discrete(datadir):
             values=[400, 700, 900],
             name="Weight",
             tag="wght",
-            labels=[
+            axisLabels=[
                 AxisLabel(
                     name="Regular", userValue=400, elidable=True, linkedUserValue=700
                 ),
@@ -260,7 +265,7 @@ def test_read_v5_document_discrete(datadir):
             values=[75, 100],
             name="Width",
             tag="wdth",
-            labels=[
+            axisLabels=[
                 AxisLabel(name="Narrow", userValue=75),
                 AxisLabel(name="Normal", userValue=100, elidable=True),
             ],
@@ -270,7 +275,7 @@ def test_read_v5_document_discrete(datadir):
             values=[0, 1],
             name="Italic",
             tag="ital",
-            labels=[
+            axisLabels=[
                 AxisLabel(name="Roman", userValue=0, elidable=True, linkedUserValue=1),
                 AxisLabel(name="Italic", userValue=1),
             ],
@@ -302,8 +307,8 @@ def test_read_v5_document_aktiv(datadir):
                 (800, 158),
                 (900, 185),
             ],
-            labelOrdering=1,
-            labels=[
+            axisOrdering=1,
+            axisLabels=[
                 AxisLabel(name="Hair", userValue=100),
                 AxisLabel(userValue=200, name="Thin"),
                 AxisLabel(userValue=300, name="Light"),
@@ -323,8 +328,8 @@ def test_read_v5_document_aktiv(datadir):
             minimum=75,
             default=100,
             maximum=125,
-            labelOrdering=0,
-            labels=[
+            axisOrdering=0,
+            axisLabels=[
                 AxisLabel(name="Cd", userValue=75),
                 AxisLabel(name="Normal", elidable=True, userValue=100),
                 AxisLabel(name="Ex", userValue=125),
@@ -336,8 +341,8 @@ def test_read_v5_document_aktiv(datadir):
             minimum=0,
             default=0,
             maximum=1,
-            labelOrdering=2,
-            labels=[
+            axisOrdering=2,
+            axisLabels=[
                 AxisLabel(
                     name="Upright", userValue=0, elidable=True, linkedUserValue=1
                 ),
@@ -351,7 +356,7 @@ def test_read_v5_document_aktiv(datadir):
     expected_variable_fonts = [
         VariableFont(
             name="AktivGroteskVF_WghtWdthItal",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
                 RangeAxisSubsetDescriptor(name="Italic"),
@@ -359,20 +364,20 @@ def test_read_v5_document_aktiv(datadir):
         ),
         VariableFont(
             name="AktivGroteskVF_WghtWdth",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
             ],
         ),
         VariableFont(
             name="AktivGroteskVF_Wght",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
             ],
         ),
         VariableFont(
             name="AktivGroteskVF_Italics_WghtWdth",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
@@ -380,7 +385,7 @@ def test_read_v5_document_aktiv(datadir):
         ),
         VariableFont(
             name="AktivGroteskVF_Italics_Wght",
-            axisSelection=[
+            axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],

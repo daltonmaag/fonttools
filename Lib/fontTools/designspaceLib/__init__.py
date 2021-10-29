@@ -153,12 +153,20 @@ class SourceDescriptor(SimpleDescriptor):
         self.styleName = styleName
 
         self.copyLib = copyLib
+        """(Deprecated in version 5)"""
         self.copyInfo = copyInfo
+        """(Deprecated in version 5)"""
         self.copyGroups = copyGroups
+        """(Deprecated in version 5)"""
         self.copyFeatures = copyFeatures
+        """(Deprecated in version 5)"""
+
         self.muteKerning = muteKerning
+        """(Changed in version 5) Now should also be used by varLib"""
         self.muteInfo = muteInfo
+        """(Changed in version 5) Now should also be used by varLib"""
         self.mutedGlyphNames = mutedGlyphNames or []
+        """(Changed in version 5) Now should also be used by varLib"""
 
     path = posixpath_property("_path")
     filename = posixpath_property("_filename")
@@ -274,7 +282,6 @@ class InstanceDescriptor(SimpleDescriptor):
         kerning=True,
         info=True,
         lib=None,
-        label=None,
     ):
         # the original path as found in the document
         self.filename = filename
@@ -283,7 +290,17 @@ class InstanceDescriptor(SimpleDescriptor):
         # Same as in SourceDescriptor.
         self.font = font
         self.name = name
-        self.location = location
+        self.location: Optional[Union[Dict[str, Union[float, Tuple[float, float]]], str]] = location
+        """(Changed in version 5) Location can be either as in version 4 a
+        dictionary that maps axis names to (potentially anisotropic) locations,
+        or, new in version 5, a string that matches the name of a LocationLabel.
+        In that second case the instance should have the same location as the
+        LocationLabel.
+
+        The type of this property changes but as long as the library is used
+        to open a DSv4, the property will never be a string. Only when opening
+        a DSv5 will it start being a string.
+        """
         self.familyName = familyName
         self.styleName = styleName
         self.postScriptFontName = postScriptFontName
@@ -294,9 +311,11 @@ class InstanceDescriptor(SimpleDescriptor):
         self.localisedStyleMapFamilyName = localisedStyleMapFamilyName or {}
         self.localisedStyleMapStyleName = localisedStyleMapStyleName or {}
         self.glyphs = glyphs or {}
+        """(Deprecated in version 5)"""
         self.kerning = kerning
+        """(Deprecated in version 5)"""
         self.info = info
-        self.label: Optional[str] = label
+        """(Deprecated in version 5)"""
 
         self.lib = lib or {}
         """Custom data associated with this instance."""
@@ -352,7 +371,7 @@ class AxisDescriptor(SimpleDescriptor):
         Add more localisations?
     """
     flavor = "axis"
-    _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map', 'labels']
+    _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map', 'axisOrdering', 'axisLabels']
 
     def __init__(
         self,
@@ -365,8 +384,8 @@ class AxisDescriptor(SimpleDescriptor):
         maximum=None,
         hidden=False,
         map=None,
-        labelOrdering=None,
-        labels=None,
+        axisOrdering=None,
+        axisLabels=None,
     ):
         # opentype tag for this axis
         self.tag = tag
@@ -379,8 +398,8 @@ class AxisDescriptor(SimpleDescriptor):
         self.default = default
         self.hidden = hidden
         self.map = map or []
-        self.labelOrdering = labelOrdering
-        self.labels: List[AxisLabelDescriptor] = labels or []
+        self.axisOrdering = axisOrdering
+        self.axisLabels: List[AxisLabelDescriptor] = axisLabels or []
 
     def serialize(self):
         # output to a dict, used in testing
@@ -393,8 +412,8 @@ class AxisDescriptor(SimpleDescriptor):
             default=self.default,
             hidden=self.hidden,
             map=self.map,
-            labelOrdering=self.labelOrdering,
-            labels=self.labels,
+            axisOrdering=self.axisOrdering,
+            axisLabels=self.axisLabels,
         )
 
     def map_forward(self, v):
@@ -419,7 +438,7 @@ class DiscreteAxisDescriptor(SimpleDescriptor):
     """
 
     flavor = "axis"
-    _attrs = ('tag', 'name', 'values', 'default', 'map', 'labels')
+    _attrs = ('tag', 'name', 'values', 'default', 'map', 'axisOrdering', 'axisLabels')
 
     def __init__(
         self,
@@ -431,8 +450,8 @@ class DiscreteAxisDescriptor(SimpleDescriptor):
         default=None,
         hidden=False,
         map=None,
-        labelOrdering=None,
-        labels=None,
+        axisOrdering=None,
+        axisLabels=None,
     ):
         # opentype tag for this axis
         self.tag = tag
@@ -444,8 +463,8 @@ class DiscreteAxisDescriptor(SimpleDescriptor):
         self.values = values
         self.hidden = hidden
         self.map: List[Tuple[float, float]] = map or []
-        self.labelOrdering: Optional[int] = labelOrdering
-        self.labels: List[AxisLabelDescriptor] = labels or []
+        self.axisOrdering: Optional[int] = axisOrdering
+        self.axisLabels: List[AxisLabelDescriptor] = axisLabels or []
 
     def map_forward(self, value):
         """Maps value from axis mapping's input to output.
@@ -557,11 +576,11 @@ class VariableFontDescriptor(SimpleDescriptor):
     """Container for variations, sub-spaces of the Designspace."""
 
     flavor = "variable-font"
-    _attrs = ('name', 'axisSelection', 'lib')
+    _attrs = ('name', 'axisSubsets', 'lib')
 
-    def __init__(self, *, name, axisSelection, lib=None):
+    def __init__(self, *, name, axisSubsets, lib=None):
         self.name: str = name
-        self.axisSelection: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = axisSelection
+        self.axisSubsets: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = axisSubsets
         self.lib: MutableMapping[str, Any] = lib or {}
 
 
@@ -1036,9 +1055,9 @@ class BaseDocReader(LogMixin):
             labelElement = axisElement.find(".labels")
             if labelElement is not None:
                 if "ordering" in labelElement.attrib:
-                    axisObject.labelOrdering = int(labelElement.attrib["ordering"])
+                    axisObject.axisOrdering = int(labelElement.attrib["ordering"])
                 for label in labelElement.findall(".label"):
-                    axisObject.labels.append(self.readAxisLabel(label))
+                    axisObject.axisLabels.append(self.readAxisLabel(label))
             self.documentObject.axes.append(axisObject)
             self.axisDefaults[axisObject.name] = axisObject.default
 
@@ -1135,12 +1154,12 @@ class BaseDocReader(LogMixin):
             if name is None:
                 raise DesignSpaceDocumentError("variable-font element must have a name attribute.")
 
-            axisSelectionElement = variableFontElement.find(".axis-subsets")
-            if axisSelectionElement is None:
+            axisSubsetsElement = variableFontElement.find(".axis-subsets")
+            if axisSubsetsElement is None:
                 raise DesignSpaceDocumentError("variable-font element must contain an axes element.")
-            axisSelections = []
-            for axisSelection in axisSelectionElement.iterfind(".axis-subset"):
-                axisSelections.append(self.readAxisSubset(axisSelection))
+            axisSubsets = []
+            for axisSubset in axisSubsetsElement.iterfind(".axis-subset"):
+                axisSubsets.append(self.readAxisSubset(axisSubset))
 
             lib = None
             libElement = variableFontElement.find(".lib")
@@ -1149,7 +1168,7 @@ class BaseDocReader(LogMixin):
 
             variableFont = self.variableFontsDescriptorClass(
                 name=name,
-                axisSelection=axisSelections,
+                axisSubsets=axisSubsets,
                 lib=lib,
             )
             self.documentObject.variableFonts.append(variableFont)
@@ -1340,15 +1359,16 @@ class BaseDocReader(LogMixin):
                     styleMapFamilyName = styleMapFamilyNameElement.text
                     instanceObject.setStyleMapFamilyName(styleMapFamilyName, lang)
         instanceLocation = self.locationFromElement(instanceElement)
-        if instanceLocation is not None:
-            instanceObject.location = instanceLocation
+        instanceLocationString = instanceElement.attrib.get('location')
+        if instanceLocation is not None and instanceLocationString is not None:
+            raise DesignSpaceDocumentError('instance element must have at most one of the location="..." attribute or the nested location element')
+        instanceObject.location = instanceLocation or instanceLocationString
         for glyphElement in instanceElement.findall('.glyphs/glyph'):
             self.readGlyphElement(glyphElement, instanceObject)
         for infoElement in instanceElement.findall("info"):
             self.readInfoElement(infoElement, instanceObject)
         for libElement in instanceElement.findall('lib'):
             self.readLibElement(libElement, instanceObject)
-        instanceObject.label = instanceElement.attrib.get('label')
         self.documentObject.instances.append(instanceObject)
 
     def readLibElement(self, libElement, instanceObject):

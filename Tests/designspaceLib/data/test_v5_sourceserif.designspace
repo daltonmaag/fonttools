@@ -2,11 +2,11 @@
 <designspace format="5.0">
     <axes>
         <axis default="400" maximum="900" minimum="200" name="weight" tag="wght">
-            <map input="200" output="0" />   
-            <map input="300" output="145" /> 
-            <map input="400" output="394" /> 
-            <map input="600" output="594" /> 
-            <map input="700" output="823" /> 
+            <map input="200" output="0" />
+            <map input="300" output="145" />
+            <map input="400" output="394" />
+            <map input="600" output="594" />
+            <map input="700" output="823" />
             <map input="900" output="1000" />
             <labels ordering="1">
                 <label uservalue="200" userminimum="200" usermaximum="250" name="ExtraLight"/>
@@ -227,8 +227,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-CaptionLight">
             <location>
@@ -236,8 +234,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-CaptionRegular">
             <location>
@@ -245,8 +241,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-CaptionSemibold">
             <location>
@@ -254,8 +248,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-CaptionBold">
             <location>
@@ -263,8 +255,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-CaptionBlack">
             <location>
@@ -272,8 +262,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SmTextExtraLight" stylename="SmText ExtraLight">
             <location>
@@ -281,8 +269,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SmTextLight" stylename="SmText Light">
             <location>
@@ -290,8 +276,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SmTextRegular" stylename="SmText">
             <location>
@@ -299,8 +283,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SmTextSemibold" stylename="SmText Semibold">
             <location>
@@ -308,8 +290,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SmTextBold" stylename="SmText Bold">
             <location>
@@ -317,8 +297,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SmTextBlack" stylename="SmText Black">
             <location>
@@ -326,8 +304,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-ExtraLight">
             <location>
@@ -335,8 +311,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-Light">
             <location>
@@ -344,8 +318,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-Regular" stylename="Regular">
             <location>
@@ -353,8 +325,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-Semibold">
             <location>
@@ -362,8 +332,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-Bold">
             <location>
@@ -371,8 +339,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-Black">
             <location>
@@ -380,8 +346,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SubheadExtraLight">
             <location>
@@ -389,8 +353,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SubheadLight">
             <location>
@@ -398,8 +360,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SubheadRegular">
             <location>
@@ -407,8 +367,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SubheadSemibold">
             <location>
@@ -416,8 +374,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SubheadBold">
             <location>
@@ -425,8 +381,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-SubheadBlack">
             <location>
@@ -434,8 +388,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-DisplayExtraLight">
             <location>
@@ -443,8 +395,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-DisplayLight">
             <location>
@@ -452,8 +402,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-DisplayRegular">
             <location>
@@ -461,8 +409,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-DisplaySemibold">
             <location>
@@ -470,8 +416,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-DisplayBold">
             <location>
@@ -479,8 +423,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Roman-DisplayBlack">
             <location>
@@ -488,8 +430,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="0" />
             </location>
-            <kerning />
-            <info />
         </instance>
 
         <instance postscriptfontname="SourceSerif4Italic-CaptionExtraLight">
@@ -498,8 +438,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-CaptionLight">
             <location>
@@ -507,8 +445,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-CaptionRegular">
             <location>
@@ -516,8 +452,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-CaptionSemibold">
             <location>
@@ -525,8 +459,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-CaptionBold">
             <location>
@@ -534,8 +466,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-CaptionBlack">
             <location>
@@ -543,8 +473,6 @@
                 <dimension name="optical" xvalue="8" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SmTextExtraLight" stylename="SmText ExtraLight Italic">
             <location>
@@ -552,8 +480,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SmTextLight" stylename="SmText Light Italic">
             <location>
@@ -561,8 +487,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SmTextRegular" stylename="SmText Italic">
             <location>
@@ -570,8 +494,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SmTextSemibold" stylename="SmText Semibold Italic">
             <location>
@@ -579,8 +501,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SmTextBold" stylename="SmText Bold Italic">
             <location>
@@ -588,8 +508,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SmTextBlack" stylename="SmText Black Italic">
             <location>
@@ -597,8 +515,6 @@
                 <dimension name="optical" xvalue="16" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-ExtraLight">
             <location>
@@ -606,8 +522,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-Light">
             <location>
@@ -615,8 +529,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-Regular">
             <location>
@@ -624,8 +536,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-Semibold">
             <location>
@@ -633,8 +543,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-Bold">
             <location>
@@ -642,8 +550,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-Black">
             <location>
@@ -651,8 +557,6 @@
                 <dimension name="optical" xvalue="20" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SubheadExtraLight">
             <location>
@@ -660,8 +564,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SubheadLight">
             <location>
@@ -669,8 +571,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SubheadRegular">
             <location>
@@ -678,8 +578,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SubheadSemibold">
             <location>
@@ -687,8 +585,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SubheadBold">
             <location>
@@ -696,8 +592,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-SubheadBlack">
             <location>
@@ -705,8 +599,6 @@
                 <dimension name="optical" xvalue="32" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-DisplayExtraLight">
             <location>
@@ -714,8 +606,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-DisplayLight">
             <location>
@@ -723,8 +613,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-DisplayRegular">
             <location>
@@ -732,8 +620,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-DisplaySemibold">
             <location>
@@ -741,8 +627,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-DisplayBold">
             <location>
@@ -750,8 +634,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
         <instance postscriptfontname="SourceSerif4Italic-DisplayBlack">
             <location>
@@ -759,8 +641,6 @@
                 <dimension name="optical" xvalue="60" />
                 <dimension name="italic" xvalue="1" />
             </location>
-            <kerning />
-            <info />
         </instance>
     </instances>
 </designspace>

@@ -32,7 +32,7 @@
       <map input="1000" output="990"/>
       <labels>
         <label uservalue="0" name="Condensed" />
-        <label uservalue="15" name="Normal" elidable="true" />
+        <label uservalue="15" name="Normal" elidable="true" oldersibling="true" />
         <label uservalue="401" name="Wide" />
         <label uservalue="1000" name="Extra Wide" />
       </labels>
