@@ -396,12 +396,10 @@ def test_convert_v5_document_aktiv_to_v4(datadir):
 
     import fontTools.designspaceLib.convert5to4
 
-    TMP = Path(r"C:\Users\nikolaus.waxweiler\AppData\Local\Temp")
-
     variable_fonts, stylespace = fontTools.designspaceLib.convert5to4.convert5to4(doc)
     for vf_name, vf in variable_fonts.items():
         vf.lib["org.statmake.stylespace"] = stylespace.to_dict()
-        vf.write(TMP / (vf_name + ".designspace"))
+        vf.write(datadir / "out" / (vf_name + ".designspace"))
 
 
 def test_convert_v5_document_sourceserif_to_v4(datadir):
@@ -409,12 +407,10 @@ def test_convert_v5_document_sourceserif_to_v4(datadir):
 
     import fontTools.designspaceLib.convert5to4
 
-    TMP = Path(r"C:\Users\nikolaus.waxweiler\AppData\Local\Temp")
-
     variable_fonts, stylespace = fontTools.designspaceLib.convert5to4.convert5to4(doc)
     for vf_name, vf in variable_fonts.items():
         vf.lib["org.statmake.stylespace"] = stylespace.to_dict()
-        vf.write(TMP / (vf_name + ".designspace"))
+        vf.write(datadir / "out" / (vf_name + ".designspace"))
 
 
 def test_detect_ribbi_aktiv(datadir):
