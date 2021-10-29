@@ -42,14 +42,18 @@ all lowercase.
     doc = DesignSpaceDocument()
     doc.read("some/path/to/my.designspace")
     doc.axes
+    doc.locationLabels
     doc.sources
+    doc.variableFonts
     doc.instances
 
 Attributes
 ----------
 
 -  ``axes``: list of axisDescriptors
+-  ``locationLabels``: list of locationLabelDescriptors (since v5)
 -  ``sources``: list of sourceDescriptors
+-  ``variableFonts``: list of variableFontDescriptors (since v5)
 -  ``instances``: list of instanceDescriptors
 -  ``rules``: list if ruleDescriptors
 -  ``readerClass``: class of the reader object
@@ -64,7 +68,7 @@ Methods
 
 -  ``read(path)``: read a designspace file from ``path``
 -  ``write(path)``: write this designspace to ``path``
--  ``addSource(aSourceDescriptor)``: add this sourceDescriptor to 
+-  ``addSource(aSourceDescriptor)``: add this sourceDescriptor to
    ``doc.sources``.
 -  ``addInstance(anInstanceDescriptor)``: add this instanceDescriptor
    to ``doc.instances``.
@@ -84,7 +88,7 @@ Methods
    locations of all masters and instances to the ``-1 - 0 - 1`` value.
 -  ``loadSourceFonts()``: Ensure SourceDescriptor.font attributes are loaded,
    and return list of fonts.
--  ``tostring(encoding=None)``: Returns the designspace as a string. Default 
+-  ``tostring(encoding=None)``: Returns the designspace as a string. Default
    encoding `utf-8`.
 
 Class Methods
@@ -124,19 +128,26 @@ Attributes
 -  ``location``: dict. Axis values for this source. MutatorMath + Varlib
 -  ``copyLib``: bool. Indicates if the contents of the font.lib need to
    be copied to the instances. MutatorMath.
+   Deprecated since v5.
 -  ``copyInfo`` bool. Indicates if the non-interpolating font.info needs
    to be copied to the instances. MutatorMath
+   Deprecated since v5.
 -  ``copyGroups`` bool. Indicates if the groups need to be copied to the
    instances. MutatorMath.
+   Deprecated since v5.
 -  ``copyFeatures`` bool. Indicates if the feature text needs to be
    copied to the instances. MutatorMath.
+   Deprecated since v5.
 -  ``muteKerning``: bool. Indicates if the kerning data from this source
    needs to be muted (i.e. not be part of the calculations).
    MutatorMath.
+   Also VarLib since v5.
 -  ``muteInfo``: bool. Indicated if the interpolating font.info data for
    this source needs to be muted. MutatorMath.
+   Also VarLib since v5.
 -  ``mutedGlyphNames``: list. Glyphnames that need to be muted in the
    instances. MutatorMath.
+   Also VarLib since v5.
 -  ``familyName``: string. Family name of this source. Though this data
    can be extracted from the font, it can be efficient to have it right
    here. Varlib.
@@ -301,11 +312,11 @@ RuleDescriptor object
 
 Evaluating rules
 ----------------
-    
--  ``evaluateRule(rule, location)``: Return True if any of the rule's conditionsets 
+
+-  ``evaluateRule(rule, location)``: Return True if any of the rule's conditionsets
    matches the given location.
 -  ``evaluateConditions(conditions, location)``: Return True if all the conditions
-   matches the given location. 
+   matches the given location.
 -  ``processRules(rules, location, glyphNames)``: Apply all the rules to the list
    of glyphNames. Return a new list of glyphNames with substitutions applied.
 
@@ -847,7 +858,7 @@ Example
 Rules describe designspace areas in which one glyph should be replaced by another.
 A rule has a name and a number of conditionsets. The rule also contains a list of
 glyphname pairs: the glyphs that need to be substituted. For a rule to be triggered
-**only one** of the conditionsets needs to be true, ``OR``. Within a conditionset 
+**only one** of the conditionsets needs to be true, ``OR``. Within a conditionset
 **all** conditions need to be true, ``AND``.
 
 .. attributes-11:
@@ -937,7 +948,7 @@ Example
 -------
 
 Example with an implied ``conditionset``. Here the conditions are not
-contained in a conditionset. 
+contained in a conditionset.
 
 .. code:: xml
 
@@ -1082,7 +1093,7 @@ UFOs says.
 8 Implementation and differences
 ================================
 
-The designspace format has gone through considerable development. 
+The designspace format has gone through considerable development.
 
  -  the format was originally written for MutatorMath.
  -  the format is now also used in fontTools.varlib.
@@ -1106,7 +1117,7 @@ There are some differences between the way MutatorMath and fontTools.varlib hand
 ---------------------------------------------
 
 When making instances as UFOs from a designspace with rules, it can
-be useful to evaluate the rules so that the characterset of the ufo 
+be useful to evaluate the rules so that the characterset of the ufo
 reflects, as much as possible, the state of a variable font when seen
 at the same location. This can be done by some swapping and renaming of
 glyphs.
@@ -1118,7 +1129,7 @@ without a bar. Also, when the swapped glyphs are part of other GSUB variations
 it can become complex very quickly. So proceed with caution.
 
  -  Assuming `rulesProcessingLast = True`:
- -  We need to swap the glyphs so that the original shape is still available. 
+ -  We need to swap the glyphs so that the original shape is still available.
     For instance, if a rule swaps ``a`` for ``a.alt``, a glyph
     that references ``a`` in a component would then show the new ``a.alt``.
  -  But that can lead to unexpected results, the two glyphs may have different
@@ -1135,12 +1146,13 @@ it can become complex very quickly. So proceed with caution.
 9.1 Version 5.0
 ---------------
 
-The format was developed to describe the entire design space of a reasonably regular
-font family in one file, with global data about the family to reduce repetition in
-sub-sections. "Reasonably regular" is broadly meant to mean that the sources and
-instances across the previously multiple Designspace files are in distinct locations
-and derive their metadata (like style name) in a regular way based on their axis
-positions. Axis mappings must be the same across the entire space.
+The format was extended to describe the entire design space of a reasonably
+regular font family in one file, with global data about the family to reduce
+repetition in sub-sections. "Reasonably regular" means that the sources and
+instances across the previously multiple Designspace files are positioned on a
+grid and derive their metadata (like style name) in a way that's compatible with
+the STAT model, based on their axis positions. Axis mappings must be the same
+across the entire space.
 
 1. Each axis can have labels attached to stops within the axis range, analogous to the
    `OpenType STAT <https://docs.microsoft.com/en-us/typography/opentype/spec/stat>`_
@@ -1157,10 +1169,9 @@ positions. Axis mappings must be the same across the entire space.
 What is currently not supported is e.g.
 
 1. A setup where different sources sit at the same logical location in the design space,
-   think "Thingamabob Regular" and "Thingamabob SmallCaps Regular".
+   think "MyFont Regular" and "MyFont SmallCaps Regular". (this situation could be
+   encoded by adding a "SmallCaps" discrete axis, if that makes sense).
 2. Anisotropic locations for axis labels.
-3. Variation sub-spaces without at least one interpolating axis.
-4. More than one discrete axis-subset per axis in the ``variable-font`` element.
 
 9.2 Older versions
 ------------------
