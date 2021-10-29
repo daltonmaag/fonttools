@@ -1362,7 +1362,9 @@ class BaseDocReader(LogMixin):
         instanceLocationString = instanceElement.attrib.get('location')
         if instanceLocation is not None and instanceLocationString is not None:
             raise DesignSpaceDocumentError('instance element must have at most one of the location="..." attribute or the nested location element')
-        instanceObject.location = instanceLocation or instanceLocationString
+        # varLib expects the location to be an empty dictionary (not None)
+        # when only the <location> element in present with nothing inside
+        instanceObject.location = instanceLocationString or instanceLocation
         for glyphElement in instanceElement.findall('.glyphs/glyph'):
             self.readGlyphElement(glyphElement, instanceObject)
         for infoElement in instanceElement.findall("info"):
