@@ -20,7 +20,7 @@ from attr import asdict
 from fontTools.designspaceLib import (
     AxisDescriptor,
     AxisLabelDescriptor,
-    AxisSelector,
+    RangeAxisSubsetDescriptor,
     DesignSpaceDocument,
     DesignSpaceDocumentError,
     InstanceDescriptor,
@@ -91,7 +91,7 @@ def convert5to4(
         axes_with_single_location: Dict[str, float] = {}
         for axis_subset in vf.axisSelection:  # FIXME: rename to axisSubsets
             axis = doc.getAxis(axis_subset.name)
-            if isinstance(axis_subset, AxisSelector):
+            if isinstance(axis_subset, RangeAxisSubsetDescriptor):
                 vf_axis = AxisDescriptor(
                     # Same info
                     tag=axis.tag,
@@ -296,7 +296,7 @@ def _subset_rules_based_on_conditions(
     #  - A condition is relevant if
     #    - axis is point (C-AP),
     #       - and point in condition's range (C-AP-in)
-    #       - else (C-AP-out) whole conditionset can be discarded (condition false 
+    #       - else (C-AP-out) whole conditionset can be discarded (condition false
     #         => conditionset false)
     #    - axis is range (C-AR),
     #       - (C-AR-all) and axis range fully contained in condition range: we can

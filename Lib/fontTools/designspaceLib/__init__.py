@@ -471,7 +471,6 @@ class AxisLabelDescriptor(SimpleDescriptor):
 
     flavor = "label"
     _attrs = ('userMinimum', 'userValue', 'userMaximum', 'name', 'elidable', 'olderSibling', 'linkedUserValue', 'labelNames')
-    _xml_attrs = {'userminimum', 'uservalue', 'usermaximum', 'name', 'elidable', 'oldersibling', 'linkeduservalue'}
 
     def __init__(
         self,
@@ -494,49 +493,6 @@ class AxisLabelDescriptor(SimpleDescriptor):
         self.linkedUserValue: Optional[float] = linkedUserValue
         self.labelNames: MutableMapping[str, str] = labelNames or {}
 
-    @classmethod
-    def from_element(cls, element: ElementTree.Element) -> AxisLabelDescriptor:
-        unknown_attrs = set(element.attrib) - cls._xml_attrs
-        if unknown_attrs:
-            raise DesignSpaceDocumentError(f"Label element contains unknown attributes: {', '.join(unknown_attrs)}")
-
-        name = element.get("name")
-        if name is None:
-            raise DesignSpaceDocumentError("label element must have a name attribute.")
-        value = element.get("uservalue")
-        if value is None:
-            raise DesignSpaceDocumentError("label element must have a uservalue attribute.")
-        value = float(value)
-        minimum = element.get("userminimum")
-        if minimum is not None:
-            minimum = float(minimum)
-        maximum = element.get("usermaximum")
-        if maximum is not None:
-            maximum = float(maximum)
-        linkedValue = element.get("linkeduservalue")
-        if linkedValue is not None:
-            linkedValue = float(linkedValue)
-        elidable = True if element.get("elidable") == "true" else False
-        olderSibling = True if element.get("oldersibling") == "true" else False
-        labelNames = {
-            lang: label_name.text or ""
-            for label_name in element.findall("labelname")
-            for attr, lang in label_name.items()
-            if attr == XML_LANG
-            # Note: elementtree reads the "xml:lang" attribute name as
-            # '{http://www.w3.org/XML/1998/namespace}lang'
-        }
-        return cls(
-            name=name,
-            userValue=value,
-            userMinimum=minimum,
-            userMaximum=maximum,
-            elidable=elidable,
-            olderSibling=olderSibling,
-            linkedUserValue=linkedValue,
-            labelNames=labelNames,
-        )
-
     def getFormat(self) -> Union[Literal[1], Literal[2], Literal[3]]:
         if self.linkedUserValue is not None:
             return 3
@@ -558,7 +514,6 @@ class LocationLabelDescriptor(SimpleDescriptor):
 
     flavor = "label"
     _attrs = ('name', 'elidable', 'oldersibling', 'location', 'labelNames')
-    _xml_attrs = {'name', 'elidable', 'oldersibling'}
 
     def __init__(
         self,
@@ -578,37 +533,6 @@ class LocationLabelDescriptor(SimpleDescriptor):
     @property
     def defaultName(self) -> str:
         return self.labelNames.get("en") or self.name
-
-    @classmethod
-    def from_element(cls, element: ElementTree.Element) -> LocationLabelDescriptor:
-        unknown_attrs = set(element.attrib) - cls._xml_attrs
-        if unknown_attrs:
-            raise DesignSpaceDocumentError(f"Label element contains unknown attributes: {', '.join(unknown_attrs)}")
-
-        name = element.get("name")
-        if name is None:
-            raise DesignSpaceDocumentError("label element must have a name attribute.")
-        location = {
-            dimension.attrib["name"]: float(dimension.attrib["xvalue"])
-            for dimension in element.findall(".location/dimension")
-        }
-        elidable = True if element.get("elidable") == "true" else False
-        olderSibling = True if element.get("oldersibling") == "true" else False
-        labelNames = {
-            lang: label_name.text or ""
-            for label_name in element.findall("labelname")
-            for attr, lang in label_name.items()
-            if attr == XML_LANG
-            # Note: elementtree reads the "xml:lang" attribute name as
-            # '{http://www.w3.org/XML/1998/namespace}lang'
-        }
-        return cls(
-            name=name,
-            location=location,
-            elidable=elidable,
-            olderSibling=olderSibling,
-            labelNames=labelNames,
-        )
 
     def __eq__(self, other):
         if other.__class__ is not self.__class__:
@@ -634,49 +558,16 @@ class VariableFontDescriptor(SimpleDescriptor):
 
     flavor = "variable-font"
     _attrs = ('name', 'axisSelection', 'lib')
-    _xml_attrs = {'name'}
 
     def __init__(self, *, name, axisSelection, lib=None):
         self.name: str = name
         self.axisSelection: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = axisSelection
         self.lib: MutableMapping[str, Any] = lib or {}
 
-    @classmethod
-    def from_element(cls, element: ElementTree.Element) -> AxisLabelDescriptor:
-        unknown_attrs = set(element.attrib) - cls._xml_attrs
-        if unknown_attrs:
-            raise DesignSpaceDocumentError(f"variable-font element contains unknown attributes: {', '.join(unknown_attrs)}")
 
-        name = element.get("name")
-        if name is None:
-            raise DesignSpaceDocumentError("variable-font element must have a name attribute.")
-
-        axisSelectionElement = element.find(".axis-subsets")
-        if axisSelectionElement is None:
-            raise DesignSpaceDocumentError("variable-font element must contain an axes element.")
-        axisSelections = []
-        for axisSelection in axisSelectionElement.iterfind(".axis-subset"):
-            if "uservalue" in axisSelection.attrib:
-                axisSelections.append(DiscreteAxisSelector.from_element(axisSelection))
-            else:
-                axisSelections.append(AxisSelector.from_element(axisSelection))
-
-        lib = None
-        libElement = element.find(".lib")
-        if libElement is not None:
-            lib = plistlib.fromtree(libElement[0])
-
-        return cls(
-            name=name,
-            axisSelection=axisSelections,
-            lib=lib,
-        )
-
-
-class AxisSelector(SimpleDescriptor):
+class RangeAxisSubsetDescriptor(SimpleDescriptor):
     flavor = "axis-subset"
     _attrs = ('name', 'userMinimum', 'userDefault', 'userMaximum')
-    _xml_attrs = {'name', 'userminimum', 'userdefault', 'usermaximum'}
 
     def __init__(self, *, name, userMinimum=-math.inf, userDefault=None, userMaximum=math.inf):
         self.name: str = name
@@ -686,60 +577,14 @@ class AxisSelector(SimpleDescriptor):
 
         # TODO reject if range not wide (minimum==maximum) and tell the user to specify value=... instead
 
-    @classmethod
-    def from_element(cls, element: ElementTree.Element) -> AxisSelector:
-        unknown_attrs = set(element.attrib) - cls._xml_attrs
-        if unknown_attrs:
-            raise DesignSpaceDocumentError(f"Variation element contains unknown attributes: {', '.join(unknown_attrs)}")
 
-        name = element.get("name")
-        if name is None:
-            raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
-
-        userMinimum = element.get("userminimum")
-        userDefault = element.get("userdefault")
-        userMaximum = element.get("usermaximum")
-        if all(v is not None for v in (userMinimum, userDefault, userMaximum)):
-            return cls(
-                name=name,
-                userMinimum=float(userMinimum),
-                userDefault=float(userDefault),
-                userMaximum=float(userMaximum),
-            )
-        if all(v is None for v in (userMinimum, userDefault, userMaximum)):
-            return cls(name=name)
-
-        raise DesignSpaceDocumentError(
-            "axis-subset element must have min/max/default values or none at all."
-        )
-
-
-class DiscreteAxisSelector(SimpleDescriptor):
+class ValueAxisSubsetDescriptor(SimpleDescriptor):
     flavor = "axis-subset"
     _attrs = ('name', 'userValue')
-    _xml_attrs = {'name', 'uservalue'}
 
     def __init__(self, *, name, userValue):
         self.name: str = name
         self.userValue: float = userValue
-
-    @classmethod
-    def from_element(cls, element: ElementTree.Element) -> AxisSelector:
-        unknown_attrs = set(element.attrib) - cls._xml_attrs
-        if unknown_attrs:
-            raise DesignSpaceDocumentError(f"axis-subset element contains unknown attributes: {', '.join(unknown_attrs)}")
-
-        name = element.get("name")
-        if name is None:
-            raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
-        userValue = element.get("uservalue")
-        if userValue is None:
-            raise DesignSpaceDocumentError(
-                "The axis-subset element for a discrete subset must have a uservalue attribute."
-            )
-        userValue = float(userValue)
-
-        return cls(name=name, userValue=userValue)
 
 
 class BaseDocWriter(object):
@@ -1057,8 +902,11 @@ class BaseDocReader(LogMixin):
     ruleDescriptorClass = RuleDescriptor
     axisDescriptorClass = AxisDescriptor
     discreteAxisDescriptorClass = DiscreteAxisDescriptor
-    labelDescriptorClass = AxisLabelDescriptor
+    axisLabelDescriptorClass = AxisLabelDescriptor
+    locationLabelDescriptorClass = LocationLabelDescriptor
     variableFontsDescriptorClass = VariableFontDescriptor
+    valueAxisSubsetDescriptorClass = ValueAxisSubsetDescriptor
+    rangeAxisSubsetDescriptorClass = RangeAxisSubsetDescriptor
     sourceDescriptorClass = SourceDescriptor
     instanceDescriptorClass = InstanceDescriptor
 
@@ -1190,25 +1038,167 @@ class BaseDocReader(LogMixin):
                 if "ordering" in labelElement.attrib:
                     axisObject.labelOrdering = int(labelElement.attrib["ordering"])
                 for label in labelElement.findall(".label"):
-                    axisObject.labels.append(self.labelDescriptorClass.from_element(label))
+                    axisObject.labels.append(self.readAxisLabel(label))
             self.documentObject.axes.append(axisObject)
             self.axisDefaults[axisObject.name] = axisObject.default
+
+    def readAxisLabel(self, element: ElementTree.Element):
+        xml_attrs = {'userminimum', 'uservalue', 'usermaximum', 'name', 'elidable', 'oldersibling', 'linkeduservalue'}
+        unknown_attrs = set(element.attrib) - xml_attrs
+        if unknown_attrs:
+            raise DesignSpaceDocumentError(f"label element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+        name = element.get("name")
+        if name is None:
+            raise DesignSpaceDocumentError("label element must have a name attribute.")
+        value = element.get("uservalue")
+        if value is None:
+            raise DesignSpaceDocumentError("label element must have a uservalue attribute.")
+        value = float(value)
+        minimum = element.get("userminimum")
+        if minimum is not None:
+            minimum = float(minimum)
+        maximum = element.get("usermaximum")
+        if maximum is not None:
+            maximum = float(maximum)
+        linkedValue = element.get("linkeduservalue")
+        if linkedValue is not None:
+            linkedValue = float(linkedValue)
+        elidable = True if element.get("elidable") == "true" else False
+        olderSibling = True if element.get("oldersibling") == "true" else False
+        labelNames = {
+            lang: label_name.text or ""
+            for label_name in element.findall("labelname")
+            for attr, lang in label_name.items()
+            if attr == XML_LANG
+            # Note: elementtree reads the "xml:lang" attribute name as
+            # '{http://www.w3.org/XML/1998/namespace}lang'
+        }
+        return self.axisLabelDescriptorClass(
+            name=name,
+            userValue=value,
+            userMinimum=minimum,
+            userMaximum=maximum,
+            elidable=elidable,
+            olderSibling=olderSibling,
+            linkedUserValue=linkedValue,
+            labelNames=labelNames,
+        )
 
     def readLabels(self):
         if not self.documentObject.formatVersion.startswith("5"):
             return
 
+        xml_attrs = {'name', 'elidable', 'oldersibling'}
         for labelElement in self.root.findall(".labels/label"):
-            location = LocationLabelDescriptor.from_element(labelElement)
+            unknown_attrs = set(labelElement.attrib) - xml_attrs
+            if unknown_attrs:
+                raise DesignSpaceDocumentError(f"Label element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+            name = labelElement.get("name")
+            if name is None:
+                raise DesignSpaceDocumentError("label element must have a name attribute.")
+            location = {
+                dimension.attrib["name"]: float(dimension.attrib["xvalue"])
+                for dimension in labelElement.findall(".location/dimension")
+            }
+            elidable = True if labelElement.get("elidable") == "true" else False
+            olderSibling = True if labelElement.get("oldersibling") == "true" else False
+            labelNames = {
+                lang: label_name.text or ""
+                for label_name in labelElement.findall("labelname")
+                for attr, lang in label_name.items()
+                if attr == XML_LANG
+                # Note: elementtree reads the "xml:lang" attribute name as
+                # '{http://www.w3.org/XML/1998/namespace}lang'
+            }
+            location = self.locationLabelDescriptorClass(
+                name=name,
+                location=location,
+                elidable=elidable,
+                olderSibling=olderSibling,
+                labelNames=labelNames,
+            )
             self.documentObject.locationLabels.append(location)
 
     def readVariableFonts(self):
         if not self.documentObject.formatVersion.startswith("5"):
             return
 
+        xml_attrs = {'name'}
         for variableFontElement in self.root.findall(".variable-fonts/variable-font"):
-            variableFont = self.variableFontsDescriptorClass.from_element(variableFontElement)
+            unknown_attrs = set(variableFontElement.attrib) - xml_attrs
+            if unknown_attrs:
+                raise DesignSpaceDocumentError(f"variable-font element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+            name = variableFontElement.get("name")
+            if name is None:
+                raise DesignSpaceDocumentError("variable-font element must have a name attribute.")
+
+            axisSelectionElement = variableFontElement.find(".axis-subsets")
+            if axisSelectionElement is None:
+                raise DesignSpaceDocumentError("variable-font element must contain an axes element.")
+            axisSelections = []
+            for axisSelection in axisSelectionElement.iterfind(".axis-subset"):
+                axisSelections.append(self.readAxisSubset(axisSelection))
+
+            lib = None
+            libElement = variableFontElement.find(".lib")
+            if libElement is not None:
+                lib = plistlib.fromtree(libElement[0])
+
+            variableFont = self.variableFontsDescriptorClass(
+                name=name,
+                axisSelection=axisSelections,
+                lib=lib,
+            )
             self.documentObject.variableFonts.append(variableFont)
+
+    def readAxisSubset(self, element: ElementTree.Element):
+        if "uservalue" in element.attrib:
+            xml_attrs = {'name', 'uservalue'}
+            unknown_attrs = set(element.attrib) - xml_attrs
+            if unknown_attrs:
+                raise DesignSpaceDocumentError(f"axis-subset element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+            name = element.get("name")
+            if name is None:
+                raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
+            userValue = element.get("uservalue")
+            if userValue is None:
+                raise DesignSpaceDocumentError(
+                    "The axis-subset element for a discrete subset must have a uservalue attribute."
+                )
+            userValue = float(userValue)
+
+            return self.valueAxisSubsetDescriptorClass(name=name, userValue=userValue)
+        else:
+            xml_attrs = {'name', 'userminimum', 'userdefault', 'usermaximum'}
+            unknown_attrs = set(element.attrib) - xml_attrs
+            if unknown_attrs:
+                raise DesignSpaceDocumentError(f"axis-subset element contains unknown attributes: {', '.join(unknown_attrs)}")
+
+            name = element.get("name")
+            if name is None:
+                raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
+
+            userMinimum = element.get("userminimum")
+            userDefault = element.get("userdefault")
+            userMaximum = element.get("usermaximum")
+            if all(v is not None for v in (userMinimum, userDefault, userMaximum)):
+                return self.rangeAxisSubsetDescriptorClass(
+                    name=name,
+                    userMinimum=float(userMinimum),
+                    userDefault=float(userDefault),
+                    userMaximum=float(userMaximum),
+                )
+            if all(v is None for v in (userMinimum, userDefault, userMaximum)):
+                return self.rangeAxisSubsetDescriptorClass(name=name)
+
+            raise DesignSpaceDocumentError(
+                "axis-subset element must have min/max/default values or none at all."
+            )
+
 
     def readSources(self):
         for sourceCount, sourceElement in enumerate(self.root.findall(".sources/source")):

@@ -8,8 +8,8 @@ from fontTools.designspaceLib import (
     AxisLabelDescriptor as AxisLabel,
     LocationLabelDescriptor as LocationLabel,
     VariableFontDescriptor as VariableFont,
-    AxisSelector,
-    DiscreteAxisSelector,
+    RangeAxisSubsetDescriptor,
+    ValueAxisSubsetDescriptor,
 )
 
 
@@ -98,42 +98,42 @@ def test_read_v5_document_simple(datadir):
     expected_variable_fonts = [
         VariableFont(
             name="Test_WghtWdth",
-            axisSelection=[AxisSelector(name="Weight"), AxisSelector(name="Width")],
+            axisSelection=[RangeAxisSubsetDescriptor(name="Weight"), RangeAxisSubsetDescriptor(name="Width")],
             lib={"com.vtt.source": "sources/vtt/Test_WghtWdth.vtt"},
         ),
         VariableFont(
             name="Test_Wght",
-            axisSelection=[AxisSelector(name="Weight")],
+            axisSelection=[RangeAxisSubsetDescriptor(name="Weight")],
             lib={"com.vtt.source": "sources/vtt/Test_Wght.vtt"},
         ),
         VariableFont(
             name="TestCd_Wght",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                DiscreteAxisSelector(name="Width", userValue=0),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                ValueAxisSubsetDescriptor(name="Width", userValue=0),
             ],
         ),
         VariableFont(
             name="TestWd_Wght",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                DiscreteAxisSelector(name="Width", userValue=1000),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                ValueAxisSubsetDescriptor(name="Width", userValue=1000),
             ],
         ),
         VariableFont(
             name="TestItalic_Wght",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                DiscreteAxisSelector(name="Italic", userValue=1),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
         VariableFont(
             name="TestRB_Wght",
             axisSelection=[
-                AxisSelector(
+                RangeAxisSubsetDescriptor(
                     name="Weight", userMinimum=400, userDefault=400, userMaximum=700
                 ),
-                DiscreteAxisSelector(name="Italic", userValue=0),
+                ValueAxisSubsetDescriptor(name="Italic", userValue=0),
             ],
         ),
     ]
@@ -352,37 +352,37 @@ def test_read_v5_document_aktiv(datadir):
         VariableFont(
             name="AktivGroteskVF_WghtWdthItal",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                AxisSelector(name="Width"),
-                AxisSelector(name="Italic"),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                RangeAxisSubsetDescriptor(name="Width"),
+                RangeAxisSubsetDescriptor(name="Italic"),
             ],
         ),
         VariableFont(
             name="AktivGroteskVF_WghtWdth",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                AxisSelector(name="Width"),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                RangeAxisSubsetDescriptor(name="Width"),
             ],
         ),
         VariableFont(
             name="AktivGroteskVF_Wght",
             axisSelection=[
-                AxisSelector(name="Weight"),
+                RangeAxisSubsetDescriptor(name="Weight"),
             ],
         ),
         VariableFont(
             name="AktivGroteskVF_Italics_WghtWdth",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                AxisSelector(name="Width"),
-                DiscreteAxisSelector(name="Italic", userValue=1),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                RangeAxisSubsetDescriptor(name="Width"),
+                ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
         VariableFont(
             name="AktivGroteskVF_Italics_Wght",
             axisSelection=[
-                AxisSelector(name="Weight"),
-                DiscreteAxisSelector(name="Italic", userValue=1),
+                RangeAxisSubsetDescriptor(name="Weight"),
+                ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
     ]
