@@ -166,7 +166,7 @@
     </sources>
 
     <variable-fonts>
-        <variable-font name="SourceSerif4Variable-Roman">
+        <variable-font filename="SourceSerif4Variable-Roman.ttf">
             <axis-subsets>
                 <axis-subset name="weight"/>
                 <axis-subset name="optical"/>
@@ -197,7 +197,7 @@
                 </dict>
             </lib>
         </variable-font>
-        <variable-font name="SourceSerif4Variable-Italic">
+        <variable-font filename="SourceSerif4Variable-Italic.ttf">
             <axis-subsets>
                 <axis-subset name="weight"/>
                 <axis-subset name="optical"/>

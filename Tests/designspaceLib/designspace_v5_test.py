@@ -99,7 +99,7 @@ def test_read_v5_document_simple(datadir):
 
     expected_variable_fonts = [
         VariableFont(
-            name="Test_WghtWdth",
+            filename="Test_WghtWdth.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
@@ -107,33 +107,33 @@ def test_read_v5_document_simple(datadir):
             lib={"com.vtt.source": "sources/vtt/Test_WghtWdth.vtt"},
         ),
         VariableFont(
-            name="Test_Wght",
+            filename="Test_Wght.ttf",
             axisSubsets=[RangeAxisSubsetDescriptor(name="Weight")],
             lib={"com.vtt.source": "sources/vtt/Test_Wght.vtt"},
         ),
         VariableFont(
-            name="TestCd_Wght",
+            filename="TestCd_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Width", userValue=0),
             ],
         ),
         VariableFont(
-            name="TestWd_Wght",
+            filename="TestWd_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Width", userValue=1000),
             ],
         ),
         VariableFont(
-            name="TestItalic_Wght",
+            filename="TestItalic_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
         VariableFont(
-            name="TestRB_Wght",
+            filename="TestRB_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(
                     name="Weight", userMinimum=400, userDefault=400, userMaximum=700
@@ -355,7 +355,7 @@ def test_read_v5_document_aktiv(datadir):
 
     expected_variable_fonts = [
         VariableFont(
-            name="AktivGroteskVF_WghtWdthItal",
+            filename="AktivGroteskVF_WghtWdthItal.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
@@ -363,20 +363,20 @@ def test_read_v5_document_aktiv(datadir):
             ],
         ),
         VariableFont(
-            name="AktivGroteskVF_WghtWdth",
+            filename="AktivGroteskVF_WghtWdth.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
             ],
         ),
         VariableFont(
-            name="AktivGroteskVF_Wght",
+            filename="AktivGroteskVF_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
             ],
         ),
         VariableFont(
-            name="AktivGroteskVF_Italics_WghtWdth",
+            filename="AktivGroteskVF_Italics_WghtWdth.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
@@ -384,7 +384,7 @@ def test_read_v5_document_aktiv(datadir):
             ],
         ),
         VariableFont(
-            name="AktivGroteskVF_Italics_Wght",
+            filename="AktivGroteskVF_Italics_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),

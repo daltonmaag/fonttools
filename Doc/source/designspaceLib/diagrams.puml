@@ -151,7 +151,7 @@ definitions of sparse sources.
 end note
 
 class VariableFont <<New>> {
-+ name: str
++ filename: str
 ' + axisSubsets: List[AbstractAxisSubset]
 + lib: Dict
 }

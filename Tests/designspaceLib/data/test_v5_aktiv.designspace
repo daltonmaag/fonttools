@@ -209,32 +209,32 @@
   </sources>
 
   <variable-fonts>
-    <variable-font name="AktivGroteskVF_WghtWdthItal">
+    <variable-font filename="AktivGroteskVF_WghtWdthItal.ttf">
       <axis-subsets>
         <axis-subset name="Weight"/>
         <axis-subset name="Width"/>
         <axis-subset name="Italic"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="AktivGroteskVF_WghtWdth">
+    <variable-font filename="AktivGroteskVF_WghtWdth.ttf">
       <axis-subsets>
         <axis-subset name="Weight"/>
         <axis-subset name="Width"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="AktivGroteskVF_Wght">
+    <variable-font filename="AktivGroteskVF_Wght.ttf">
       <axis-subsets>
         <axis-subset name="Weight"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="AktivGroteskVF_Italics_WghtWdth">
+    <variable-font filename="AktivGroteskVF_Italics_WghtWdth.ttf">
       <axis-subsets>
         <axis-subset name="Weight"/>
         <axis-subset name="Width"/>
         <axis-subset name="Italic" uservalue="1"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="AktivGroteskVF_Italics_Wght">
+    <variable-font filename="AktivGroteskVF_Italics_Wght.ttf">
       <axis-subsets>
         <axis-subset name="Weight"/>
         <axis-subset name="Italic" uservalue="1"/>

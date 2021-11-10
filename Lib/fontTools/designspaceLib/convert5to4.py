@@ -216,7 +216,7 @@ def convert5to4(
             "org.statmake.additionalLocations": axes_with_single_location,
         }
 
-        variable_fonts[vf.name] = vf_doc
+        variable_fonts[vf.filename] = vf_doc
 
     return (variable_fonts, stylespace)
 

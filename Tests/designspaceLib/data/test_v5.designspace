@@ -119,7 +119,7 @@
       Dicrete axes cannot be included in full, and we must specify a value
       (or the compiler should assume the default value).
     -->
-    <variable-font name="Test_WghtWdth">
+    <variable-font filename="Test_WghtWdth">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -133,7 +133,7 @@
         </dict>
       </lib>
     </variable-font>
-    <variable-font name="Test_Wght">
+    <variable-font filename="Test_Wght">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -146,7 +146,7 @@
         </dict>
       </lib>
     </variable-font>
-    <variable-font name="TestCd_Wght">
+    <variable-font filename="TestCd_Wght">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -154,7 +154,7 @@
         <axis-subset name="Width" uservalue="0"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="TestWd_Wght">
+    <variable-font filename="TestWd_Wght">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -162,14 +162,14 @@
         <axis-subset name="Width" uservalue="1000"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="TestItalic_Wght">
+    <variable-font filename="TestItalic_Wght">
       <!-- This one is the Italic, with full range for the Weight axis. -->
       <axis-subsets>
         <axis-subset name="Weight"/>
         <axis-subset name="Italic" uservalue="1"/>
       </axis-subsets>
     </variable-font>
-    <variable-font name="TestRB_Wght">
+    <variable-font filename="TestRB_Wght">
       <!-- As an example, this would be the Roman with a reduced range. -->
       <axis-subsets>
         <axis-subset name="Weight" userminimum="400" usermaximum="700" userdefault="400"/>

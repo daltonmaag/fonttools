@@ -979,11 +979,11 @@ class VariableFontDescriptor(SimpleDescriptor):
     """
 
     flavor = "variable-font"
-    _attrs = ('filename', 'path', 'axisSubsets', 'lib')
+    _attrs = ('filename', 'axisSubsets', 'lib')
 
     filename = posixpath_property("_filename")
 
-    def __init__(self, *, filename, path, axisSubsets, lib=None):
+    def __init__(self, *, filename, axisSubsets, lib=None):
         self.filename: str = filename
         """string. Relative path to the variable font file, **as it is
         in the document**. The file may or may not exist.
@@ -1585,15 +1585,15 @@ class BaseDocReader(LogMixin):
         if not self.documentObject.formatVersion.startswith("5"):
             return
 
-        xml_attrs = {'name'}
+        xml_attrs = {'filename'}
         for variableFontElement in self.root.findall(".variable-fonts/variable-font"):
             unknown_attrs = set(variableFontElement.attrib) - xml_attrs
             if unknown_attrs:
                 raise DesignSpaceDocumentError(f"variable-font element contains unknown attributes: {', '.join(unknown_attrs)}")
 
-            name = variableFontElement.get("name")
-            if name is None:
-                raise DesignSpaceDocumentError("variable-font element must have a name attribute.")
+            filename = variableFontElement.get("filename")
+            if filename is None:
+                raise DesignSpaceDocumentError("variable-font element must have a filename attribute.")
 
             axisSubsetsElement = variableFontElement.find(".axis-subsets")
             if axisSubsetsElement is None:
@@ -1608,7 +1608,7 @@ class BaseDocReader(LogMixin):
                 lib = plistlib.fromtree(libElement[0])
 
             variableFont = self.variableFontsDescriptorClass(
-                name=name,
+                filename=filename,
                 axisSubsets=axisSubsets,
                 lib=lib,
             )
