@@ -2,6 +2,18 @@
 Document XML structure
 **********************
 
+.. sectnum::
+   :start: 2
+.. Note: impossible with Sphinx to avoid numbering the document title
+.. See this issue: https://github.com/sphinx-doc/sphinx/issues/4628
+
+.. contents:: Table of contents (levels match the document structure)
+   :local:
+
+========
+Overview
+========
+
 
 -  The ``axes`` element contains one or more ``axis`` elements.
 -  The ``labels`` element contains one or more ``label`` elements.
@@ -10,6 +22,7 @@ Document XML structure
 -  The ``instances`` element contains one or more ``instance`` elements.
 -  The ``rules`` element contains one or more ``rule`` elements.
 -  The ``lib`` element contains arbitrary data.
+
 
 .. code:: xml
 
@@ -48,9 +61,12 @@ Document XML structure
         </lib>
     </designspace>
 
+==================
+``<axes>`` element
+==================
 
-axis element
-============
+``<axis>`` element
+==================
 
 -  Define a single axis
 -  Child element of ``axes``
@@ -58,8 +74,7 @@ axis element
    Discrete axes have a list of values instead of a range minimum and maximum.
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``name``: required, string. Name of the axis that is used in the
    location elements.
@@ -77,8 +92,7 @@ For a discrete axis:
    -  ``values``: required, space-separated numbers. The exhaustive list of possible values along this axis.
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -90,9 +104,8 @@ Example
     -->
     <axis name="Italic" tag="ital" default="0" values="0 1">
 
-
-labelname element
-=================
+``<labelname>`` element
+-----------------------
 
 -  Defines a human readable name for UI use.
 -  Optional for non-registered axis names.
@@ -100,20 +113,18 @@ labelname element
 -  Child element of ``axis``
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``xml:lang``: required, string. `XML language
    definition <https://www.w3.org/International/questions/qa-when-xmllang.en>`__
 
-Value
------
+
+.. rubric:: Value
 
 -  The natural language name of this axis.
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -121,8 +132,8 @@ Example
     <labelname xml:lang="en">Wéíght</labelname>
 
 
-map element
-===========
+``<map>`` element
+-----------------
 
 -  Defines a single node in a series of input value (user space coordinate)
    to output value (designspace coordinate) pairs.
@@ -130,8 +141,7 @@ map element
 -  Child of ``axis`` element.
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -140,16 +150,18 @@ Example
     <map input="1000.0" output="990.0" />
 
 
-labels and label elements
-=========================
+``<labels>`` element (axis)
+---------------------------
+
+``<label>`` element (axis)
+..........................
 
 -  Define STAT format 1, 2, 3 labels for the locations on this axis.
 -  The axis can have several ``label`` elements,
 TODO here
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -158,8 +170,8 @@ Example
     <map input="1000.0" output="990.0" />
 
 
-Example of all axis elements together:
---------------------------------------
+Example of all axis elements together
+=====================================
 
 .. code:: xml
 
@@ -176,51 +188,157 @@ Example of all axis elements together:
         </axes>
 
 
-location element
-================
+================================
+``<labels>`` element (top-level)
+================================
 
--  Defines a coordinate in the design space.
--  Dictionary of axisname: axisvalue
--  Used in ``source``, ``instance`` and ``glyph`` elements.
+TODO
 
+``<label>`` element (top-level)
+===============================
 
-dimension element
-=================
-
--  Child element of ``location``
+TODO
 
 
-Attributes
-----------
+===================
+``<rules>`` element
+===================
 
--  ``name``: required, string. Name of the axis.
--  ``xvalue``: required, number. The value on this axis.
--  ``yvalue``: optional, number. Separate value for anisotropic
-   interpolations.
+-  Container for ``rule`` elements
+-  The rules are evaluated in this order.
+
+Rules describe designspace areas in which one glyph should be replaced by another.
+A rule has a name and a number of conditionsets. The rule also contains a list of
+glyphname pairs: the glyphs that need to be substituted. For a rule to be triggered
+**only one** of the conditionsets needs to be true, ``OR``. Within a conditionset
+**all** conditions need to be true, ``AND``.
 
 
-Example
--------
+.. rubric:: Attributes
+
+-  ``processing``: flag, optional. Valid values are [``first``, ``last``]. This flag indicates whether the substitution rules should be applied before or after other glyph substitution features.
+-  If no ``processing`` attribute is given, interpret as ``first``, and put the substitution rule in the ``rvrn`` feature.
+-  If ``processing`` is ``last``, put it in ``rclt``.
+-  If you want to use a different feature altogether, e.g. ``calt``, use the lib key ``com.github.fonttools.varLib.featureVarsFeatureTag``::
+
+    <lib>
+        <dict>
+            <key>com.github.fonttools.varLib.featureVarsFeatureTag</key>
+            <string>calt</string>
+        </dict>
+    </lib>
+
+
+
+``<rule>`` element
+==================
+
+-  Defines a named rule.
+-  Each ``rule`` element contains one or more ``conditionset`` elements.
+-  **Only one** ``conditionset`` needs to be true to trigger the rule.
+-  **All** conditions in a ``conditionset`` must be true to make the ``conditionset`` true.
+-  For backwards compatibility a ``rule`` can contain ``condition`` elements outside of a conditionset. These are then understood to be part of a single, implied, ``conditionset``. Note: these conditions should be written wrapped in a conditionset.
+-  A rule element needs to contain one or more ``sub`` elements in order to be compiled to a variable font.
+-  Rules without sub elements should be ignored when compiling a font.
+-  For authoring tools it might be necessary to save designspace files without ``sub`` elements just because the work is incomplete.
+
+
+.. rubric:: Attributes
+
+-  ``name``: optional, string. A unique name that can be used to
+   identify this rule if it needs to be referenced elsewhere. The name
+   is not important for compiling variable fonts.
+
+``<conditionset>`` element
+--------------------------
+
+-  Child element of ``rule``
+-  Contains one or more ``condition`` elements.
+
+
+``<condition>`` element
+.......................
+
+-  Child element of ``conditionset``
+-  Between the ``minimum`` and ``maximum`` this condition is ``True``.
+-  ``minimum`` and ``maximum`` are in designspace coordinates.
+-  If ``minimum`` is not available, assume it is ``axis.minimum``, mapped to designspace coordinates.
+-  If ``maximum`` is not available, assume it is ``axis.maximum``, mapped to designspace coordinates.
+-  The condition must contain at least a minimum or maximum or both.
+
+
+.. rubric:: Attributes
+
+-  ``name``: string, required. Must match one of the defined ``axis``
+   name attributes.
+-  ``minimum``: number, required*. The low value, in designspace coordinates.
+-  ``maximum``: number, required*. The high value, in designspace coordinates.
+
+
+``<sub>`` element
+-----------------
+
+-  Child element of ``rule``.
+-  Defines which glyph to replace when the rule evaluates to **True**.
+-  The ``sub`` element contains a pair of glyphnames. The ``name`` attribute is the glyph that should be visible when the rule evaluates to **False**. The ``with`` attribute is the glyph that should be visible when the rule evaluates to **True**.
+
+Axis values in Conditions are in designspace coordinates.
+
+
+.. rubric:: Attributes
+
+-  ``name``: string, required. The name of the glyph this rule looks
+   for.
+-  ``with``: string, required. The name of the glyph it is replaced
+   with.
+
+
+.. rubric:: Example
+
+Example with an implied ``conditionset``. Here the conditions are not
+contained in a conditionset.
 
 .. code:: xml
 
-    <location>
-        <dimension name="width" xvalue="0.000000" />
-        <dimension name="weight" xvalue="0.000000" yvalue="0.003" />
-    </location>
+    <rules processing="last">
+        <rule name="named.rule.1">
+            <condition minimum="250" maximum="750" name="weight" />
+            <condition minimum="50" maximum="100" name="width" />
+            <sub name="dollar" with="dollar.alt"/>
+        </rule>
+    </rules>
 
+Example with ``conditionsets``. All conditions in a conditionset must be true.
 
-source element
-==============
+.. code:: xml
+
+    <rules>
+        <rule name="named.rule.2">
+            <conditionset>
+                <condition minimum="250" maximum="750" name="weight" />
+                <condition minimum="50" maximum="100" name="width" />
+            </conditionset>
+            <conditionset>
+                <condition ... />
+                <condition ... />
+            </conditionset>
+            <sub name="dollar" with="dollar.alt"/>
+        </rule>
+    </rules>
+
+=====================
+``<sources>`` element
+=====================
+
+``<source>`` element
+====================
 
 -  Defines a single font or layer that contributes to the designspace.
 -  Child element of ``sources``
 -  Location in designspace coordinates.
 
-.. attributes-5:
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``familyname``: optional, string. The family name of the source font.
    While this could be extracted from the font data itself, it can be
@@ -235,8 +353,41 @@ Attributes
    If no layer attribute is given assume the foreground layer should be used.
 
 
-lib element
-===========
+``<location>`` element
+----------------------
+
+-  Defines a coordinate in the design space.
+-  Dictionary of axisname: axisvalue
+-  Used in ``source``, ``instance`` and ``glyph`` elements.
+
+
+``<dimension>`` element
+.......................
+
+-  Child element of ``location``
+
+
+.. rubric:: Attributes
+
+-  ``name``: required, string. Name of the axis.
+-  ``xvalue``: required, number. The value on this axis.
+-  ``yvalue``: optional, number. Separate value for anisotropic
+   interpolations.
+
+
+.. rubric:: Example
+
+.. code:: xml
+
+    <location>
+        <dimension name="width" xvalue="0.000000" />
+        <dimension name="weight" xvalue="0.000000" yvalue="0.003" />
+    </location>
+
+
+
+``<lib>`` element (source)
+--------------------------
 
 There are two meanings for the ``lib`` element:
 
@@ -247,26 +398,9 @@ There are two meanings for the ``lib`` element:
        source.
     -  MutatorMath only
 
-2. Document and instance lib
-    - Example:
 
-      .. code:: xml
-
-        <lib>
-            <dict>
-                <key>...</key>
-                <string>The contents use the PLIST format.</string>
-            </dict>
-        </lib>
-
-    - Child element of ``designspace`` and ``instance``
-    - Contains arbitrary data about the whole document or about a specific
-      instance.
-    - Items in the dict need to use **reverse domain name notation** <https://en.wikipedia.org/wiki/Reverse_domain_name_notation>__
-
-
-info element
-============
+``<info>`` element
+------------------
 
 -  ``<info copy="1" />``
 -  Child element of ``source``
@@ -275,8 +409,8 @@ info element
 -  MutatorMath
 
 
-features element
-================
+``<features>`` element
+----------------------
 
 -  ``<features copy="1" />``
 -  Defines if the instances can inherit opentype feature text from this
@@ -285,8 +419,8 @@ features element
 -  MutatorMath only
 
 
-glyph element
-=============
+``<glyph>`` element
+-------------------
 
 -  Can appear in ``source`` as well as in ``instance`` elements.
 -  In a ``source`` element this states if a glyph is to be excluded from
@@ -294,8 +428,7 @@ glyph element
 -  MutatorMath only
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``mute``: optional attribute, number 1 or 0. Indicate if this glyph
    should be ignored as a master.
@@ -303,15 +436,14 @@ Attributes
 -  MutatorMath only
 
 
-kerning element
-===============
+``<kerning>`` element
+---------------------
 
 -  ``<kerning mute="1" />``
 -  Can appear in ``source`` as well as in ``instance`` elements.
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``mute``: required attribute, number 1 or 0. Indicate if the kerning
    data from this source is to be excluded from the calculation.
@@ -320,8 +452,7 @@ Attributes
 -  MutatorMath only
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -338,8 +469,26 @@ Example
     </source>
 
 
-instance element
-================
+============================
+``<variable-fonts>`` element
+============================
+
+TODO
+
+
+``<variable-font>`` element
+===========================
+
+TODO
+
+
+=======================
+``<instances>`` element
+=======================
+
+
+``<instance>`` element
+======================
 
 -  Defines a single font that can be calculated with the designspace.
 -  Child element of ``instances``
@@ -351,8 +500,7 @@ instance element
 -  Location in designspace coordinates.
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``familyname``: required, string. The family name of the instance
    font. Corresponds with ``font.info.familyName``
@@ -391,7 +539,7 @@ Example for varlib
     </instance>
 
 
-glyphs element
+``<glyphs>`` element
 ==============
 
 -  Container for ``glyph`` elements.
@@ -399,15 +547,14 @@ glyphs element
 -  MutatorMath only.
 
 
-glyph element
+``<glyph>`` element
 =============
 
 -  Child element of ``glyphs``
 -  May contain a ``location`` element.
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``name``: string. The name of the glyph.
 -  ``unicode``: string. Unicode values for this glyph, in hexadecimal.
@@ -416,13 +563,13 @@ Attributes
    should be supressed in the output.
 
 
-note element
+``<note>`` element
 ============
 
 -  String. The value corresponds to glyph.note in UFO.
 
 
-masters element
+``<masters>`` element
 ===============
 
 -  Container for ``master`` elements
@@ -430,7 +577,7 @@ masters element
    for this glyph.
 
 
-master element
+``<master>`` element
 ==============
 
 -  Defines a single alternative master for this glyph.
@@ -448,8 +595,7 @@ with an ``xml:lang`` attribute:
 -  stylemapfamilyname
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -462,16 +608,14 @@ Example
     <stylemapfamilyname xml:lang="ja">モンセラート SemiBold</stylemapfamilyname>
 
 
-Attributes
-----------
+.. rubric:: Attributes
 
 -  ``glyphname``: the name of the alternate master glyph.
 -  ``source``: the identifier name of the source this master glyph needs
    to be loaded from
 
 
-Example
--------
+.. rubric:: Example
 
 .. code:: xml
 
@@ -509,133 +653,24 @@ Example
     </instance>
 
 
-rules element
-=============
 
--  Container for ``rule`` elements
--  The rules are evaluated in this order.
+============================
+``<lib>`` element (document)
+============================
 
-Rules describe designspace areas in which one glyph should be replaced by another.
-A rule has a name and a number of conditionsets. The rule also contains a list of
-glyphname pairs: the glyphs that need to be substituted. For a rule to be triggered
-**only one** of the conditionsets needs to be true, ``OR``. Within a conditionset
-**all** conditions need to be true, ``AND``.
+2. Document and instance lib
+    - Example:
 
+      .. code:: xml
 
-Attributes
-----------
+        <lib>
+            <dict>
+                <key>...</key>
+                <string>The contents use the PLIST format.</string>
+            </dict>
+        </lib>
 
--  ``processing``: flag, optional. Valid values are [``first``, ``last``]. This flag indicates whether the substitution rules should be applied before or after other glyph substitution features.
--  If no ``processing`` attribute is given, interpret as ``first``, and put the substitution rule in the ``rvrn`` feature.
--  If ``processing`` is ``last``, put it in ``rclt``.
--  If you want to use a different feature altogether, e.g. ``calt``, use the lib key ``com.github.fonttools.varLib.featureVarsFeatureTag``::
-
-    <lib>
-        <dict>
-            <key>com.github.fonttools.varLib.featureVarsFeatureTag</key>
-            <string>calt</string>
-        </dict>
-    </lib>
-
-
-
-rule element
-============
-
--  Defines a named rule.
--  Each ``rule`` element contains one or more ``conditionset`` elements.
--  **Only one** ``conditionset`` needs to be true to trigger the rule.
--  **All** conditions in a ``conditionset`` must be true to make the ``conditionset`` true.
--  For backwards compatibility a ``rule`` can contain ``condition`` elements outside of a conditionset. These are then understood to be part of a single, implied, ``conditionset``. Note: these conditions should be written wrapped in a conditionset.
--  A rule element needs to contain one or more ``sub`` elements in order to be compiled to a variable font.
--  Rules without sub elements should be ignored when compiling a font.
--  For authoring tools it might be necessary to save designspace files without ``sub`` elements just because the work is incomplete.
-
-
-Attributes
-----------
-
--  ``name``: optional, string. A unique name that can be used to
-   identify this rule if it needs to be referenced elsewhere. The name
-   is not important for compiling variable fonts.
-
-conditionset element
-=================
-
--  Child element of ``rule``
--  Contains one or more ``condition`` elements.
-
-
-condition element
-=================
-
--  Child element of ``conditionset``
--  Between the ``minimum`` and ``maximum`` this condition is ``True``.
--  ``minimum`` and ``maximum`` are in designspace coordinates.
--  If ``minimum`` is not available, assume it is ``axis.minimum``, mapped to designspace coordinates.
--  If ``maximum`` is not available, assume it is ``axis.maximum``, mapped to designspace coordinates.
--  The condition must contain at least a minimum or maximum or both.
-
-
-Attributes
-----------
-
--  ``name``: string, required. Must match one of the defined ``axis``
-   name attributes.
--  ``minimum``: number, required*. The low value, in designspace coordinates.
--  ``maximum``: number, required*. The high value, in designspace coordinates.
-
-
-sub element
-===========
-
--  Child element of ``rule``.
--  Defines which glyph to replace when the rule evaluates to **True**.
--  The ``sub`` element contains a pair of glyphnames. The ``name`` attribute is the glyph that should be visible when the rule evaluates to **False**. The ``with`` attribute is the glyph that should be visible when the rule evaluates to **True**.
-
-Axis values in Conditions are in designspace coordinates.
-
-
-Attributes
-----------
-
--  ``name``: string, required. The name of the glyph this rule looks
-   for.
--  ``with``: string, required. The name of the glyph it is replaced
-   with.
-
-
-Example
--------
-
-Example with an implied ``conditionset``. Here the conditions are not
-contained in a conditionset.
-
-.. code:: xml
-
-    <rules processing="last">
-        <rule name="named.rule.1">
-            <condition minimum="250" maximum="750" name="weight" />
-            <condition minimum="50" maximum="100" name="width" />
-            <sub name="dollar" with="dollar.alt"/>
-        </rule>
-    </rules>
-
-Example with ``conditionsets``. All conditions in a conditionset must be true.
-
-.. code:: xml
-
-    <rules>
-        <rule name="named.rule.2">
-            <conditionset>
-                <condition minimum="250" maximum="750" name="weight" />
-                <condition minimum="50" maximum="100" name="width" />
-            </conditionset>
-            <conditionset>
-                <condition ... />
-                <condition ... />
-            </conditionset>
-            <sub name="dollar" with="dollar.alt"/>
-        </rule>
-    </rules>
-
+    - Child element of ``designspace`` and ``instance``
+    - Contains arbitrary data about the whole document or about a specific
+      instance.
+    - Items in the dict need to use **reverse domain name notation** <https://en.wikipedia.org/wiki/Reverse_domain_name_notation>__

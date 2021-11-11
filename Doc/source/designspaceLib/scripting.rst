@@ -1,6 +1,6 @@
-#######################
-Scripting a designspace
-#######################
+#########################
+3 Scripting a designspace
+#########################
 
 It can be useful to build a designspace with a script rather than
 construct one with an interface like
@@ -60,7 +60,7 @@ Make a descriptor object and add it to the document.
    Variation Axis
    Tags <https://www.microsoft.com/typography/otspec/fvar.htm#VAT>`__
 -  The default master is expected at the intersection of all
-   default values of all axes. 
+   default values of all axes.
 
 Option: add label names
 -----------------------
@@ -124,7 +124,7 @@ So go ahead and add another master:
     s1.name = "master.bold"
     s1.location = dict(weight=1000)
     doc.addSource(s1)
-    
+
 
 Option: exclude glyphs
 ----------------------

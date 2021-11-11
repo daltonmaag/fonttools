@@ -1,6 +1,6 @@
-##############################
-DesignSpaceDocument Python API
-##############################
+################################
+1 DesignSpaceDocument Python API
+################################
 
 An object to read, write and edit interpolation systems for typefaces.
 Define sources, axes, rules, variable fonts and instances.
@@ -13,10 +13,14 @@ Get an overview of the available classes in the Class Diagram below:
 
    UML class diagram of designspaceLib. Click to enlarge.
 
+.. contents:: Table of contents
+   :local:
+
 .. _designspacedocument-object:
 
-DesignSpaceDocument object
-==========================
+===================
+DesignSpaceDocument
+===================
 
 .. autoclass:: fontTools.designspaceLib::DesignSpaceDocument
    :members:
@@ -24,8 +28,8 @@ DesignSpaceDocument object
    :member-order: bysource
 
 
-AxisDescriptor object
-=====================
+AxisDescriptor
+==============
 
 .. autoclass:: fontTools.designspaceLib::AxisDescriptor
    :members:
@@ -34,8 +38,8 @@ AxisDescriptor object
    :member-order: bysource
 
 
-DiscreteAxisDescriptor object
-=============================
+DiscreteAxisDescriptor
+======================
 
 .. autoclass:: fontTools.designspaceLib::DiscreteAxisDescriptor
    :members:
@@ -44,8 +48,8 @@ DiscreteAxisDescriptor object
    :member-order: bysource
 
 
-AxisLabelDescriptor object
-==========================
+AxisLabelDescriptor
+-------------------
 
 .. autoclass:: fontTools.designspaceLib::AxisLabelDescriptor
    :members:
@@ -53,8 +57,8 @@ AxisLabelDescriptor object
    :member-order: bysource
 
 
-LocationLabelDescriptor object
-==========================
+LocationLabelDescriptor
+===================
 
 .. autoclass:: fontTools.designspaceLib::LocationLabelDescriptor
    :members:
@@ -62,53 +66,8 @@ LocationLabelDescriptor object
    :member-order: bysource
 
 
-SourceDescriptor object
-=======================
-
-.. autoclass:: fontTools.designspaceLib::SourceDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-VariableFontDescriptor object
-=============================
-
-.. autoclass:: fontTools.designspaceLib::VariableFontDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-RangeAxisSubsetDescriptor object
-================================
-
-.. autoclass:: fontTools.designspaceLib::RangeAxisSubsetDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-ValueAxisSubsetDescriptor object
-================================
-
-.. autoclass:: fontTools.designspaceLib::ValueAxisSubsetDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-InstanceDescriptor object
-=========================
-
-.. autoclass:: fontTools.designspaceLib::InstanceDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-RuleDescriptor object
-=====================
+RuleDescriptor
+==============
 
 .. autoclass:: fontTools.designspaceLib::RuleDescriptor
    :members:
@@ -124,8 +83,54 @@ Evaluating rules
 .. autofunction:: fontTools.designspaceLib::processRules
 
 
+SourceDescriptor
+================
+
+.. autoclass:: fontTools.designspaceLib::SourceDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+VariableFontDescriptor
+======================
+
+.. autoclass:: fontTools.designspaceLib::VariableFontDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+RangeAxisSubsetDescriptor
+-------------------------
+
+.. autoclass:: fontTools.designspaceLib::RangeAxisSubsetDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+ValueAxisSubsetDescriptor
+-------------------------
+
+.. autoclass:: fontTools.designspaceLib::ValueAxisSubsetDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+InstanceDescriptor
+==================
+
+.. autoclass:: fontTools.designspaceLib::InstanceDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
 .. _subclassing-descriptors:
 
+=======================
 Subclassing descriptors
 =======================
 
@@ -141,23 +146,23 @@ descriptor does not need to be a subclass.
         discreteAxisDescriptorClass = MyDiscreteAxisDescriptor
         axisLabelDescriptorClass = MyAxisLabelDescriptor
         locationLabelDescriptorClass = MyLocationLabelDescriptor
+        ruleDescriptorClass = MyRuleDescriptor
         sourceDescriptorClass = MySourceDescriptor
         variableFontsDescriptorClass = MyVariableFontDescriptor
         valueAxisSubsetDescriptorClass = MyValueAxisSubsetDescriptor
         rangeAxisSubsetDescriptorClass = MyRangeAxisSubsetDescriptor
         instanceDescriptorClass = MyInstanceDescriptor
-        ruleDescriptorClass = MyRuleDescriptor
 
     class MyDocWriter(BaseDocWriter):
         axisDescriptorClass = MyAxisDescriptor
         discreteAxisDescriptorClass = MyDiscreteAxisDescriptor
         axisLabelDescriptorClass = MyAxisLabelDescriptor
         locationLabelDescriptorClass = MyLocationLabelDescriptor
+        ruleDescriptorClass = MyRuleDescriptor
         sourceDescriptorClass = MySourceDescriptor
         variableFontsDescriptorClass = MyVariableFontDescriptor
         valueAxisSubsetDescriptorClass = MyValueAxisSubsetDescriptor
         rangeAxisSubsetDescriptorClass = MyRangeAxisSubsetDescriptor
         instanceDescriptorClass = MyInstanceDescriptor
-        ruleDescriptorClass = MyRuleDescriptor
 
     myDoc = DesignSpaceDocument(MyDocReader, MyDocWriter)
