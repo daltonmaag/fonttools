@@ -8,6 +8,7 @@ Define sources, axes, rules, variable fonts and instances.
 Get an overview of the available classes in the Class Diagram below:
 
 .. figure:: v5_class_diagram.png
+   :width: 650px
    :alt: UML class diagram of designspaceLib
 
    UML class diagram of designspaceLib. Click to enlarge.
