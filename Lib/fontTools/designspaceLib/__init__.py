@@ -869,7 +869,7 @@ class AxisLabelDescriptor(SimpleDescriptor):
         """STAT field ``linkedValue`` (format 3)."""
         self.labelNames: MutableMapping[str, str] = labelNames or {}
         """User-facing translations of this location's label. Keyed by
-        xml:lang code.
+        ``xml:lang`` code.
         """
 
     def getFormat(self) -> int:
@@ -878,9 +878,9 @@ class AxisLabelDescriptor(SimpleDescriptor):
         ===========  =========  ===========  ===========  ===============
         STAT Format  userValue  userMinimum  userMaximum  linkedUserValue
         ===========  =========  ===========  ===========  ===============
-        1            ✅         ❌           ❌            ❌
-        2            ✅         ✅           ✅            ❌
-        3            ✅         ❌           ❌            ✅
+        1            ✅          ❌            ❌            ❌
+        2            ✅          ✅            ✅            ❌
+        3            ✅          ❌            ❌            ✅
         ===========  =========  ===========  ===========  ===============
         """
         if self.linkedUserValue is not None:
@@ -1517,19 +1517,19 @@ class BaseDocReader(LogMixin):
         name = element.get("name")
         if name is None:
             raise DesignSpaceDocumentError("label element must have a name attribute.")
-        value = element.get("uservalue")
-        if value is None:
+        valueStr = element.get("uservalue")
+        if valueStr is None:
             raise DesignSpaceDocumentError("label element must have a uservalue attribute.")
-        value = float(value)
-        minimum = element.get("userminimum")
-        if minimum is not None:
-            minimum = float(minimum)
-        maximum = element.get("usermaximum")
-        if maximum is not None:
-            maximum = float(maximum)
-        linkedValue = element.get("linkeduservalue")
-        if linkedValue is not None:
-            linkedValue = float(linkedValue)
+        value = float(valueStr)
+        minimumStr = element.get("userminimum")
+        if minimumStr is not None:
+            minimum = float(minimumStr)
+        maximumStr = element.get("usermaximum")
+        if maximumStr is not None:
+            maximum = float(maximumStr)
+        linkedValueStr = element.get("linkeduservalue")
+        if linkedValueStr is not None:
+            linkedValue = float(linkedValueStr)
         elidable = True if element.get("elidable") == "true" else False
         olderSibling = True if element.get("oldersibling") == "true" else False
         labelNames = {
@@ -1630,12 +1630,12 @@ class BaseDocReader(LogMixin):
             name = element.get("name")
             if name is None:
                 raise DesignSpaceDocumentError("axis-subset element must have a name attribute.")
-            userValue = element.get("uservalue")
-            if userValue is None:
+            userValueStr = element.get("uservalue")
+            if userValueStr is None:
                 raise DesignSpaceDocumentError(
                     "The axis-subset element for a discrete subset must have a uservalue attribute."
                 )
-            userValue = float(userValue)
+            userValue = float(userValueStr)
 
             return self.valueAxisSubsetDescriptorClass(name=name, userValue=userValue)
         else:
@@ -1651,7 +1651,7 @@ class BaseDocReader(LogMixin):
             userMinimum = element.get("userminimum")
             userDefault = element.get("userdefault")
             userMaximum = element.get("usermaximum")
-            if all(v is not None for v in (userMinimum, userDefault, userMaximum)):
+            if userMinimum is not None and userDefault is not None and userMaximum is not None:
                 return self.rangeAxisSubsetDescriptorClass(
                     name=name,
                     userMinimum=float(userMinimum),
@@ -1725,6 +1725,7 @@ class BaseDocReader(LogMixin):
 
     def readLocationElement(self, locationElement):
         """ Format 0 location reader """
+        # TODO: implement uservalue
         if self._strictAxisNames and not self.documentObject.axes:
             raise DesignSpaceDocumentError("No axes defined")
         loc = {}

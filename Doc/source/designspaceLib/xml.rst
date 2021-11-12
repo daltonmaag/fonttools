@@ -15,15 +15,6 @@ Overview
 ========
 
 
--  The ``axes`` element contains one or more ``axis`` elements.
--  The ``labels`` element contains one or more ``label`` elements.
--  The ``sources`` element contains one or more ``source`` elements.
--  The ``variable-fonts`` element contains one or more ``variable-font`` elements.
--  The ``instances`` element contains one or more ``instance`` elements.
--  The ``rules`` element contains one or more ``rule`` elements.
--  The ``lib`` element contains arbitrary data.
-
-
 .. code:: xml
 
     <?xml version='1.0' encoding='utf-8'?>
@@ -65,6 +56,9 @@ Overview
 ``<axes>`` element
 ==================
 
+The ``<axes>`` element contains one or more ``<axis>`` elements.
+
+
 ``<axis>`` element
 ==================
 
@@ -91,6 +85,8 @@ For a continuous axis:
 For a discrete axis:
    -  ``values``: required, space-separated numbers. The exhaustive list of possible values along this axis.
 
+   .. versionadded:: 5.0
+
 
 .. rubric:: Example
 
@@ -104,13 +100,16 @@ For a discrete axis:
     -->
     <axis name="Italic" tag="ital" default="0" values="0 1">
 
-``<labelname>`` element
------------------------
+
+.. _labelname:
+
+``<labelname>`` element (axis)
+------------------------------
 
 -  Defines a human readable name for UI use.
 -  Optional for non-registered axis names.
 -  Can be localised with ``xml:lang``
--  Child element of ``axis``
+-  Child element of ``<axis>`` or ``<label>``
 
 
 .. rubric:: Attributes
@@ -121,7 +120,7 @@ For a discrete axis:
 
 .. rubric:: Value
 
--  The natural language name of this axis.
+-  The natural language name of this axis or STAT label.
 
 
 .. rubric:: Example
@@ -138,8 +137,7 @@ For a discrete axis:
 -  Defines a single node in a series of input value (user space coordinate)
    to output value (designspace coordinate) pairs.
 -  Together these values transform the designspace.
--  Child of ``axis`` element.
-
+-  Child of ``<axis>`` element.
 
 .. rubric:: Example
 
@@ -153,21 +151,65 @@ For a discrete axis:
 ``<labels>`` element (axis)
 ---------------------------
 
+The ``<labels>`` element contains one or more ``<label>`` elements.
+
+.. versionadded:: 5.0
+
+
 ``<label>`` element (axis)
 ..........................
 
 -  Define STAT format 1, 2, 3 labels for the locations on this axis.
--  The axis can have several ``label`` elements,
-TODO here
+-  The axis can have several ``<label>`` elements, one for each STAT entry.
+-  This ``<label>`` element can have several ``<labelname>`` child elements,
+   to provide translations of its ``name`` attribute.
 
+.. versionadded:: 5.0
+
+.. rubric:: Attributes
+
+- ``name``: required, string. the name of this label
+- ``elidable``: optional, boolean, default: false. STAT flag ``ELIDABLE_AXIS_VALUE_NAME``.
+- ``oldersibling``: optional, boolean, default: false. STAT flag ``OLDER_SIBLING_FONT_ATTRIBUTE``.
+
+  See: `OTSpec STAT Flags <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#flags>`_
+
+Depending on the intended target STAT format, use a combination of the following
+field, all in user coordinates. Check the following table for the format
+correspondences.
+
+- ``uservalue``: (required) STAT field ``value`` (format 1, 3) or ``nominalValue`` (format 2).
+- ``userminimum``: STAT field ``rangeMinValue`` (format 2).
+- ``usermaximum``: STAT field ``rangeMaxValue`` (format 2).
+- ``linkeduservalue``: STAT field ``linkedValue`` (format 3).
+
+===========  =========  ===========  ===========  ===============
+STAT Format  uservalue  userminimum  usermaximum  linkeduservalue
+===========  =========  ===========  ===========  ===============
+1            ✅          ❌            ❌            ❌
+2            ✅          ✅            ✅            ❌
+3            ✅          ❌            ❌            ✅
+===========  =========  ===========  ===========  ===============
 
 .. rubric:: Example
 
 .. code:: xml
 
-    <map input="1.0" output="10.0" />
-    <map input="400.0" output="66.0" />
-    <map input="1000.0" output="990.0" />
+    <label userminimum="200" uservalue="200" usermaximum="250" name="Extra Light">
+        <labelname xml:lang="de">Extraleicht</labelname>
+        <labelname xml:lang="fr">Extra léger</labelname>
+    </label>
+    <label userminimum="350" uservalue="400" usermaximum="450" name="Regular" elidable="true" />
+
+
+``<labelname>`` element (axis STAT label)
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
+User-facing translations of this STAT label. Keyed by ``xml:lang`` code.
+
+.. versionadded:: 5.0
+
+Same attribute and value as :ref:`the axis' \<labelname\> element <labelname>`.
 
 
 Example of all axis elements together
@@ -175,37 +217,117 @@ Example of all axis elements together
 
 .. code:: xml
 
-        <axes>
-            <axis default="1" maximum="1000" minimum="0" name="weight" tag="wght">
-                <labelname xml:lang="fa-IR">قطر</labelname>
-                <labelname xml:lang="en">Wéíght</labelname>
-            </axis>
-            <axis default="100" maximum="200" minimum="50" name="width" tag="wdth">
-                <map input="50.0" output="10.0" />
-                <map input="100.0" output="66.0" />
-                <map input="200.0" output="990.0" />
-            </axis>
-        </axes>
+    <axes>
+        <axis default="1" maximum="1000" minimum="0" name="weight" tag="wght">
+            <labelname xml:lang="fa-IR">قطر</labelname>
+            <labelname xml:lang="en">Wéíght</labelname>
+            <labels>
+                <label userminimum="200" uservalue="200" usermaximum="250" name="Extra Light">
+                    <labelname xml:lang="de">Extraleicht</labelname>
+                    <labelname xml:lang="fr">Extra léger</labelname>
+                </label>
+                <label userminimum="350" uservalue="400" usermaximum="450" name="Regular" elidable="true" />
+            </labels>
+        </axis>
+        <axis default="100" maximum="200" minimum="50" name="width" tag="wdth">
+            <map input="50.0" output="10.0" />
+            <map input="100.0" output="66.0" />
+            <map input="200.0" output="990.0" />
+        </axis>
+    </axes>
 
 
 ================================
 ``<labels>`` element (top-level)
 ================================
 
-TODO
+The ``<labels>`` element contains one or more ``<label>`` elements.
+
+.. versionadded:: 5.0
 
 ``<label>`` element (top-level)
 ===============================
 
-TODO
+-  Define STAT format 4 labels for a free-standing location.
+-  The designspace can have several top-level ``<label>`` elements, one for each
+   STAT format 4 entry.
+-  This ``<label>`` element must have a child ``<location>`` element that
+   represents the location to which the label applies.
+-  This ``<label>`` element may have several child ``<labelname>`` elements to
+   provide translations of its ``name`` attribute.
+
+
+See: `OTSpec STAT Axis value table, format 4 <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#axis-value-table-format-4>`_
+
+.. versionadded:: 5.0
+
+.. rubric:: Attributes
+
+- ``name``: required, string. the name of this label
+- ``elidable``: optional, boolean, default: false. STAT flag ``ELIDABLE_AXIS_VALUE_NAME``.
+- ``oldersibling``: optional, boolean, default: false. STAT flag ``OLDER_SIBLING_FONT_ATTRIBUTE``.
+
+  See: `OTSpec STAT Flags <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#flags>`_
+
+
+.. _location:
+
+``<location>`` element (top-level STAT label)
+---------------------------------------------
+
+-  Defines a coordinate in either user or design space.
+-  Dictionary of ``{ axisname: axisvalue }``.
+-  Also used in ``<source>``, ``<instance>`` and ``<glyph>`` elements.
+
+
+``<dimension>`` element
+.......................
+
+-  Child element of ``<location>``
+
+.. rubric:: Attributes
+
+-  ``name``: required, string. Name of the axis.
+
+Depending on whether you're representing a location in user or design coordinates,
+provide one of the attributes below.
+
+For user-space coordinates:
+-  ``uservalue``: required, number. The value on this axis in user coordinates.
+
+For design-space coordinates:
+-  ``xvalue``: required, number. The value on this axis in design coordinates.
+-  ``yvalue``: optional, number. Separate value for anisotropic
+   interpolations.
+
+
+.. rubric:: Example
+
+.. code:: xml
+
+    <location>
+        <dimension name="width" uservalue="125" />
+        <dimension name="weight" xvalue="10" yvalue="20.5" />
+    </location>
+
+
+``<labelname>`` element (top-level STAT label)
+----------------------------------------------
+
+User-facing translations of this STAT label. Keyed by ``xml:lang`` code.
+
+.. versionadded:: 5.0
+
+Same attribute and value as :ref:`the axis' \<labelname\> element <labelname>`.
 
 
 ===================
 ``<rules>`` element
 ===================
 
--  Container for ``rule`` elements
--  The rules are evaluated in this order.
+The ``<rules>`` element contains one or more ``<rule>`` elements.
+
+The rules are evaluated in this order.
 
 Rules describe designspace areas in which one glyph should be replaced by another.
 A rule has a name and a number of conditionsets. The rule also contains a list of
@@ -234,13 +356,13 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 ==================
 
 -  Defines a named rule.
--  Each ``rule`` element contains one or more ``conditionset`` elements.
--  **Only one** ``conditionset`` needs to be true to trigger the rule.
--  **All** conditions in a ``conditionset`` must be true to make the ``conditionset`` true.
--  For backwards compatibility a ``rule`` can contain ``condition`` elements outside of a conditionset. These are then understood to be part of a single, implied, ``conditionset``. Note: these conditions should be written wrapped in a conditionset.
--  A rule element needs to contain one or more ``sub`` elements in order to be compiled to a variable font.
+-  Each ``<rule>`` element contains one or more ``<conditionset>`` elements.
+-  **Only one** ``<conditionset>`` needs to be true to trigger the rule.
+-  **All** conditions in a ``<conditionset>`` must be true to make the ``<conditionset>`` true.
+-  For backwards compatibility a ``<rule>`` can contain ``<condition>`` elements outside of a conditionset. These are then understood to be part of a single, implied, ``<conditionset>``. Note: these conditions should be written wrapped in a conditionset.
+-  A rule element needs to contain one or more ``<sub>`` elements in order to be compiled to a variable font.
 -  Rules without sub elements should be ignored when compiling a font.
--  For authoring tools it might be necessary to save designspace files without ``sub`` elements just because the work is incomplete.
+-  For authoring tools it might be necessary to save designspace files without ``<sub>`` elements just because the work is incomplete.
 
 
 .. rubric:: Attributes
@@ -252,14 +374,14 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 ``<conditionset>`` element
 --------------------------
 
--  Child element of ``rule``
--  Contains one or more ``condition`` elements.
+-  Child element of ``<rule>``
+-  Contains one or more ``<condition>`` elements.
 
 
 ``<condition>`` element
 .......................
 
--  Child element of ``conditionset``
+-  Child element of ``<conditionset>``
 -  Between the ``minimum`` and ``maximum`` this condition is ``True``.
 -  ``minimum`` and ``maximum`` are in designspace coordinates.
 -  If ``minimum`` is not available, assume it is ``axis.minimum``, mapped to designspace coordinates.
@@ -278,9 +400,9 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 ``<sub>`` element
 -----------------
 
--  Child element of ``rule``.
+-  Child element of ``<rule>``.
 -  Defines which glyph to replace when the rule evaluates to **True**.
--  The ``sub`` element contains a pair of glyphnames. The ``name`` attribute is the glyph that should be visible when the rule evaluates to **False**. The ``with`` attribute is the glyph that should be visible when the rule evaluates to **True**.
+-  The ``<sub>`` element contains a pair of glyphnames. The ``name`` attribute is the glyph that should be visible when the rule evaluates to **False**. The ``with`` attribute is the glyph that should be visible when the rule evaluates to **True**.
 
 Axis values in Conditions are in designspace coordinates.
 
@@ -295,7 +417,7 @@ Axis values in Conditions are in designspace coordinates.
 
 .. rubric:: Example
 
-Example with an implied ``conditionset``. Here the conditions are not
+Example with an implied ``<conditionset>``. Here the conditions are not
 contained in a conditionset.
 
 .. code:: xml
@@ -308,7 +430,7 @@ contained in a conditionset.
         </rule>
     </rules>
 
-Example with ``conditionsets``. All conditions in a conditionset must be true.
+Example with ``<conditionsets>``. All conditions in a conditionset must be true.
 
 .. code:: xml
 
@@ -330,11 +452,14 @@ Example with ``conditionsets``. All conditions in a conditionset must be true.
 ``<sources>`` element
 =====================
 
+The ``<sources>`` element contains one or more ``<source>`` elements.
+
+
 ``<source>`` element
 ====================
 
 -  Defines a single font or layer that contributes to the designspace.
--  Child element of ``sources``
+-  Child element of ``<sources>``
 -  Location in designspace coordinates.
 
 
@@ -358,13 +483,13 @@ Example with ``conditionsets``. All conditions in a conditionset must be true.
 
 -  Defines a coordinate in the design space.
 -  Dictionary of axisname: axisvalue
--  Used in ``source``, ``instance`` and ``glyph`` elements.
+-  Used in ``<source>``, ``<instance>`` and ``<glyph>`` elements.
 
 
 ``<dimension>`` element
 .......................
 
--  Child element of ``location``
+-  Child element of ``<location>``
 
 
 .. rubric:: Attributes
@@ -393,20 +518,24 @@ There are two meanings for the ``lib`` element:
 
 1. Source lib
     -  Example: ``<lib copy="1" />``
-    -  Child element of ``source``
+    -  Child element of ``<source>``
     -  Defines if the instances can inherit the data in the lib of this
        source.
     -  MutatorMath only
+
+.. deprecated:: 5.0
 
 
 ``<info>`` element
 ------------------
 
 -  ``<info copy="1" />``
--  Child element of ``source``
+-  Child element of ``<source>``
 -  Defines if the instances can inherit the non-interpolating font info
    from this source.
 -  MutatorMath
+
+.. deprecated:: 5.0
 
 
 ``<features>`` element
@@ -415,17 +544,22 @@ There are two meanings for the ``lib`` element:
 -  ``<features copy="1" />``
 -  Defines if the instances can inherit opentype feature text from this
    source.
--  Child element of ``source``
+-  Child element of ``<source>``
 -  MutatorMath only
 
+.. deprecated:: 5.0
 
-``<glyph>`` element
--------------------
 
--  Can appear in ``source`` as well as in ``instance`` elements.
--  In a ``source`` element this states if a glyph is to be excluded from
+``<glyph>`` element (source)
+----------------------------
+
+-  Can appear in ``<source>`` as well as in ``<instance>`` elements.
+-  In a ``<source>`` element this states if a glyph is to be excluded from
    the calculation.
 -  MutatorMath only
+
+.. versionchanged:: 5.0
+   TODO
 
 
 .. rubric:: Attributes
@@ -440,8 +574,10 @@ There are two meanings for the ``lib`` element:
 ---------------------
 
 -  ``<kerning mute="1" />``
--  Can appear in ``source`` as well as in ``instance`` elements.
+-  Can appear in ``<source>`` as well as in ``<instance>`` elements.
 
+.. versionchanged:: 5.0
+   TODO
 
 .. rubric:: Attributes
 
@@ -473,7 +609,7 @@ There are two meanings for the ``lib`` element:
 ``<variable-fonts>`` element
 ============================
 
-TODO
+The ``<variable-fonts>`` element contains one or more ``<variable-font>`` elements.
 
 
 ``<variable-font>`` element
@@ -486,15 +622,17 @@ TODO
 ``<instances>`` element
 =======================
 
+The ``<instances>`` element contains one or more ``<instance>`` elements.
+
 
 ``<instance>`` element
 ======================
 
 -  Defines a single font that can be calculated with the designspace.
--  Child element of ``instances``
+-  Child element of ``<instances>``
 -  For use in Varlib the instance element really only needs the names
-   and the location. The ``glyphs`` element is not required.
--  MutatorMath uses the ``glyphs`` element to describe how certain
+   and the location. The ``<glyphs>`` element is not required.
+-  MutatorMath uses the ``<glyphs>`` element to describe how certain
    glyphs need different masters, mainly to describe the effects of
    conditional rules in Superpolator.
 -  Location in designspace coordinates.
@@ -539,20 +677,23 @@ Example for varlib
     </instance>
 
 
-``<glyphs>`` element
-==============
+``<glyphs>`` element (instance)
+===============================
 
--  Container for ``glyph`` elements.
+-  Container for ``<glyph>`` elements.
 -  Optional
 -  MutatorMath only.
 
+.. deprecated:: 5.0
 
-``<glyph>`` element
-=============
 
--  Child element of ``glyphs``
--  May contain a ``location`` element.
+``<glyph>`` element (instance)
+==============================
 
+-  Child element of ``<glyphs>``
+-  May contain a ``<location>`` element.
+
+.. deprecated:: 5.0
 
 .. rubric:: Attributes
 
@@ -568,19 +709,32 @@ Example for varlib
 
 -  String. The value corresponds to glyph.note in UFO.
 
+.. deprecated:: 5.0
+
 
 ``<masters>`` element
 ===============
 
--  Container for ``master`` elements
--  These ``master`` elements define an alternative set of glyph masters
+-  Container for ``<master>`` elements
+-  These ``<master>`` elements define an alternative set of glyph masters
    for this glyph.
+
+.. deprecated:: 5.0
 
 
 ``<master>`` element
 ==============
 
 -  Defines a single alternative master for this glyph.
+
+.. deprecated:: 5.0
+
+.. rubric:: Attributes
+
+-  ``glyphname``: the name of the alternate master glyph.
+-  ``source``: the identifier name of the source this master glyph needs
+   to be loaded from
+
 
 Localised names for instances
 =============================
@@ -589,10 +743,10 @@ Localised names for instances can be included with these simple elements
 with an ``xml:lang`` attribute:
 `XML language definition <https://www.w3.org/International/questions/qa-when-xmllang.en>`__
 
--  stylename
--  familyname
--  stylemapstylename
--  stylemapfamilyname
+-  ``<stylename>``
+-  ``<familyname>``
+-  ``<stylemapstylename>``
+-  ``<stylemapfamilyname>``
 
 
 .. rubric:: Example
@@ -606,13 +760,6 @@ with an ``xml:lang`` attribute:
     <stylemapstylename xml:lang="de">Standard</stylemapstylename>
     <stylemapfamilyname xml:lang="de">Montserrat Halbfett</stylemapfamilyname>
     <stylemapfamilyname xml:lang="ja">モンセラート SemiBold</stylemapfamilyname>
-
-
-.. rubric:: Attributes
-
--  ``glyphname``: the name of the alternate master glyph.
--  ``source``: the identifier name of the source this master glyph needs
-   to be loaded from
 
 
 .. rubric:: Example
@@ -658,19 +805,23 @@ with an ``xml:lang`` attribute:
 ``<lib>`` element (document)
 ============================
 
-2. Document and instance lib
-    - Example:
+The ``<lib>`` element contains arbitrary data.
 
-      .. code:: xml
+- Child element of ``designspace`` and ``instance``
+- Contains arbitrary data about the whole document or about a specific
+  instance.
+- Items in the dict need to use **reverse domain name notation**
+  <https://en.wikipedia.org/wiki/Reverse_domain_name_notation>__
 
-        <lib>
-            <dict>
-                <key>...</key>
-                <string>The contents use the PLIST format.</string>
-            </dict>
-        </lib>
+.. rubric:: Example:
 
-    - Child element of ``designspace`` and ``instance``
-    - Contains arbitrary data about the whole document or about a specific
-      instance.
-    - Items in the dict need to use **reverse domain name notation** <https://en.wikipedia.org/wiki/Reverse_domain_name_notation>__
+.. code:: xml
+
+    <lib>
+        <dict>
+            <key>...</key>
+            <string>The contents use the PLIST format.</string>
+        </dict>
+    </lib>
+
+
