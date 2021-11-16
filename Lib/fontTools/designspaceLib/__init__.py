@@ -173,10 +173,14 @@ class SourceDescriptor(SimpleDescriptor):
 
         MutatorMath.
         """
+
         self.location = location
-        """dict. Axis values for this source.
+        """dict. Axis values for this source, in design space coordinates.
 
         MutatorMath + Varlib.
+
+        .. deprecated:: 5.0
+           Use :attr:`designLocation` instead.
         """
 
         self.layerName = layerName
@@ -359,6 +363,10 @@ def processRules(rules, location, glyphNames):
     return glyphNames
 
 
+AnisotropicLocationDict = Dict[str, Union[float, Tuple[float, float]]]
+SimpleLocationDict = Dict[str, float]
+
+
 class InstanceDescriptor(SimpleDescriptor):
     """Simple container for data related to the instance
 
@@ -371,7 +379,7 @@ class InstanceDescriptor(SimpleDescriptor):
         i2.styleName = "InstanceStyleName"
         i2.name = "instance.ufo2"
         # anisotropic location
-        i2.location = dict(weight=500, width=(400,300))
+        i2.designLocation = dict(weight=500, width=(400,300))
         i2.postScriptFontName = "InstancePostscriptName"
         i2.styleMapFamilyName = "InstanceStyleMapFamilyName"
         i2.styleMapStyleName = "InstanceStyleMapStyleName"
@@ -403,6 +411,9 @@ class InstanceDescriptor(SimpleDescriptor):
         font=None,
         name=None,
         location=None,
+        locationLabel=None,
+        designLocation=None,
+        userLocation=None,
         familyName=None,
         styleName=None,
         postScriptFontName=None,
@@ -440,22 +451,38 @@ class InstanceDescriptor(SimpleDescriptor):
         identify it if it needs to be referenced from elsewhere in the
         document.
         """
-        self.location: Optional[Union[Dict[str, Union[float, Tuple[float, float]]], str]] = location
-        """dict or string. Axis values for this instance.
+        self.locationLabel = locationLabel
+        """Name of a :class:`LocationLabelDescriptor`. If
+        provided, the instance should have the same location as the
+        LocationLabel.
+
+        .. seealso::
+           :meth:`getFullDesignLocation`
+           :meth:`getFullUserLocation`
+
+        .. versionadded:: 5.0
+        """
+        self.designLocation: AnisotropicLocationDict = designLocation if designLocation is not None else (location or {})
+        """dict. Axis values for this instance, in design space coordinates.
 
         MutatorMath + Varlib.
 
-        .. versionchanged:: 5.0
-            Location can be either as in version 4 a dictionary that maps axis
-            names to (potentially anisotropic) locations, or, new in version 5,
-            a string that matches the name of a
-            :class:`LocationLabel <LocationLabelDescriptor>`.  In that second
-            case the instance should have the same location as the
-            LocationLabel.
+        .. seealso:: This may be only part of the full location. See:
+           :meth:`getFullDesignLocation`
+           :meth:`getFullUserLocation`
 
-            The type of this property changes but as long as the library is used
-            to open a DSv4, the property will never be a string. Only when
-            opening a DSv5 will it start being a string.
+        .. versionadded:: 5.0
+        """
+        self.userLocation: SimpleLocationDict = userLocation or {}
+        """dict. Axis values for this instance, in user space coordinates.
+
+        MutatorMath + Varlib.
+
+        .. seealso:: This may be only part of the full location. See:
+           :meth:`getFullDesignLocation`
+           :meth:`getFullUserLocation`
+
+        .. versionadded:: 5.0
         """
         self.familyName = familyName
         """string. Family name of this instance.
@@ -463,7 +490,7 @@ class InstanceDescriptor(SimpleDescriptor):
         MutatorMath + Varlib.
         """
         self.styleName = styleName
-        """string. Style name of this source.
+        """string. Style name of this instance.
 
         MutatorMath + Varlib.
         """
@@ -526,6 +553,23 @@ class InstanceDescriptor(SimpleDescriptor):
         self.lib = lib or {}
         """Custom data associated with this instance."""
 
+    @property
+    def location(self):
+        """dict. Axis values for this instance.
+
+        MutatorMath + Varlib.
+
+        .. seealso:: :meth:`updateLocation`
+
+        .. deprecated:: 5.0
+           Use the more explicit alias for this property :attr:`designLocation`.
+        """
+        return self.designLocation
+
+    @location.setter
+    def location(self, location: Optional[AnisotropicLocationDict]):
+        self.designLocation = location or {}
+
     def setStyleName(self, styleName, languageCode="en"):
         """These methods give easier access to the localised names."""
         self.localisedStyleName[languageCode] = tostr(styleName)
@@ -550,6 +594,107 @@ class InstanceDescriptor(SimpleDescriptor):
 
     def getStyleMapFamilyName(self, languageCode="en"):
         return self.localisedStyleMapFamilyName.get(languageCode)
+
+    def clearLocation(self, axisName: Optional[str] = None):
+        """Clear all location-related fields. Ensures that
+        :attr:``designLocation`` and :attr:``userLocation`` are dictionaries
+        (possibly empty if clearing everything).
+
+        In order to update the location of this instance wholesale, a user
+        should first clear all the fields, then change the field(s) for which
+        they have data.
+
+        .. code:: python
+
+            instance.clearLocation()
+            instance.designLocation = {'Weight': (34, 36.5), 'Width': 100}
+            instance.userLocation = {'Opsz': 16}
+
+        In order to update a single axis location, the user should only clear
+        that axis, then edit the values:
+
+        .. code:: python
+
+            instance.clearLocation('Weight')
+            instance.designLocation['Weight'] = (34, 36.5)
+
+        Args:
+          axisName: if provided, only clear the location for that axis.
+
+        .. versionadded:: 5.0
+        """
+        self.locationLabel = None
+        if axisName is None:
+            self.designLocation = {}
+            self.userLocation = {}
+        else:
+            if self.designLocation is None:
+                self.designLocation = {}
+            if axisName in self.designLocation:
+                del self.designLocation[axisName]
+            if self.userLocation is None:
+                self.userLocation = {}
+            if axisName in self.userLocation:
+                del self.userLocation[axisName]
+
+    def getLocationLabelDescriptor(self, doc: 'DesignSpaceDocument') -> Optional[LocationLabelDescriptor]:
+        """Get the :class:`LocationLabelDescriptor` instance that matches
+        this instances's :attr:`locationLabel`.
+
+        Raises if the named label can't be found.
+
+        .. versionadded:: 5.0
+        """
+        if self.locationLabel is None:
+            return None
+        label = doc.getLocationLabel(self.locationLabel)
+        if label is None:
+            raise DesignSpaceDocumentError(
+                'InstanceDescriptor.getLocationLabelDescriptor(): '
+                f'unknown location label `{self.locationLabel}` in instance `{self.name}`.'
+            )
+        return label
+
+    def getFullDesignLocation(self, doc: 'DesignSpaceDocument') -> AnisotropicLocationDict:
+        """Get the complete design location of this instance, by combining data
+        from the various location fields, default axis values and mappings, and
+        top-level location labels.
+
+        The source of truth for this instance's location is determined for each
+        axis independently by taking the first not-None field in this list:
+
+        - ``locationLabel``: the location along this axis is the same as the
+          matching STAT format 4 label. No anisotropy.
+        - ``designLocation[axisName]``: the explicit design location along this
+          axis, possibly anisotropic.
+        - ``userLocation[axisName]``: the explicit user location along this
+          axis. No anisotropy.
+        - ``axis.default``: default axis value. No anisotropy.
+
+        .. versionadded: 5.0
+        """
+        label = self.getLocationLabelDescriptor(doc)
+        if label is not None:
+            return doc.map_forward(label.userLocation)  # type: ignore
+        result: AnisotropicLocationDict = {}
+        for axis in doc.axes:
+            if axis.name in self.designLocation:
+                result[axis.name] = self.designLocation[axis.name]
+            elif axis.name in self.userLocation:
+                result[axis.name] = axis.map_forward(self.userLocation[axis.name])
+            else:
+                result[axis.name] = axis.map_forward(axis.default)
+        return result
+
+    def getFullUserLocation(self, doc: 'DesignSpaceDocument') -> SimpleLocationDict:
+        """Get the complete user location for this instance.
+
+        .. seealso:: :meth:`getFullDesignLocation`
+
+        .. versionadded:: 5.0
+        """
+        return doc.map_backward(self.getFullDesignLocation(doc))
+
 
 
 def tagForAxisName(name):
@@ -907,20 +1052,20 @@ class LocationLabelDescriptor(SimpleDescriptor):
     """
 
     flavor = "label"
-    _attrs = ('name', 'elidable', 'oldersibling', 'location', 'labelNames')
+    _attrs = ('name', 'elidable', 'oldersibling', 'userLocation', 'labelNames')
 
     def __init__(
         self,
         *,
         name,
-        location,
+        userLocation,
         elidable=False,
         olderSibling=False,
         labelNames=None,
     ):
         self.name: str = name
         """Label for this named location, STAT field ``valueNameID``."""
-        self.location: Mapping[str, float] = location
+        self.userLocation: SimpleLocationDict = userLocation
         """Location in user coordinates along each axis.
 
         If an axis is not mentioned, it is assumed to be at its default location.
@@ -951,13 +1096,13 @@ class LocationLabelDescriptor(SimpleDescriptor):
 
         return (
             self.name,
-            self.location,
+            self.userLocation,
             self.elidable,
             self.olderSibling,
             self.labelNames,
         ) == (
             other.name,
-            other.location,
+            other.userLocation,
             other.elidable,
             other.olderSibling,
             other.labelNames,
@@ -1962,8 +2107,20 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
         Default is False. For new projects, you probably want True. See
         the following issues for more information:
-        `#1371 <https://github.com/fonttools/fonttools/issues/1371#issuecomment-590214572>`_
-        `#2050 <https://github.com/fonttools/fonttools/issues/2050#issuecomment-678691020>`_
+        `fontTools#1371 <https://github.com/fonttools/fonttools/issues/1371#issuecomment-590214572>`__
+        `fontTools#2050 <https://github.com/fonttools/fonttools/issues/2050#issuecomment-678691020>`__
+
+        If you want to use a different feature altogether, e.g. ``calt``,
+        use the lib key ``com.github.fonttools.varLib.featureVarsFeatureTag``
+
+        .. code:: xml
+
+            <lib>
+                <dict>
+                    <key>com.github.fonttools.varLib.featureVarsFeatureTag</key>
+                    <string>calt</string>
+                </dict>
+            </lib>
         """
 
         self.default: Optional[str] = None
@@ -2205,7 +2362,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         .. versionadded:: 5.0
         """
         return next(
-            (label for label in self.locationLabels if label.location == userLocation), None
+            (label for label in self.locationLabels if label.userLocation == userLocation), None
         )
 
     def updateFilenameFromPath(self, masters=True, instances=True, force=False):
@@ -2251,6 +2408,49 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
             if axisDescriptor.name == name:
                 return axisDescriptor
         return None
+
+    def getLocationLabel(self, name: str) -> Optional[LocationLabelDescriptor]:
+        """Return the top-level location label with the given ``name``, or
+        ``None`` if no such label exists.
+
+        .. versionadded:: 5.0
+        """
+        for label in self.locationLabels:
+            if label.name == name:
+                return label
+        return None
+
+    def map_forward(self, userLocation: SimpleLocationDict) -> SimpleLocationDict:
+        """Map a user location to a design location.
+
+        Assume that missing coordinates are at the default location for that axis.
+
+        Note: the output won't be anisotropic, only the xvalue is set.
+
+        .. versionadded:: 5.0
+        """
+        return {
+            axis.name: axis.map_forward(userLocation.get(axis.name, axis.default))
+            for axis in self.axes
+        }
+
+    def map_backward(self, designLocation: AnisotropicLocationDict) -> SimpleLocationDict:
+        """Map a design location to a user location.
+
+        Assume that missing coordinates are at the default location for that axis.
+
+        When the input has anisotropic locations, only the xvalue is used.
+
+        .. versionadded: 5.0
+        """
+        return {
+            axis.name: (
+                axis.map_backward(designLocation[axis.name])
+                if axis.name in designLocation
+                else axis.default
+            )
+            for axis in self.axes
+        }
 
     def findDefault(self):
         """Set and return SourceDescriptor at the default location or None.

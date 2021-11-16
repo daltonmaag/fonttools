@@ -429,3 +429,11 @@ def test_detect_ribbi_aktiv(datadir):
         (("Weight", 84), ("Width", 100), ("Italic", 1)): "italic",
         (("Weight", 133), ("Width", 100), ("Italic", 1)): "bold italic",
     }
+
+
+def test_doc_location_mapping_methods():
+    raise 'TODO'
+
+
+def test_instance_location_methods():
+    raise 'TODO'

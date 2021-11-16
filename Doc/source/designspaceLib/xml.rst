@@ -160,7 +160,7 @@ The ``<labels>`` element contains one or more ``<label>`` elements.
 ..........................
 
 -  Define STAT format 1, 2, 3 labels for the locations on this axis.
--  The axis can have several ``<label>`` elements, one for each STAT entry.
+-  The axis can have several child ``<label>`` elements, one for each STAT entry.
 -  This ``<label>`` element can have several ``<labelname>`` child elements,
    to provide translations of its ``name`` attribute.
 
@@ -276,9 +276,12 @@ See: `OTSpec STAT Axis value table, format 4 <https://docs.microsoft.com/en-us/t
 ---------------------------------------------
 
 -  Defines a coordinate in either user or design space.
--  Dictionary of ``{ axisname: axisvalue }``.
+-  Encodes a dictionary of ``{ axisname: axisvalue }``.
 -  Also used in ``<source>``, ``<instance>`` and ``<glyph>`` elements.
+-  This ``<location>`` element must have one or more child ``<dimension>``
+   elements.
 
+.. _dimension:
 
 ``<dimension>`` element
 .......................
@@ -293,12 +296,15 @@ Depending on whether you're representing a location in user or design coordinate
 provide one of the attributes below.
 
 For user-space coordinates:
+
 -  ``uservalue``: required, number. The value on this axis in user coordinates.
 
+   .. versionadded:: 5.0
+
 For design-space coordinates:
+
 -  ``xvalue``: required, number. The value on this axis in design coordinates.
--  ``yvalue``: optional, number. Separate value for anisotropic
-   interpolations.
+-  ``yvalue``: optional, number. Separate value for anisotropic interpolations.
 
 
 .. rubric:: Example
@@ -306,8 +312,8 @@ For design-space coordinates:
 .. code:: xml
 
     <location>
-        <dimension name="width" uservalue="125" />
-        <dimension name="weight" xvalue="10" yvalue="20.5" />
+        <dimension name="Width" uservalue="125" />
+        <dimension name="Weight" xvalue="10" yvalue="20.5" />
     </location>
 
 
@@ -338,17 +344,28 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 
 .. rubric:: Attributes
 
--  ``processing``: flag, optional. Valid values are [``first``, ``last``]. This flag indicates whether the substitution rules should be applied before or after other glyph substitution features.
--  If no ``processing`` attribute is given, interpret as ``first``, and put the substitution rule in the ``rvrn`` feature.
--  If ``processing`` is ``last``, put it in ``rclt``.
--  If you want to use a different feature altogether, e.g. ``calt``, use the lib key ``com.github.fonttools.varLib.featureVarsFeatureTag``::
+-  ``processing``: flag, optional. Valid values are [``first``, ``last``]. This
+   flag indicates whether the substitution rules should be applied before or after
+   other glyph substitution features.
 
-    <lib>
-        <dict>
-            <key>com.github.fonttools.varLib.featureVarsFeatureTag</key>
-            <string>calt</string>
-        </dict>
-    </lib>
+   -  If no ``processing`` attribute is given, interpret as ``first``, and put
+      the substitution rule in the ``rvrn`` feature.
+   -  If ``processing`` is ``last``, put it in ``rclt``.
+   -  The default is ``first``. For new projects, you probably want ``last``.
+      See the following issues for more information:
+      `fontTools#1371 <https://github.com/fonttools/fonttools/issues/1371#issuecomment-590214572>`__
+      `fontTools#2050 <https://github.com/fonttools/fonttools/issues/2050#issuecomment-678691020>`__
+   -  If you want to use a different feature altogether, e.g. ``calt``,
+      use the lib key ``com.github.fonttools.varLib.featureVarsFeatureTag``
+
+      .. code:: xml
+
+           <lib>
+               <dict>
+                   <key>com.github.fonttools.varLib.featureVarsFeatureTag</key>
+                   <string>calt</string>
+               </dict>
+           </lib>
 
 
 
@@ -357,8 +374,8 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 
 -  Defines a named rule.
 -  Each ``<rule>`` element contains one or more ``<conditionset>`` elements.
--  **Only one** ``<conditionset>`` needs to be true to trigger the rule.
--  **All** conditions in a ``<conditionset>`` must be true to make the ``<conditionset>`` true.
+-  **Only one** ``<conditionset>`` needs to be true to trigger the rule (logical OR).
+-  **All** conditions in a ``<conditionset>`` must be true to make the ``<conditionset>`` true. (logical AND)
 -  For backwards compatibility a ``<rule>`` can contain ``<condition>`` elements outside of a conditionset. These are then understood to be part of a single, implied, ``<conditionset>``. Note: these conditions should be written wrapped in a conditionset.
 -  A rule element needs to contain one or more ``<sub>`` elements in order to be compiled to a variable font.
 -  Rules without sub elements should be ignored when compiling a font.
@@ -393,9 +410,15 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 
 -  ``name``: string, required. Must match one of the defined ``axis``
    name attributes.
--  ``minimum``: number, required*. The low value, in designspace coordinates.
--  ``maximum``: number, required*. The high value, in designspace coordinates.
+-  ``minimum``: number, required*. The low value, in design coordinates.
+-  ``maximum``: number, required*. The high value, in design coordinates.
 
+.. If you want to specify the condition limits in design coordinates:
+
+.. If you want to specify the condition limits in user coordinates:
+
+.. -  ``userminimum``: number, required*. The low value, in design coordinates.
+.. -  ``usermaximum``: number, required*. The high value, in design coordinates.
 
 ``<sub>`` element
 -----------------
@@ -403,8 +426,6 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 -  Child element of ``<rule>``.
 -  Defines which glyph to replace when the rule evaluates to **True**.
 -  The ``<sub>`` element contains a pair of glyphnames. The ``name`` attribute is the glyph that should be visible when the rule evaluates to **False**. The ``with`` attribute is the glyph that should be visible when the rule evaluates to **True**.
-
-Axis values in Conditions are in designspace coordinates.
 
 
 .. rubric:: Attributes
@@ -441,12 +462,13 @@ Example with ``<conditionsets>``. All conditions in a conditionset must be true.
                 <condition minimum="50" maximum="100" name="width" />
             </conditionset>
             <conditionset>
-                <condition ... />
-                <condition ... />
+                <condition... />
+                <condition... />
             </conditionset>
             <sub name="dollar" with="dollar.alt"/>
         </rule>
     </rules>
+
 
 =====================
 ``<sources>`` element
@@ -478,62 +500,45 @@ The ``<sources>`` element contains one or more ``<source>`` elements.
    If no layer attribute is given assume the foreground layer should be used.
 
 
-``<location>`` element
-----------------------
+``<location>`` element (source)
+-------------------------------
 
--  Defines a coordinate in the design space.
--  Dictionary of axisname: axisvalue
--  Used in ``<source>``, ``<instance>`` and ``<glyph>`` elements.
+Defines the coordinates of this source in the design space.
 
-
-``<dimension>`` element
-.......................
-
--  Child element of ``<location>``
+.. seealso:: `Full documentation of the <location> element <location>`__
 
 
-.. rubric:: Attributes
+``<dimension>`` element (source)
+................................
 
--  ``name``: required, string. Name of the axis.
--  ``xvalue``: required, number. The value on this axis.
--  ``yvalue``: optional, number. Separate value for anisotropic
-   interpolations.
-
-
-.. rubric:: Example
-
-.. code:: xml
-
-    <location>
-        <dimension name="width" xvalue="0.000000" />
-        <dimension name="weight" xvalue="0.000000" yvalue="0.003" />
-    </location>
-
+.. seealso:: `Full documentation of the <dimension> element <dimension>`__
 
 
 ``<lib>`` element (source)
 --------------------------
 
-There are two meanings for the ``lib`` element:
-
-1. Source lib
-    -  Example: ``<lib copy="1" />``
-    -  Child element of ``<source>``
-    -  Defines if the instances can inherit the data in the lib of this
-       source.
-    -  MutatorMath only
+-  Example: ``<lib copy="1" />``
+-  Child element of ``<source>``
+-  Defines if the instances can inherit the data in the lib of this source.
+-  MutatorMath only.
 
 .. deprecated:: 5.0
+
+.. note::
+
+    Don't confuse with other ``<lib>`` elements which allow storing
+    arbitrary data. Sources don't have such a ``<lib>`` because usually the
+    backing UFO file has one itself.
 
 
 ``<info>`` element
 ------------------
 
--  ``<info copy="1" />``
+-  Example: ``<info copy="1" />``
 -  Child element of ``<source>``
 -  Defines if the instances can inherit the non-interpolating font info
    from this source.
--  MutatorMath
+-  MutatorMath only.
 
 .. deprecated:: 5.0
 
@@ -541,11 +546,11 @@ There are two meanings for the ``lib`` element:
 ``<features>`` element
 ----------------------
 
--  ``<features copy="1" />``
+-  Example: ``<features copy="1" />``
 -  Defines if the instances can inherit opentype feature text from this
    source.
 -  Child element of ``<source>``
--  MutatorMath only
+-  MutatorMath only.
 
 .. deprecated:: 5.0
 
@@ -553,39 +558,46 @@ There are two meanings for the ``lib`` element:
 ``<glyph>`` element (source)
 ----------------------------
 
--  Can appear in ``<source>`` as well as in ``<instance>`` elements.
+-  Example: ``<glyph mute="1" name="A"/>``
 -  In a ``<source>`` element this states if a glyph is to be excluded from
    the calculation.
--  MutatorMath only
+-  MutatorMath and VarLib.
 
 .. versionchanged:: 5.0
-   TODO
-
+   Added to the specification that VarLib should use this information to mute
+   glyphs like MutatorMath did (to ease implementation of sparse sources).
 
 .. rubric:: Attributes
 
 -  ``mute``: optional attribute, number 1 or 0. Indicate if this glyph
    should be ignored as a master.
--  ``<glyph mute="1" name="A"/>``
--  MutatorMath only
+
+.. note::
+
+    Do not confuse with the ``<glyph>`` element in instances, which achieves
+    something different.
 
 
-``<kerning>`` element
----------------------
+.. _kerning_source:
 
--  ``<kerning mute="1" />``
+``<kerning>`` element (source)
+------------------------------
+
+-  Example: ``<kerning mute="1" />``
 -  Can appear in ``<source>`` as well as in ``<instance>`` elements.
+-  MutatorMath and VarLib.
 
 .. versionchanged:: 5.0
-   TODO
+   Added to the specification that VarLib should use this information to mute
+   kerning like MutatorMath did (to ease implementation of sparse sources).
 
 .. rubric:: Attributes
 
 -  ``mute``: required attribute, number 1 or 0. Indicate if the kerning
    data from this source is to be excluded from the calculation.
--  If the kerning element is not present, assume ``mute=0``, yes,
-   include the kerning of this source in the calculation.
--  MutatorMath only
+
+   -  If the kerning element is not present, assume ``mute=0``, yes,
+      include the kerning of this source in the calculation.
 
 
 .. rubric:: Example
@@ -593,15 +605,12 @@ There are two meanings for the ``lib`` element:
 .. code:: xml
 
     <source familyname="MasterFamilyName" filename="masters/masterTest1.ufo" name="master.ufo1" stylename="MasterStyleNameOne">
-        <lib copy="1" />
-        <features copy="1" />
-        <info copy="1" />
-        <glyph mute="1" name="A" />
-        <glyph mute="1" name="Z" />
         <location>
             <dimension name="width" xvalue="0.000000" />
             <dimension name="weight" xvalue="0.000000" />
         </location>
+        <glyph mute="1" name="A" />
+        <glyph mute="1" name="Z" />
     </source>
 
 
@@ -611,11 +620,41 @@ There are two meanings for the ``lib`` element:
 
 The ``<variable-fonts>`` element contains one or more ``<variable-font>`` elements.
 
+.. versionadded:: 5.0
+
 
 ``<variable-font>`` element
 ===========================
 
 TODO
+
+.. versionadded:: 5.0
+
+
+``<axis-subsets>`` element
+--------------------------
+
+TODO
+
+.. versionadded:: 5.0
+
+
+``<axis-subset>`` element
+.........................
+
+TODO
+
+.. versionadded:: 5.0
+
+
+``<lib>`` element (variable font)
+---------------------------------
+
+Arbitrary data about this variable font.
+
+.. versionadded:: 5.0
+
+.. seealso:: :ref:`lib`
 
 
 =======================
@@ -656,88 +695,31 @@ The ``<instances>`` element contains one or more ``<instance>`` elements.
 -  ``stylemapstylename``: string. Optional for MutatorMath. Corresponds
    with ``styleMapStyleName``
 
-Example for varlib
-------------------
 
-.. code:: xml
+``<location>`` element (instance)
+---------------------------------
 
-    <instance familyname="InstanceFamilyName" filename="instances/instanceTest2.ufo" name="instance.ufo2" postscriptfontname="InstancePostscriptName" stylemapfamilyname="InstanceStyleMapFamilyName" stylemapstylename="InstanceStyleMapStyleName" stylename="InstanceStyleName">
-    <location>
-        <dimension name="width" xvalue="400" yvalue="300" />
-        <dimension name="weight" xvalue="66" />
-    </location>
-    <kerning />
-    <info />
-    <lib>
-        <dict>
-            <key>com.coolDesignspaceApp.specimenText</key>
-            <string>Hamburgerwhatever</string>
-        </dict>
-    </lib>
-    </instance>
+Defines the coordinates of this instance in the design space.
+
+.. seealso:: `Full documentation of the <location> element <location>`__
 
 
-``<glyphs>`` element (instance)
-===============================
+``<dimension>`` element (instance)
+..................................
 
--  Container for ``<glyph>`` elements.
--  Optional
--  MutatorMath only.
-
-.. deprecated:: 5.0
+.. seealso:: `Full documentation of the <dimension> element <dimension>`__
 
 
-``<glyph>`` element (instance)
-==============================
+``<lib>`` element (instance)
+----------------------------
 
--  Child element of ``<glyphs>``
--  May contain a ``<location>`` element.
+Arbitrary data about this instance.
 
-.. deprecated:: 5.0
-
-.. rubric:: Attributes
-
--  ``name``: string. The name of the glyph.
--  ``unicode``: string. Unicode values for this glyph, in hexadecimal.
-   Multiple values should be separated with a space.
--  ``mute``: optional attribute, number 1 or 0. Indicate if this glyph
-   should be supressed in the output.
+.. seealso:: :ref:`lib`
 
 
-``<note>`` element
-============
-
--  String. The value corresponds to glyph.note in UFO.
-
-.. deprecated:: 5.0
-
-
-``<masters>`` element
-===============
-
--  Container for ``<master>`` elements
--  These ``<master>`` elements define an alternative set of glyph masters
-   for this glyph.
-
-.. deprecated:: 5.0
-
-
-``<master>`` element
-==============
-
--  Defines a single alternative master for this glyph.
-
-.. deprecated:: 5.0
-
-.. rubric:: Attributes
-
--  ``glyphname``: the name of the alternate master glyph.
--  ``source``: the identifier name of the source this master glyph needs
-   to be loaded from
-
-
-Localised names for instances
-=============================
+``<stylename>``, ``<familyname>``, ``<stylemapstylename>``, ``<stylemapfamilyname>`` elements: localised names for instances
+----------------------------------------------------------------------------------------------------------------------------
 
 Localised names for instances can be included with these simple elements
 with an ``xml:lang`` attribute:
@@ -762,7 +744,86 @@ with an ``xml:lang`` attribute:
     <stylemapfamilyname xml:lang="ja">モンセラート SemiBold</stylemapfamilyname>
 
 
-.. rubric:: Example
+Example for varlib
+------------------
+
+.. code:: xml
+
+    <instance familyname="InstanceFamilyName" filename="instances/instanceTest2.ufo" name="instance.ufo2" postscriptfontname="InstancePostscriptName" stylemapfamilyname="InstanceStyleMapFamilyName" stylemapstylename="InstanceStyleMapStyleName" stylename="InstanceStyleName">
+    <location>
+        <dimension name="width" xvalue="400" yvalue="300" />
+        <dimension name="weight" xvalue="66" />
+    </location>
+    <lib>
+        <dict>
+            <key>com.coolDesignspaceApp.specimenText</key>
+            <string>Hamburgerwhatever</string>
+        </dict>
+    </lib>
+    </instance>
+
+
+``<glyphs>`` element (instance)
+-------------------------------
+
+-  Container for ``<glyph>`` elements.
+-  Optional
+-  MutatorMath only.
+
+.. deprecated:: 5.0
+
+
+``<glyph>`` element (instance)
+..............................
+
+-  Child element of ``<glyphs>``
+-  May contain a ``<location>`` element.
+
+.. deprecated:: 5.0
+
+.. rubric:: Attributes
+
+-  ``name``: string. The name of the glyph.
+-  ``unicode``: string. Unicode values for this glyph, in hexadecimal.
+   Multiple values should be separated with a space.
+-  ``mute``: optional attribute, number 1 or 0. Indicate if this glyph
+   should be supressed in the output.
+
+
+``<note>`` element
+,,,,,,,,,,,,,,,,,,
+
+-  String. The value corresponds to glyph.note in UFO.
+
+.. deprecated:: 5.0
+
+
+``<masters>`` element
+,,,,,,,,,,,,,,,,,,,,,
+
+-  Container for ``<master>`` elements
+-  These ``<master>`` elements define an alternative set of glyph masters
+   for this glyph.
+
+.. deprecated:: 5.0
+
+
+``<master>`` element
+++++++++++++++++++++
+
+-  Defines a single alternative master for this glyph.
+
+.. deprecated:: 5.0
+
+.. rubric:: Attributes
+
+-  ``glyphname``: the name of the alternate master glyph.
+-  ``source``: the identifier name of the source this master glyph needs
+   to be loaded from
+
+
+Example for MutatorMath
+.......................
 
 .. code:: xml
 
@@ -800,10 +861,11 @@ with an ``xml:lang`` attribute:
     </instance>
 
 
+.. _lib:
 
-============================
-``<lib>`` element (document)
-============================
+=============================
+``<lib>`` element (top-level)
+=============================
 
 The ``<lib>`` element contains arbitrary data.
 
