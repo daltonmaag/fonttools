@@ -24,17 +24,17 @@
       </labels>
     </axis>
 
-    <axis tag="wdth" name="width" minimum="0" maximum="1000" default="15" hidden="1">
+    <axis tag="wdth" name="width" minimum="50" maximum="150" default="100" hidden="1">
       <labelname xml:lang="fr">Chasse</labelname>
-      <map input="0" output="10"/>
-      <map input="15" output="20"/>
-      <map input="401" output="66"/>
-      <map input="1000" output="990"/>
+      <map input="50" output="10"/>
+      <map input="100" output="20"/>
+      <map input="125" output="66"/>
+      <map input="150" output="990"/>
       <labels>
-        <label uservalue="0" name="Condensed" />
-        <label uservalue="15" name="Normal" elidable="true" oldersibling="true" />
-        <label uservalue="401" name="Wide" />
-        <label uservalue="1000" name="Extra Wide" />
+        <label uservalue="50" name="Condensed" />
+        <label uservalue="100" name="Normal" elidable="true" oldersibling="true" />
+        <label uservalue="125" name="Wide" />
+        <label uservalue="150" name="Extra Wide" />
       </labels>
     </axis>
 
@@ -56,16 +56,16 @@
   <labels>
     <label name="asdf">
       <location>
-        <dimension name="weight" xvalue="10"/>
-        <dimension name="width" xvalue="20"/>
-        <dimension name="Italic" xvalue="0"/>
+        <dimension name="weight" uservalue="10"/>
+        <dimension name="width" uservalue="50"/>
+        <dimension name="Italic" uservalue="0"/>
       </location>
     </label>
     <label name="dfdf">
       <location>
-        <dimension name="weight" xvalue="100"/>
-        <dimension name="width" xvalue="200"/>
-        <dimension name="Italic" xvalue="1"/>
+        <dimension name="weight" uservalue="100"/>
+        <dimension name="width" uservalue="100"/>
+        <dimension name="Italic" uservalue="1"/>
       </location>
     </label>
   </labels>
@@ -119,7 +119,7 @@
       Dicrete axes cannot be included in full, and we must specify a value
       (or the compiler should assume the default value).
     -->
-    <variable-font filename="Test_WghtWdth">
+    <variable-font filename="Test_WghtWdth.ttf">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -133,7 +133,7 @@
         </dict>
       </lib>
     </variable-font>
-    <variable-font filename="Test_Wght">
+    <variable-font filename="Test_Wght.ttf">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -146,7 +146,7 @@
         </dict>
       </lib>
     </variable-font>
-    <variable-font filename="TestCd_Wght">
+    <variable-font filename="TestCd_Wght.ttf">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -154,7 +154,7 @@
         <axis-subset name="Width" uservalue="0"/>
       </axis-subsets>
     </variable-font>
-    <variable-font filename="TestWd_Wght">
+    <variable-font filename="TestWd_Wght.ttf">
       <!-- This one is the Roman (default location along ital),
            with full range for the Weight axis. -->
       <axis-subsets>
@@ -162,14 +162,14 @@
         <axis-subset name="Width" uservalue="1000"/>
       </axis-subsets>
     </variable-font>
-    <variable-font filename="TestItalic_Wght">
+    <variable-font filename="TestItalic_Wght.ttf">
       <!-- This one is the Italic, with full range for the Weight axis. -->
       <axis-subsets>
         <axis-subset name="Weight"/>
         <axis-subset name="Italic" uservalue="1"/>
       </axis-subsets>
     </variable-font>
-    <variable-font filename="TestRB_Wght">
+    <variable-font filename="TestRB_Wght.ttf">
       <!-- As an example, this would be the Roman with a reduced range. -->
       <axis-subsets>
         <axis-subset name="Weight" userminimum="400" usermaximum="700" userdefault="400"/>
@@ -233,25 +233,34 @@
       <info/>
     </instance>
 
-    <!-- These instances will derive all their data from the data above. -->
+    <!--
+      These instances will derive all their data from the data above.
+
+      Instances can specify their location either:
+        - using the name of a location label
+        - with design coordinates (xvalue="")
+        - with user coordinates (uservalue="")
+        - with a mix of both coordinate systems
+    -->
+    <instance location="asdf"/>
     <instance>
       <location>
         <dimension name="weight" xvalue="600"/>
-        <dimension name="width" xvalue="401"/>
+        <dimension name="width" xvalue="401" yvalue="420"/>
       </location>
     </instance>
     <instance>
       <location>
         <dimension name="weight" xvalue="10"/>
-        <dimension name="width" xvalue="20"/>
+        <dimension name="width" uservalue="100"/>
         <dimension name="Italic" xvalue="0"/>
       </location>
     </instance>
     <instance>
       <location>
-        <dimension name="weight" xvalue="100"/>
-        <dimension name="width" xvalue="200"/>
-        <dimension name="Italic" xvalue="1"/>
+        <dimension name="weight" uservalue="300"/>
+        <dimension name="width" uservalue="130"/>
+        <dimension name="Italic" uservalue="1"/>
       </location>
     </instance>
   </instances>

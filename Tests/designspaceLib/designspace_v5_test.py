@@ -2,12 +2,13 @@ from pathlib import Path
 
 import pytest
 from fontTools.designspaceLib import (
-    AxisDescriptor as Axis,
+    AxisDescriptor,
     DesignSpaceDocument,
-    DiscreteAxisDescriptor as DiscreteAxis,
-    AxisLabelDescriptor as AxisLabel,
-    LocationLabelDescriptor as LocationLabel,
-    VariableFontDescriptor as VariableFont,
+    DiscreteAxisDescriptor,
+    AxisLabelDescriptor,
+    InstanceDescriptor,
+    LocationLabelDescriptor,
+    VariableFontDescriptor,
     RangeAxisSubsetDescriptor,
     ValueAxisSubsetDescriptor,
 )
@@ -21,13 +22,8 @@ def datadir():
 def test_read_v5_document_simple(datadir):
     doc = DesignSpaceDocument.fromfile(datadir / "test_v5.designspace")
 
-    assert doc.locationLabels == [
-        LocationLabel(name="asdf", location={"weight": 10, "width": 20, "Italic": 0}),
-        LocationLabel(name="dfdf", location={"weight": 100, "width": 200, "Italic": 1}),
-    ]
-
-    expected_axes = [
-        Axis(
+    assert doc.axes == [
+        AxisDescriptor(
             tag="wght",
             name="weight",
             minimum=0,
@@ -37,68 +33,79 @@ def test_read_v5_document_simple(datadir):
             map=[(200, 0), (300, 100), (400, 368), (600, 600), (700, 824), (900, 1000)],
             axisOrdering=None,
             axisLabels=[
-                AxisLabel(
+                AxisLabelDescriptor(
                     name="Extra Light",
                     userMinimum=200,
                     userValue=200,
                     userMaximum=250,
                     labelNames={"de": "Extraleicht", "fr": "Extra léger"},
                 ),
-                AxisLabel(
+                AxisLabelDescriptor(
                     name="Light", userMinimum=250, userValue=300, userMaximum=350
                 ),
-                AxisLabel(
+                AxisLabelDescriptor(
                     name="Regular",
                     userMinimum=350,
                     userValue=400,
                     userMaximum=450,
                     elidable=True,
                 ),
-                AxisLabel(
+                AxisLabelDescriptor(
                     name="Semi Bold", userMinimum=450, userValue=600, userMaximum=650
                 ),
-                AxisLabel(name="Bold", userMinimum=650, userValue=700, userMaximum=850),
-                AxisLabel(
+                AxisLabelDescriptor(
+                    name="Bold", userMinimum=650, userValue=700, userMaximum=850
+                ),
+                AxisLabelDescriptor(
                     name="Black", userMinimum=850, userValue=900, userMaximum=900
                 ),
             ],
         ),
-        Axis(
+        AxisDescriptor(
             tag="wdth",
             name="width",
-            minimum=0,
-            maximum=1000,
-            default=15,
+            minimum=50,
+            maximum=150,
+            default=100,
             hidden=True,
             labelNames={"fr": "Chasse"},
-            map=[(0, 10), (15, 20), (401, 66), (1000, 990)],
+            map=[(50, 10), (100, 20), (125, 66), (150, 990)],
             axisOrdering=None,
             axisLabels=[
-                AxisLabel(name="Condensed", userValue=0),
-                AxisLabel(
-                    name="Normal", elidable=True, olderSibling=True, userValue=15
+                AxisLabelDescriptor(name="Condensed", userValue=50),
+                AxisLabelDescriptor(
+                    name="Normal", elidable=True, olderSibling=True, userValue=100
                 ),
-                AxisLabel(name="Wide", userValue=401),
-                AxisLabel(name="Extra Wide", userValue=1000),
+                AxisLabelDescriptor(name="Wide", userValue=125),
+                AxisLabelDescriptor(name="Extra Wide", userValue=150),
             ],
         ),
-        DiscreteAxis(
+        DiscreteAxisDescriptor(
             tag="ital",
             name="Italic",
             values=[0, 1],
             default=0,
             axisOrdering=None,
             axisLabels=[
-                AxisLabel(name="Roman", userValue=0, elidable=True, linkedUserValue=1),
-                AxisLabel(name="Italic", userValue=1),
+                AxisLabelDescriptor(
+                    name="Roman", userValue=0, elidable=True, linkedUserValue=1
+                ),
+                AxisLabelDescriptor(name="Italic", userValue=1),
             ],
         ),
     ]
 
-    assert [v.asdict() for v in doc.axes] == [v.asdict() for v in expected_axes]
+    assert doc.locationLabels == [
+        LocationLabelDescriptor(
+            name="asdf", userLocation={"weight": 10, "width": 50, "Italic": 0}
+        ),
+        LocationLabelDescriptor(
+            name="dfdf", userLocation={"weight": 100, "width": 100, "Italic": 1}
+        ),
+    ]
 
-    expected_variable_fonts = [
-        VariableFont(
+    assert doc.variableFonts == [
+        VariableFontDescriptor(
             filename="Test_WghtWdth.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
@@ -106,33 +113,33 @@ def test_read_v5_document_simple(datadir):
             ],
             lib={"com.vtt.source": "sources/vtt/Test_WghtWdth.vtt"},
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="Test_Wght.ttf",
             axisSubsets=[RangeAxisSubsetDescriptor(name="Weight")],
             lib={"com.vtt.source": "sources/vtt/Test_Wght.vtt"},
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="TestCd_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Width", userValue=0),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="TestWd_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Width", userValue=1000),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="TestItalic_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="TestRB_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(
@@ -142,8 +149,68 @@ def test_read_v5_document_simple(datadir):
             ],
         ),
     ]
-    assert [v.asdict() for v in doc.variableFonts] == [
-        v.asdict() for v in expected_variable_fonts
+
+    assert doc.instances == [
+        InstanceDescriptor(
+            filename="instances/instanceTest1.ufo",
+            path="C:/UsersLocal/jany.belluz/Documents/code/fonttools/Tests/designspaceLib/data/instances/instanceTest1.ufo",
+            name="instance.ufo1",
+            designLocation={"weight": 500.0, "width": 20.0},
+            familyName="InstanceFamilyName",
+            styleName="InstanceStyleName",
+            postScriptFontName="InstancePostscriptName",
+            styleMapFamilyName="InstanceStyleMapFamilyName",
+            styleMapStyleName="InstanceStyleMapStyleName",
+            glyphs={"arrow": {"mute": True, "unicodes": [291, 292, 293]}},
+            lib={
+                "com.coolDesignspaceApp.binaryData": b"<binary gunk>",
+                "com.coolDesignspaceApp.specimenText": "Hamburgerwhatever",
+            },
+        ),
+        InstanceDescriptor(
+            filename="instances/instanceTest2.ufo",
+            path="C:/UsersLocal/jany.belluz/Documents/code/fonttools/Tests/designspaceLib/data/instances/instanceTest2.ufo",
+            name="instance.ufo2",
+            designLocation={"weight": 500.0, "width": (400.0, 300.0)},
+            familyName="InstanceFamilyName",
+            styleName="InstanceStyleName",
+            postScriptFontName="InstancePostscriptName",
+            styleMapFamilyName="InstanceStyleMapFamilyName",
+            styleMapStyleName="InstanceStyleMapStyleName",
+            glyphs={
+                "arrow": {
+                    "unicodes": [101, 201, 301],
+                    "note": "A note about this glyph",
+                    "instanceLocation": {"weight": 120.0, "width": 100.0},
+                    "masters": [
+                        {
+                            "font": "master.ufo1",
+                            "location": {"weight": 20.0, "width": 20.0},
+                            "glyphName": "BB",
+                        },
+                        {
+                            "font": "master.ufo2",
+                            "location": {"weight": 900.0, "width": 900.0},
+                            "glyphName": "CC",
+                        },
+                    ],
+                },
+                "arrow2": {},
+            },
+        ),
+        InstanceDescriptor(
+            locationLabel="asdf",
+        ),
+        InstanceDescriptor(
+            designLocation={"weight": 600.0, "width": (401.0, 420.0)},
+        ),
+        InstanceDescriptor(
+            designLocation={"weight": 10.0, "Italic": 0.0},
+            userLocation={"width": 100.0},
+        ),
+        InstanceDescriptor(
+            userLocation={"weight": 300.0, "width": 130.0, "Italic": 1.0},
+        ),
     ]
 
 
@@ -152,57 +219,74 @@ def test_read_v5_document_decovar(datadir):
 
     assert not doc.variableFonts
 
-    expected_axes = [
-        Axis(default=0, maximum=1000, minimum=0, name="Inline", tag="BLDA"),
-        Axis(default=0, maximum=1000, minimum=0, name="Shearded", tag="TRMD"),
-        Axis(default=0, maximum=1000, minimum=0, name="Rounded Slab", tag="TRMC"),
-        Axis(default=0, maximum=1000, minimum=0, name="Stripes", tag="SKLD"),
-        Axis(default=0, maximum=1000, minimum=0, name="Worm Terminal", tag="TRML"),
-        Axis(default=0, maximum=1000, minimum=0, name="Inline Skeleton", tag="SKLA"),
-        Axis(
+    assert doc.axes == [
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Inline", tag="BLDA"),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Shearded", tag="TRMD"),
+        AxisDescriptor(
+            default=0, maximum=1000, minimum=0, name="Rounded Slab", tag="TRMC"
+        ),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Stripes", tag="SKLD"),
+        AxisDescriptor(
+            default=0, maximum=1000, minimum=0, name="Worm Terminal", tag="TRML"
+        ),
+        AxisDescriptor(
+            default=0, maximum=1000, minimum=0, name="Inline Skeleton", tag="SKLA"
+        ),
+        AxisDescriptor(
             default=0, maximum=1000, minimum=0, name="Open Inline Terminal", tag="TRMF"
         ),
-        Axis(default=0, maximum=1000, minimum=0, name="Inline Terminal", tag="TRMK"),
-        Axis(default=0, maximum=1000, minimum=0, name="Worm", tag="BLDB"),
-        Axis(default=0, maximum=1000, minimum=0, name="Weight", tag="WMX2"),
-        Axis(default=0, maximum=1000, minimum=0, name="Flared", tag="TRMB"),
-        Axis(default=0, maximum=1000, minimum=0, name="Rounded", tag="TRMA"),
-        Axis(default=0, maximum=1000, minimum=0, name="Worm Skeleton", tag="SKLB"),
-        Axis(default=0, maximum=1000, minimum=0, name="Slab", tag="TRMG"),
-        Axis(default=0, maximum=1000, minimum=0, name="Bifurcated", tag="TRME"),
+        AxisDescriptor(
+            default=0, maximum=1000, minimum=0, name="Inline Terminal", tag="TRMK"
+        ),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Worm", tag="BLDB"),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Weight", tag="WMX2"),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Flared", tag="TRMB"),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Rounded", tag="TRMA"),
+        AxisDescriptor(
+            default=0, maximum=1000, minimum=0, name="Worm Skeleton", tag="SKLB"
+        ),
+        AxisDescriptor(default=0, maximum=1000, minimum=0, name="Slab", tag="TRMG"),
+        AxisDescriptor(
+            default=0, maximum=1000, minimum=0, name="Bifurcated", tag="TRME"
+        ),
     ]
-    assert [v.asdict() for v in doc.axes] == [v.asdict() for v in expected_axes]
 
     assert doc.locationLabels == [
-        LocationLabel(name="Default", elidable=True, location={}),
-        LocationLabel(
-            name="Open", location={"Inline": 1000}, labelNames={"de": "Offen"}
+        LocationLabelDescriptor(name="Default", elidable=True, userLocation={}),
+        LocationLabelDescriptor(
+            name="Open", userLocation={"Inline": 1000}, labelNames={"de": "Offen"}
         ),
-        LocationLabel(name="Worm", location={"Worm": 1000}),
-        LocationLabel(name="Checkered", location={"Inline Skeleton": 1000}),
-        LocationLabel(name="Checkered Reverse", location={"Inline Terminal": 1000}),
-        LocationLabel(name="Striped", location={"Stripes": 500}),
-        LocationLabel(name="Rounded", location={"Rounded": 1000}),
-        LocationLabel(name="Flared", location={"Flared": 1000}),
-        LocationLabel(
-            name="Flared Open", location={"Inline Skeleton": 1000, "Flared": 1000}
+        LocationLabelDescriptor(name="Worm", userLocation={"Worm": 1000}),
+        LocationLabelDescriptor(
+            name="Checkered", userLocation={"Inline Skeleton": 1000}
         ),
-        LocationLabel(name="Rounded Slab", location={"Rounded Slab": 1000}),
-        LocationLabel(name="Sheared", location={"Shearded": 1000}),
-        LocationLabel(name="Bifurcated", location={"Bifurcated": 1000}),
-        LocationLabel(
+        LocationLabelDescriptor(
+            name="Checkered Reverse", userLocation={"Inline Terminal": 1000}
+        ),
+        LocationLabelDescriptor(name="Striped", userLocation={"Stripes": 500}),
+        LocationLabelDescriptor(name="Rounded", userLocation={"Rounded": 1000}),
+        LocationLabelDescriptor(name="Flared", userLocation={"Flared": 1000}),
+        LocationLabelDescriptor(
+            name="Flared Open", userLocation={"Inline Skeleton": 1000, "Flared": 1000}
+        ),
+        LocationLabelDescriptor(
+            name="Rounded Slab", userLocation={"Rounded Slab": 1000}
+        ),
+        LocationLabelDescriptor(name="Sheared", userLocation={"Shearded": 1000}),
+        LocationLabelDescriptor(name="Bifurcated", userLocation={"Bifurcated": 1000}),
+        LocationLabelDescriptor(
             name="Inline",
-            location={"Inline Skeleton": 500, "Open Inline Terminal": 500},
+            userLocation={"Inline Skeleton": 500, "Open Inline Terminal": 500},
         ),
-        LocationLabel(name="Slab", location={"Slab": 1000}),
-        LocationLabel(name="Contrast", location={"Weight": 1000}),
-        LocationLabel(
+        LocationLabelDescriptor(name="Slab", userLocation={"Slab": 1000}),
+        LocationLabelDescriptor(name="Contrast", userLocation={"Weight": 1000}),
+        LocationLabelDescriptor(
             name="Fancy",
-            location={"Inline Skeleton": 1000, "Flared": 1000, "Weight": 1000},
+            userLocation={"Inline Skeleton": 1000, "Flared": 1000, "Weight": 1000},
         ),
-        LocationLabel(
+        LocationLabelDescriptor(
             name="Mayhem",
-            location={
+            userLocation={
                 "Inline Skeleton": 1000,
                 "Worm Skeleton": 1000,
                 "Rounded": 500,
@@ -219,7 +303,7 @@ def test_read_v5_document_decovar(datadir):
         ),
     ]
 
-    assert [i.location for i in doc.instances] == [
+    assert [i.locationLabel for i in doc.instances] == [
         "Default",
         "Open",
         "Worm",
@@ -246,42 +330,43 @@ def test_read_v5_document_discrete(datadir):
     assert not doc.locationLabels
     assert not doc.variableFonts
 
-    expected_axes = [
-        DiscreteAxis(
+    assert doc.axes == [
+        DiscreteAxisDescriptor(
             default=400,
             values=[400, 700, 900],
             name="Weight",
             tag="wght",
             axisLabels=[
-                AxisLabel(
+                AxisLabelDescriptor(
                     name="Regular", userValue=400, elidable=True, linkedUserValue=700
                 ),
-                AxisLabel(name="Bold", userValue=700),
-                AxisLabel(name="Black", userValue=900),
+                AxisLabelDescriptor(name="Bold", userValue=700),
+                AxisLabelDescriptor(name="Black", userValue=900),
             ],
         ),
-        DiscreteAxis(
+        DiscreteAxisDescriptor(
             default=100,
             values=[75, 100],
             name="Width",
             tag="wdth",
             axisLabels=[
-                AxisLabel(name="Narrow", userValue=75),
-                AxisLabel(name="Normal", userValue=100, elidable=True),
+                AxisLabelDescriptor(name="Narrow", userValue=75),
+                AxisLabelDescriptor(name="Normal", userValue=100, elidable=True),
             ],
         ),
-        DiscreteAxis(
+        DiscreteAxisDescriptor(
             default=0,
             values=[0, 1],
             name="Italic",
             tag="ital",
             axisLabels=[
-                AxisLabel(name="Roman", userValue=0, elidable=True, linkedUserValue=1),
-                AxisLabel(name="Italic", userValue=1),
+                AxisLabelDescriptor(
+                    name="Roman", userValue=0, elidable=True, linkedUserValue=1
+                ),
+                AxisLabelDescriptor(name="Italic", userValue=1),
             ],
         ),
     ]
-    assert [v.asdict() for v in doc.axes] == [v.asdict() for v in expected_axes]
 
 
 def test_read_v5_document_aktiv(datadir):
@@ -289,8 +374,8 @@ def test_read_v5_document_aktiv(datadir):
 
     assert not doc.locationLabels
 
-    expected_axes = [
-        Axis(
+    assert doc.axes == [
+        AxisDescriptor(
             tag="wght",
             name="Weight",
             minimum=100,
@@ -309,20 +394,20 @@ def test_read_v5_document_aktiv(datadir):
             ],
             axisOrdering=1,
             axisLabels=[
-                AxisLabel(name="Hair", userValue=100),
-                AxisLabel(userValue=200, name="Thin"),
-                AxisLabel(userValue=300, name="Light"),
-                AxisLabel(
+                AxisLabelDescriptor(name="Hair", userValue=100),
+                AxisLabelDescriptor(userValue=200, name="Thin"),
+                AxisLabelDescriptor(userValue=300, name="Light"),
+                AxisLabelDescriptor(
                     userValue=400, name="Regular", elidable=True, linkedUserValue=700
                 ),
-                AxisLabel(userValue=500, name="Medium"),
-                AxisLabel(userValue=600, name="SemiBold"),
-                AxisLabel(userValue=700, name="Bold"),
-                AxisLabel(userValue=800, name="XBold"),
-                AxisLabel(userValue=900, name="Black"),
+                AxisLabelDescriptor(userValue=500, name="Medium"),
+                AxisLabelDescriptor(userValue=600, name="SemiBold"),
+                AxisLabelDescriptor(userValue=700, name="Bold"),
+                AxisLabelDescriptor(userValue=800, name="XBold"),
+                AxisLabelDescriptor(userValue=900, name="Black"),
             ],
         ),
-        Axis(
+        AxisDescriptor(
             tag="wdth",
             name="Width",
             minimum=75,
@@ -330,12 +415,12 @@ def test_read_v5_document_aktiv(datadir):
             maximum=125,
             axisOrdering=0,
             axisLabels=[
-                AxisLabel(name="Cd", userValue=75),
-                AxisLabel(name="Normal", elidable=True, userValue=100),
-                AxisLabel(name="Ex", userValue=125),
+                AxisLabelDescriptor(name="Cd", userValue=75),
+                AxisLabelDescriptor(name="Normal", elidable=True, userValue=100),
+                AxisLabelDescriptor(name="Ex", userValue=125),
             ],
         ),
-        Axis(
+        AxisDescriptor(
             tag="ital",
             name="Italic",
             minimum=0,
@@ -343,18 +428,16 @@ def test_read_v5_document_aktiv(datadir):
             maximum=1,
             axisOrdering=2,
             axisLabels=[
-                AxisLabel(
+                AxisLabelDescriptor(
                     name="Upright", userValue=0, elidable=True, linkedUserValue=1
                 ),
-                AxisLabel(name="Italic", userValue=1),
+                AxisLabelDescriptor(name="Italic", userValue=1),
             ],
         ),
     ]
 
-    assert [v.asdict() for v in doc.axes] == [v.asdict() for v in expected_axes]
-
-    expected_variable_fonts = [
-        VariableFont(
+    assert doc.variableFonts == [
+        VariableFontDescriptor(
             filename="AktivGroteskVF_WghtWdthItal.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
@@ -362,20 +445,20 @@ def test_read_v5_document_aktiv(datadir):
                 RangeAxisSubsetDescriptor(name="Italic"),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="AktivGroteskVF_WghtWdth.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 RangeAxisSubsetDescriptor(name="Width"),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="AktivGroteskVF_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="AktivGroteskVF_Italics_WghtWdth.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
@@ -383,16 +466,13 @@ def test_read_v5_document_aktiv(datadir):
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
-        VariableFont(
+        VariableFontDescriptor(
             filename="AktivGroteskVF_Italics_Wght.ttf",
             axisSubsets=[
                 RangeAxisSubsetDescriptor(name="Weight"),
                 ValueAxisSubsetDescriptor(name="Italic", userValue=1),
             ],
         ),
-    ]
-    assert [v.asdict() for v in doc.variableFonts] == [
-        v.asdict() for v in expected_variable_fonts
     ]
 
 
@@ -431,9 +511,143 @@ def test_detect_ribbi_aktiv(datadir):
     }
 
 
-def test_doc_location_mapping_methods():
-    raise 'TODO'
+@pytest.fixture
+def map_doc():
+    """Generate a document with a few axes to test the mapping functions"""
+    doc = DesignSpaceDocument()
+    doc.addAxis(
+        AxisDescriptor(
+            tag="wght",
+            name="Weight",
+            minimum=100,
+            maximum=900,
+            default=100,
+            map=[(100, 10), (900, 90)],
+        )
+    )
+    doc.addAxis(
+        AxisDescriptor(
+            tag="wdth",
+            name="Width",
+            minimum=75,
+            maximum=200,
+            default=100,
+            map=[(75, 7500), (100, 10000), (200, 20000)],
+        )
+    )
+    doc.addAxis(
+        AxisDescriptor(tag="CUST", name="Custom", minimum=1, maximum=2, default=1.5)
+    )
+    doc.addLocationLabel(
+        LocationLabelDescriptor(
+            name="Wonky", userLocation={"Weight": 800, "Custom": 1.2}
+        )
+    )
+    return doc
 
 
-def test_instance_location_methods():
-    raise 'TODO'
+def test_doc_location_map_forward(map_doc: DesignSpaceDocument):
+    assert map_doc.map_forward({"Weight": 400, "Width": 150, "Custom": 2}) == {
+        "Weight": 40,
+        "Width": 15000,
+        "Custom": 2,
+    }, "The mappings should be used to compute the design locations"
+    assert map_doc.map_forward({"Weight": 400}) == {
+        "Weight": 40,
+        "Width": 10000,
+        "Custom": 1.5,
+    }, "Missing user locations should be assumed equal to the axis's default"
+
+
+def test_doc_location_map_backward(map_doc: DesignSpaceDocument):
+    assert map_doc.map_backward({"Weight": 40, "Width": 15000, "Custom": 2}) == {
+        "Weight": 400,
+        "Width": 150,
+        "Custom": 2,
+    }, "The mappings should be used to compute the user locations"
+    assert map_doc.map_backward({"Weight": 40}) == {
+        "Weight": 400,
+        "Width": 100,
+        "Custom": 1.5,
+    }, "Missing design locations should be assumed equal to the axis's default"
+    assert map_doc.map_backward(
+        {"Weight": (40, 50), "Width": (15000, 100000), "Custom": (2, 1.5)}
+    ) == {
+        "Weight": 400,
+        "Width": 150,
+        "Custom": 2,
+    }, "Only the xvalue of anisotropic locations is used"
+
+
+def test_instance_location_from_label(map_doc):
+    inst = InstanceDescriptor(locationLabel="Wonky")
+    assert inst.getFullUserLocation(map_doc) == {
+        "Weight": 800,
+        "Width": 100,
+        "Custom": 1.2,
+    }, "an instance with a locationLabel uses the user location from that label, empty values on the label use axis defaults"
+    assert inst.getFullDesignLocation(map_doc) == {
+        "Weight": 80,
+        "Width": 10000,
+        "Custom": 1.2,
+    }, "an instance with a locationLabel computes the design location from that label, empty values on the label use axis defaults"
+
+    inst = InstanceDescriptor(locationLabel="Wonky", userLocation={"Width": 200})
+    assert inst.getFullUserLocation(map_doc) == {
+        "Weight": 800,
+        "Width": 100,
+        "Custom": 1.2,
+    }, "an instance with a locationLabel uses the user location from that label, other location values are ignored"
+    assert inst.getFullDesignLocation(map_doc) == {
+        "Weight": 80,
+        "Width": 10000,
+        "Custom": 1.2,
+    }, "an instance with a locationLabel computes the design location from that label, other location values are ignored"
+
+
+def test_instance_location_no_data(map_doc):
+    inst = InstanceDescriptor()
+    assert inst.getFullUserLocation(map_doc) == {
+        "Weight": 100,
+        "Width": 100,
+        "Custom": 1.5,
+    }, "an instance without any location data has the default user location"
+    assert inst.getFullDesignLocation(map_doc) == {
+        "Weight": 10,
+        "Width": 10000,
+        "Custom": 1.5,
+    }, "an instance without any location data has the default design location"
+
+
+def test_instance_location_design_first(map_doc):
+    inst = InstanceDescriptor(
+        designLocation={"Weight": (60, 61), "Width": 11000, "Custom": 1.2},
+        userLocation={"Weight": 700, "Width": 180, "Custom": 1.4},
+    )
+    assert inst.getFullUserLocation(map_doc) == {
+        "Weight": 600,
+        "Width": 110,
+        "Custom": 1.2,
+    }, "when both design and user location data are provided, design wins"
+    assert inst.getFullDesignLocation(map_doc) == {
+        "Weight": (60, 61),
+        "Width": 11000,
+        "Custom": 1.2,
+    }, "when both design and user location data are provided, design wins (incl. anisotropy)"
+
+
+def test_instance_location_mix(map_doc):
+    inst = InstanceDescriptor(
+        designLocation={"Weight": (60, 61)},
+        userLocation={"Width": 180},
+    )
+    assert inst.getFullUserLocation(map_doc) == {
+        "Weight": 600,
+        "Width": 180,
+        "Custom": 1.5,
+    }, "instance location is a mix of design and user locations"
+    assert inst.getFullDesignLocation(map_doc) == {
+        "Weight": (60, 61),
+        "Width": 18000,
+        "Custom": 1.5,
+    }, "instance location is a mix of design and user location"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from textwrap import indent
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 from fontTools.designspaceLib.types import Location
 
@@ -12,7 +13,6 @@ import os
 import posixpath
 from fontTools.misc import etree as ET
 from fontTools.misc import plistlib
-from fontTools.misc import etree as ElementTree
 
 """
     designSpaceDocument
@@ -98,6 +98,17 @@ class SimpleDescriptor(AsDictMixin):
             except AssertionError:
                 print("failed attribute", attr, getattr(self, attr), "!=", getattr(other, attr))
 
+    def __eq__(self, other):
+        if other.__class__ is not self.__class__:
+            return NotImplemented
+
+        return all(getattr(self, attr) == getattr(other, attr) for attr in self._attrs)
+
+    def __repr__(self):
+        attrs = [f"{a}={repr(getattr(self, a))}," for a in self._attrs]
+        attrs = indent('\n'.join(attrs), '    ')
+        return f"{self.__class__.__name__}(\n{attrs}\n)"
+
 
 class SourceDescriptor(SimpleDescriptor):
     """Simple container for data related to the source
@@ -136,6 +147,7 @@ class SourceDescriptor(SimpleDescriptor):
         font=None,
         name=None,
         location=None,
+        designLocation=None,
         layerName=None,
         familyName=None,
         styleName=None,
@@ -174,13 +186,12 @@ class SourceDescriptor(SimpleDescriptor):
         MutatorMath.
         """
 
-        self.location = location
+        self.designLocation = designLocation if designLocation is not None else location or {}
         """dict. Axis values for this source, in design space coordinates.
 
         MutatorMath + Varlib.
 
-        .. deprecated:: 5.0
-           Use :attr:`designLocation` instead.
+        .. versionadded:: 5.0
         """
 
         self.layerName = layerName
@@ -261,6 +272,21 @@ class SourceDescriptor(SimpleDescriptor):
         .. versionchanged:: 5.0
             Now should also be used by varLib
         """
+
+    @property
+    def location(self):
+        """dict. Axis values for this source, in design space coordinates.
+
+        MutatorMath + Varlib.
+
+        .. deprecated:: 5.0
+           Use the more explicit alias for this property :attr:`designLocation`.
+        """
+        return self.designLocation
+
+    @location.setter
+    def location(self, location: Optional[AnisotropicLocationDict]):
+        self.designLocation = location or {}
 
 
 class RuleDescriptor(SimpleDescriptor):
@@ -388,14 +414,22 @@ class InstanceDescriptor(SimpleDescriptor):
     """
     flavor = "instance"
     _defaultLanguageCode = "en"
-    _attrs = ['path',
+    _attrs = ['filename',
+              'path',
               'name',
-              'location',
+              'locationLabel',
+              'designLocation',
+              'userLocation',
               'familyName',
               'styleName',
               'postScriptFontName',
               'styleMapFamilyName',
               'styleMapStyleName',
+              'localisedFamilyName',
+              'localisedStyleName',
+              'localisedStyleMapFamilyName',
+              'localisedStyleMapStyleName',
+              'glyphs',
               'kerning',
               'info',
               'lib']
@@ -558,8 +592,6 @@ class InstanceDescriptor(SimpleDescriptor):
         """dict. Axis values for this instance.
 
         MutatorMath + Varlib.
-
-        .. seealso:: :meth:`updateLocation`
 
         .. deprecated:: 5.0
            Use the more explicit alias for this property :attr:`designLocation`.
@@ -868,6 +900,8 @@ class AxisDescriptor(AbstractAxisDescriptor):
         """Maps value from axis mapping's output (design) to input (user)."""
         from fontTools.varLib.models import piecewiseLinearMap
 
+        if isinstance(v, tuple):
+            v = v[0]
         if not self.map:
             return v
         return piecewiseLinearMap(v, {v: k for k, v in self.map})
@@ -961,6 +995,8 @@ class DiscreteAxisDescriptor(AbstractAxisDescriptor):
         Note: for discrete axes, each value must have its mapping entry, if
         you intend that value to be mapped.
         """
+        if isinstance(value, tuple):
+            value = value[0]
         return next((k for k, v in self.map if v == value), value)
 
 
@@ -1052,7 +1088,7 @@ class LocationLabelDescriptor(SimpleDescriptor):
     """
 
     flavor = "label"
-    _attrs = ('name', 'elidable', 'oldersibling', 'userLocation', 'labelNames')
+    _attrs = ('name', 'elidable', 'olderSibling', 'userLocation', 'labelNames')
 
     def __init__(
         self,
@@ -1065,10 +1101,13 @@ class LocationLabelDescriptor(SimpleDescriptor):
     ):
         self.name: str = name
         """Label for this named location, STAT field ``valueNameID``."""
-        self.userLocation: SimpleLocationDict = userLocation
+        self.userLocation: SimpleLocationDict = userLocation or {}
         """Location in user coordinates along each axis.
 
         If an axis is not mentioned, it is assumed to be at its default location.
+
+        .. seealso:: This may be only part of the full location. See:
+           :meth:`getFullUserLocation`
         """
         self.elidable: bool = elidable
         """STAT flag ``ELIDABLE_AXIS_VALUE_NAME``.
@@ -1090,23 +1129,16 @@ class LocationLabelDescriptor(SimpleDescriptor):
         """Return the English name from :attr:`labelNames` or the :attr:`name`."""
         return self.labelNames.get("en") or self.name
 
-    def __eq__(self, other):
-        if other.__class__ is not self.__class__:
-            return NotImplemented
+    def getFullUserLocation(self, doc: 'DesignSpaceDocument') -> SimpleLocationDict:
+        """Get the complete user location of this label, by combining data
+        from the explicit user location and default axis values.
 
-        return (
-            self.name,
-            self.userLocation,
-            self.elidable,
-            self.olderSibling,
-            self.labelNames,
-        ) == (
-            other.name,
-            other.userLocation,
-            other.elidable,
-            other.olderSibling,
-            other.labelNames,
-        )
+        .. versionadded: 5.0
+        """
+        return {
+            axis.name: self.userLocation.get(axis.name, axis.default)
+            for axis in doc.axes
+        }
 
 
 class VariableFontDescriptor(SimpleDescriptor):
@@ -1653,7 +1685,7 @@ class BaseDocReader(LogMixin):
             self.documentObject.axes.append(axisObject)
             self.axisDefaults[axisObject.name] = axisObject.default
 
-    def readAxisLabel(self, element: ElementTree.Element):
+    def readAxisLabel(self, element: ET.Element):
         xml_attrs = {'userminimum', 'uservalue', 'usermaximum', 'name', 'elidable', 'oldersibling', 'linkeduservalue'}
         unknown_attrs = set(element.attrib) - xml_attrs
         if unknown_attrs:
@@ -1667,14 +1699,11 @@ class BaseDocReader(LogMixin):
             raise DesignSpaceDocumentError("label element must have a uservalue attribute.")
         value = float(valueStr)
         minimumStr = element.get("userminimum")
-        if minimumStr is not None:
-            minimum = float(minimumStr)
+        minimum = float(minimumStr) if minimumStr is not None else None
         maximumStr = element.get("usermaximum")
-        if maximumStr is not None:
-            maximum = float(maximumStr)
+        maximum = float(maximumStr) if maximumStr is not None else None
         linkedValueStr = element.get("linkeduservalue")
-        if linkedValueStr is not None:
-            linkedValue = float(linkedValueStr)
+        linkedValue = float(linkedValueStr) if linkedValueStr is not None else None
         elidable = True if element.get("elidable") == "true" else False
         olderSibling = True if element.get("oldersibling") == "true" else False
         labelNames = {
@@ -1709,10 +1738,9 @@ class BaseDocReader(LogMixin):
             name = labelElement.get("name")
             if name is None:
                 raise DesignSpaceDocumentError("label element must have a name attribute.")
-            location = {
-                dimension.attrib["name"]: float(dimension.attrib["xvalue"])
-                for dimension in labelElement.findall(".location/dimension")
-            }
+            designLocation, userLocation = self.locationFromElement(labelElement)
+            if designLocation:
+                raise DesignSpaceDocumentError(f'<label> element "{name}" must only have user locations (using uservalue="").')
             elidable = True if labelElement.get("elidable") == "true" else False
             olderSibling = True if labelElement.get("oldersibling") == "true" else False
             labelNames = {
@@ -1723,14 +1751,14 @@ class BaseDocReader(LogMixin):
                 # Note: elementtree reads the "xml:lang" attribute name as
                 # '{http://www.w3.org/XML/1998/namespace}lang'
             }
-            location = self.locationLabelDescriptorClass(
+            locationLabel = self.locationLabelDescriptorClass(
                 name=name,
-                location=location,
+                userLocation=userLocation,
                 elidable=elidable,
                 olderSibling=olderSibling,
                 labelNames=labelNames,
             )
-            self.documentObject.locationLabels.append(location)
+            self.documentObject.locationLabels.append(locationLabel)
 
     def readVariableFonts(self):
         if not self.documentObject.formatVersion.startswith("5"):
@@ -1765,7 +1793,7 @@ class BaseDocReader(LogMixin):
             )
             self.documentObject.variableFonts.append(variableFont)
 
-    def readAxisSubset(self, element: ElementTree.Element):
+    def readAxisSubset(self, element: ET.Element):
         if "uservalue" in element.attrib:
             xml_attrs = {'name', 'uservalue'}
             unknown_attrs = set(element.attrib) - xml_attrs
@@ -1832,7 +1860,10 @@ class BaseDocReader(LogMixin):
             styleName = sourceElement.attrib.get("stylename")
             if styleName is not None:
                 sourceObject.styleName = styleName
-            sourceObject.location = self.locationFromElement(sourceElement)
+            designLocation, userLocation = self.locationFromElement(sourceElement)
+            if userLocation:
+                raise DesignSpaceDocumentError(f'<source> element "{sourceName}" must only have design locations (using xvalue="").')
+            sourceObject.location = designLocation
             layerName = sourceElement.attrib.get('layer')
             if layerName is not None:
                 sourceObject.layerName = layerName
@@ -1862,41 +1893,63 @@ class BaseDocReader(LogMixin):
             self.documentObject.sources.append(sourceObject)
 
     def locationFromElement(self, element):
-        elementLocation = None
+        """Read a nested ``<location>`` element inside the given ``element``.
+
+        .. versionchanged:: 5.0
+           Return a tuple of (designLocation, userLocation)
+        """
+        elementLocation = (None, None)
         for locationElement in element.findall('.location'):
             elementLocation = self.readLocationElement(locationElement)
             break
         return elementLocation
 
     def readLocationElement(self, locationElement):
-        """ Format 0 location reader """
-        # TODO: implement uservalue
+        """Read a ``<location>`` element.
+
+        .. versionchanged:: 5.0
+           Return a tuple of (designLocation, userLocation)
+        """
         if self._strictAxisNames and not self.documentObject.axes:
             raise DesignSpaceDocumentError("No axes defined")
-        loc = {}
+        userLoc = {}
+        designLoc = {}
         for dimensionElement in locationElement.findall(".dimension"):
             dimName = dimensionElement.attrib.get("name")
             if self._strictAxisNames and dimName not in self.axisDefaults:
                 # In case the document contains no axis definitions,
                 self.log.warning("Location with undefined axis: \"%s\".", dimName)
                 continue
-            xValue = yValue = None
+            userValue = xValue = yValue = None
+            try:
+                userValue = dimensionElement.attrib.get('uservalue')
+                if userValue is not None:
+                    userValue = float(userValue)
+            except ValueError:
+                self.log.warning("ValueError in readLocation userValue %3.3f", userValue)
             try:
                 xValue = dimensionElement.attrib.get('xvalue')
-                xValue = float(xValue)
+                if xValue is not None:
+                    xValue = float(xValue)
             except ValueError:
-                self.log.warning("KeyError in readLocation xValue %3.3f", xValue)
+                self.log.warning("ValueError in readLocation xValue %3.3f", xValue)
             try:
                 yValue = dimensionElement.attrib.get('yvalue')
                 if yValue is not None:
                     yValue = float(yValue)
             except ValueError:
-                pass
+                self.log.warning("ValueError in readLocation yValue %3.3f", yValue)
+            if userValue is None == xValue is None:
+                raise DesignSpaceDocumentError(f'Exactly one of uservalue="" or xvalue="" must be provided for location dimension "{dimName}"')
             if yValue is not None:
-                loc[dimName] = (xValue, yValue)
+                if xValue is None:
+                    raise DesignSpaceDocumentError(f'Missing xvalue="" for the location dimension "{dimName}"" with yvalue="{yValue}"')
+                designLoc[dimName] = (xValue, yValue)
+            elif xValue is not None:
+                designLoc[dimName] = xValue
             else:
-                loc[dimName] = xValue
-        return loc
+                userLoc[dimName] = userValue
+        return designLoc, userLoc
 
     def readInstances(self, makeGlyphs=True, makeKerning=True, makeInfo=True):
         instanceElements = self.root.findall('.instances/instance')
@@ -1951,13 +2004,13 @@ class BaseDocReader(LogMixin):
                 if key == XML_LANG:
                     styleMapFamilyName = styleMapFamilyNameElement.text
                     instanceObject.setStyleMapFamilyName(styleMapFamilyName, lang)
-        instanceLocation = self.locationFromElement(instanceElement)
-        instanceLocationString = instanceElement.attrib.get('location')
-        if instanceLocation is not None and instanceLocationString is not None:
+        designLocation, userLocation = self.locationFromElement(instanceElement)
+        locationLabel = instanceElement.attrib.get('location')
+        if (designLocation or userLocation) and locationLabel is not None:
             raise DesignSpaceDocumentError('instance element must have at most one of the location="..." attribute or the nested location element')
-        # varLib expects the location to be an empty dictionary (not None)
-        # when only the <location> element in present with nothing inside
-        instanceObject.location = instanceLocationString or instanceLocation
+        instanceObject.locationLabel = locationLabel
+        instanceObject.userLocation = userLocation or {}
+        instanceObject.designLocation = designLocation or {}
         for glyphElement in instanceElement.findall('.glyphs/glyph'):
             self.readGlyphElement(glyphElement, instanceObject)
         for infoElement in instanceElement.findall("info"):
@@ -1973,11 +2026,6 @@ class BaseDocReader(LogMixin):
     def readInfoElement(self, infoElement, instanceObject):
         """ Read the info element."""
         instanceObject.info = True
-
-    def readKerningElement(self, kerningElement, instanceObject):
-        """ Read the kerning element."""
-        kerningLocation = self.locationFromElement(kerningElement)
-        instanceObject.addKerning(kerningLocation)
 
     def readGlyphElement(self, glyphElement, instanceObject):
         """
@@ -2014,19 +2062,23 @@ class BaseDocReader(LogMixin):
         for noteElement in glyphElement.findall('.note'):
             glyphData['note'] = noteElement.text
             break
-        instanceLocation = self.locationFromElement(glyphElement)
-        if instanceLocation is not None:
-            glyphData['instanceLocation'] = instanceLocation
+        designLocation, userLocation = self.locationFromElement(glyphElement)
+        if userLocation:
+            raise DesignSpaceDocumentError(f'<glyph> element "{glyphName}" must only have design locations (using xvalue="").')
+        if designLocation is not None:
+            glyphData['instanceLocation'] = designLocation
         glyphSources = None
         for masterElement in glyphElement.findall('.masters/master'):
             fontSourceName = masterElement.attrib.get('source')
-            sourceLocation = self.locationFromElement(masterElement)
+            designLocation, userLocation = self.locationFromElement(masterElement)
+            if userLocation:
+                raise DesignSpaceDocumentError(f'<master> element "{fontSourceName}" must only have design locations (using xvalue="").')
             masterGlyphName = masterElement.attrib.get('glyphname')
             if masterGlyphName is None:
                 # if we don't read a glyphname, use the one we have
                 masterGlyphName = glyphName
             d = dict(font=fontSourceName,
-                     location=sourceLocation,
+                     location=designLocation,
                      glyphName=masterGlyphName)
             if glyphSources is None:
                 glyphSources = []
