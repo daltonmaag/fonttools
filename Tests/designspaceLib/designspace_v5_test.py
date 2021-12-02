@@ -1,4 +1,6 @@
 from pathlib import Path
+import re
+import shutil
 
 import pytest
 from fontTools.designspaceLib import (
@@ -651,3 +653,29 @@ def test_instance_location_mix(map_doc):
         "Width": 18000,
         "Custom": 1.5,
     }, "instance location is a mix of design and user location"
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "test_v5_aktiv.designspace",
+        "test_v5_decovar.designspace",
+        "test_v5_discrete.designspace",
+        "test_v5_sourceserif.designspace",
+        "test_v5.designspace",
+        "test.designspace",
+    ],
+)
+def test_roundtrip(tmpdir, datadir, filename):
+    test_file = datadir/filename
+    output_path = tmpdir / filename
+    # Move the file to the tmpdir so that the filenames stay the same
+    # (they're relative to the file's path)
+    shutil.copy(test_file, output_path)
+    doc = DesignSpaceDocument.fromfile(output_path)
+    doc.write(output_path)
+    # The input XML has comments and empty lines for documentation purposes
+    xml = test_file.read_text(encoding="utf-8")
+    xml = re.sub(r"<!--((?!-->).)*-->", "", xml)
+    xml = re.sub(r"\n+", "\n", xml)
+    assert xml == output_path.read_text(encoding="utf-8")
