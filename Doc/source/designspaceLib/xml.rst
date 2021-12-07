@@ -1,172 +1,5 @@
-#################################
-DesignSpaceDocument Specification
-#################################
-
-An object to read, write and edit interpolation systems for typefaces.
-Define sources, axes, rules, variable fonts and instances.
-
--  `The Python API of the objects <#python-api>`_
--  `The document XML structure <#document-xml-structure>`_
-
-
-**********
-Python API
-**********
-
-
-
-.. _designspacedocument-object:
-
-DesignSpaceDocument object
-==========================
-
-.. autoclass:: fontTools.designspaceLib::DesignSpaceDocument
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-AxisDescriptor object
-=====================
-
-.. autoclass:: fontTools.designspaceLib::AxisDescriptor
-   :members:
-   :undoc-members:
-   :inherited-members: SimpleDescriptor
-   :member-order: bysource
-
-
-DiscreteAxisDescriptor object
-=============================
-
-.. autoclass:: fontTools.designspaceLib::DiscreteAxisDescriptor
-   :members:
-   :undoc-members:
-   :inherited-members: SimpleDescriptor
-   :member-order: bysource
-
-
-AxisLabelDescriptor object
-==========================
-
-.. autoclass:: fontTools.designspaceLib::AxisLabelDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-LocationLabelDescriptor object
-==========================
-
-.. autoclass:: fontTools.designspaceLib::LocationLabelDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-SourceDescriptor object
-=======================
-
-.. autoclass:: fontTools.designspaceLib::SourceDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-VariableFontDescriptor object
-=============================
-
-.. autoclass:: fontTools.designspaceLib::VariableFontDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-RangeAxisSubsetDescriptor object
-================================
-
-.. autoclass:: fontTools.designspaceLib::RangeAxisSubsetDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-ValueAxisSubsetDescriptor object
-================================
-
-.. autoclass:: fontTools.designspaceLib::ValueAxisSubsetDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-InstanceDescriptor object
-=========================
-
-.. autoclass:: fontTools.designspaceLib::InstanceDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-RuleDescriptor object
-=====================
-
-.. autoclass:: fontTools.designspaceLib::RuleDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-Evaluating rules
-----------------
-
-.. autofunction:: fontTools.designspaceLib::evaluateRule
-.. autofunction:: fontTools.designspaceLib::evaluateConditions
-.. autofunction:: fontTools.designspaceLib::processRules
-
-
-.. _subclassing-descriptors:
-
-Subclassing descriptors
-=======================
-
-The DesignSpaceDocument can take subclassed Reader and Writer objects.
-This allows you to work with your own descriptors. You could subclass
-the descriptors. But as long as they have the basic attributes the
-descriptor does not need to be a subclass.
-
-.. code:: python
-
-    class MyDocReader(BaseDocReader):
-        axisDescriptorClass = MyAxisDescriptor
-        discreteAxisDescriptorClass = MyDiscreteAxisDescriptor
-        axisLabelDescriptorClass = MyAxisLabelDescriptor
-        locationLabelDescriptorClass = MyLocationLabelDescriptor
-        sourceDescriptorClass = MySourceDescriptor
-        variableFontsDescriptorClass = MyVariableFontDescriptor
-        valueAxisSubsetDescriptorClass = MyValueAxisSubsetDescriptor
-        rangeAxisSubsetDescriptorClass = MyRangeAxisSubsetDescriptor
-        instanceDescriptorClass = MyInstanceDescriptor
-        ruleDescriptorClass = MyRuleDescriptor
-
-    class MyDocWriter(BaseDocWriter):
-        axisDescriptorClass = MyAxisDescriptor
-        discreteAxisDescriptorClass = MyDiscreteAxisDescriptor
-        axisLabelDescriptorClass = MyAxisLabelDescriptor
-        locationLabelDescriptorClass = MyLocationLabelDescriptor
-        sourceDescriptorClass = MySourceDescriptor
-        variableFontsDescriptorClass = MyVariableFontDescriptor
-        valueAxisSubsetDescriptorClass = MyValueAxisSubsetDescriptor
-        rangeAxisSubsetDescriptorClass = MyRangeAxisSubsetDescriptor
-        instanceDescriptorClass = MyInstanceDescriptor
-        ruleDescriptorClass = MyRuleDescriptor
-
-    myDoc = DesignSpaceDocument(MyDocReader, MyDocWriter)
-
-
 **********************
-Document xml structure
+Document XML structure
 **********************
 
 
@@ -184,29 +17,29 @@ Document xml structure
     <designspace format="3">
         <axes>
             <!-- define axes here -->
-            <axis ... />
+            <axis... />
         </axes>
         <labels>
             <!-- define STAT format 4 labels here -->
             <!-- New in version 5.0 -->
-            <label ... />
+            <label... />
         </labels>
         <sources>
             <!-- define masters here -->
-            <source ... />
+            <source... />
         </sources>
         <variable-fonts>
             <!-- define variable fonts here -->
             <!-- New in version 5.0 -->
-            <variable-font ... />
+            <variable-font... />
         </variable-fonts>
         <instances>
             <!-- define instances here -->
-            <instance ... />
+            <instance... />
         </instances>
         <rules>
             <!-- define rules here -->
-            <rule ... />
+            <rule... />
         </rules>
         <lib>
             <dict>
@@ -215,17 +48,15 @@ Document xml structure
         </lib>
     </designspace>
 
-.. 1-axis-element:
 
-1. axis element
-===============
+axis element
+============
 
 -  Define a single axis
 -  Child element of ``axes``
 -  The axis can be either continuous (as in version 4.0) or discrete (new in version 5.0).
-Discrete axes have a list of discrete values instead of a range.
+   Discrete axes have a list of values instead of a range minimum and maximum.
 
-.. attributes-2:
 
 Attributes
 ----------
@@ -238,8 +69,16 @@ Attributes
 -  ``hidden``: optional, 0 or 1. Records whether this axis needs to be
    hidden in interfaces.
 
--  ``minimum``: required, number. The minimum value for this axis, in user space coordinates.
--  ``maximum``: required, number. The maximum value for this axis, in user space coordinates.
+For a continuous axis:
+   -  ``minimum``: required, number. The minimum value for this axis, in user space coordinates.
+   -  ``maximum``: required, number. The maximum value for this axis, in user space coordinates.
+
+For a discrete axis:
+   -  ``values``: required, space-separated numbers. The exhaustive list of possible values along this axis.
+
+
+Example
+-------
 
 .. code:: xml
 
@@ -251,17 +90,15 @@ Attributes
     -->
     <axis name="Italic" tag="ital" default="0" values="0 1">
 
-.. 11-labelname-element:
 
-1.1 labelname element
-=====================
+labelname element
+=================
 
 -  Defines a human readable name for UI use.
 -  Optional for non-registered axis names.
 -  Can be localised with ``xml:lang``
 -  Child element of ``axis``
 
-.. attributes-3:
 
 Attributes
 ----------
@@ -274,7 +111,6 @@ Value
 
 -  The natural language name of this axis.
 
-.. example-2:
 
 Example
 -------
@@ -285,17 +121,14 @@ Example
     <labelname xml:lang="en">Wéíght</labelname>
 
 
-.. 12-map-element:
-
-1.2 map element
-===============
+map element
+===========
 
 -  Defines a single node in a series of input value (user space coordinate)
    to output value (designspace coordinate) pairs.
 -  Together these values transform the designspace.
 -  Child of ``axis`` element.
 
-.. example-3:
 
 Example
 -------
@@ -307,16 +140,13 @@ Example
     <map input="1000.0" output="990.0" />
 
 
-.. 13-labels-element:
-
-1.3 labels and label elements
-=============================
+labels and label elements
+=========================
 
 -  Define STAT format 1, 2, 3 labels for the locations on this axis.
 -  The axis can have several ``label`` elements,
 TODO here
 
-.. example-3:
 
 Example
 -------
@@ -345,23 +175,20 @@ Example of all axis elements together:
             </axis>
         </axes>
 
-.. 2-location-element:
 
-1. location element
-===================
+location element
+================
 
 -  Defines a coordinate in the design space.
 -  Dictionary of axisname: axisvalue
 -  Used in ``source``, ``instance`` and ``glyph`` elements.
 
-.. 21-dimension-element:
 
-2.1 dimension element
-=====================
+dimension element
+=================
 
 -  Child element of ``location``
 
-.. attributes-4:
 
 Attributes
 ----------
@@ -371,7 +198,6 @@ Attributes
 -  ``yvalue``: optional, number. Separate value for anisotropic
    interpolations.
 
-.. example-4:
 
 Example
 -------
@@ -383,10 +209,9 @@ Example
         <dimension name="weight" xvalue="0.000000" yvalue="0.003" />
     </location>
 
-.. 3-source-element:
 
-3. source element
-=================
+source element
+==============
 
 -  Defines a single font or layer that contributes to the designspace.
 -  Child element of ``sources``
@@ -409,10 +234,9 @@ Attributes
 -  ``layer``: optional, string. The name of the layer in the source file.
    If no layer attribute is given assume the foreground layer should be used.
 
-.. 31-lib-element:
 
-3.1 lib element
-===============
+lib element
+===========
 
 There are two meanings for the ``lib`` element:
 
@@ -440,10 +264,9 @@ There are two meanings for the ``lib`` element:
       instance.
     - Items in the dict need to use **reverse domain name notation** <https://en.wikipedia.org/wiki/Reverse_domain_name_notation>__
 
-.. 32-info-element:
 
-3.2 info element
-================
+info element
+============
 
 -  ``<info copy="1" />``
 -  Child element of ``source``
@@ -451,10 +274,9 @@ There are two meanings for the ``lib`` element:
    from this source.
 -  MutatorMath
 
-.. 33-features-element:
 
-3.3 features element
-====================
+features element
+================
 
 -  ``<features copy="1" />``
 -  Defines if the instances can inherit opentype feature text from this
@@ -462,17 +284,15 @@ There are two meanings for the ``lib`` element:
 -  Child element of ``source``
 -  MutatorMath only
 
-.. 34-glyph-element:
 
-3.4 glyph element
-=================
+glyph element
+=============
 
 -  Can appear in ``source`` as well as in ``instance`` elements.
 -  In a ``source`` element this states if a glyph is to be excluded from
    the calculation.
 -  MutatorMath only
 
-.. attributes-6:
 
 Attributes
 ----------
@@ -482,15 +302,13 @@ Attributes
 -  ``<glyph mute="1" name="A"/>``
 -  MutatorMath only
 
-.. 35-kerning-element:
 
-3.5 kerning element
-===================
+kerning element
+===============
 
 -  ``<kerning mute="1" />``
 -  Can appear in ``source`` as well as in ``instance`` elements.
 
-.. attributes-7:
 
 Attributes
 ----------
@@ -501,7 +319,6 @@ Attributes
    include the kerning of this source in the calculation.
 -  MutatorMath only
 
-.. example-5:
 
 Example
 -------
@@ -520,10 +337,9 @@ Example
         </location>
     </source>
 
-.. 4-instance-element:
 
-4. instance element
-===================
+instance element
+================
 
 -  Defines a single font that can be calculated with the designspace.
 -  Child element of ``instances``
@@ -534,7 +350,6 @@ Example
    conditional rules in Superpolator.
 -  Location in designspace coordinates.
 
-.. attributes-8:
 
 Attributes
 ----------
@@ -575,24 +390,21 @@ Example for varlib
     </lib>
     </instance>
 
-.. 41-glyphs-element:
 
-4.1 glyphs element
-==================
+glyphs element
+==============
 
 -  Container for ``glyph`` elements.
 -  Optional
 -  MutatorMath only.
 
-.. 42-glyph-element:
 
-4.2 glyph element
-=================
+glyph element
+=============
 
 -  Child element of ``glyphs``
 -  May contain a ``location`` element.
 
-.. attributes-9:
 
 Attributes
 ----------
@@ -603,31 +415,28 @@ Attributes
 -  ``mute``: optional attribute, number 1 or 0. Indicate if this glyph
    should be supressed in the output.
 
-.. 421-note-element:
 
-4.2.1 note element
-==================
+note element
+============
 
 -  String. The value corresponds to glyph.note in UFO.
 
-.. 422-masters-element:
 
-4.2.2 masters element
-=====================
+masters element
+===============
 
 -  Container for ``master`` elements
 -  These ``master`` elements define an alternative set of glyph masters
    for this glyph.
 
-.. 4221-master-element:
 
-4.2.2.1 master element
-======================
+master element
+==============
 
 -  Defines a single alternative master for this glyph.
 
-4.3 Localised names for instances
-=================================
+Localised names for instances
+=============================
 
 Localised names for instances can be included with these simple elements
 with an ``xml:lang`` attribute:
@@ -638,7 +447,6 @@ with an ``xml:lang`` attribute:
 -  stylemapstylename
 -  stylemapfamilyname
 
-.. example-6:
 
 Example
 -------
@@ -653,7 +461,6 @@ Example
     <stylemapfamilyname xml:lang="de">Montserrat Halbfett</stylemapfamilyname>
     <stylemapfamilyname xml:lang="ja">モンセラート SemiBold</stylemapfamilyname>
 
-.. attributes-10:
 
 Attributes
 ----------
@@ -662,7 +469,6 @@ Attributes
 -  ``source``: the identifier name of the source this master glyph needs
    to be loaded from
 
-.. example-7:
 
 Example
 -------
@@ -702,10 +508,9 @@ Example
     </lib>
     </instance>
 
-.. 50-rules-element:
 
-5.0 rules element
-=================
+rules element
+=============
 
 -  Container for ``rule`` elements
 -  The rules are evaluated in this order.
@@ -716,7 +521,6 @@ glyphname pairs: the glyphs that need to be substituted. For a rule to be trigge
 **only one** of the conditionsets needs to be true, ``OR``. Within a conditionset
 **all** conditions need to be true, ``AND``.
 
-.. attributes-11:
 
 Attributes
 ----------
@@ -734,10 +538,9 @@ Attributes
     </lib>
 
 
-.. 51-rule-element:
 
-5.1 rule element
-================
+rule element
+============
 
 -  Defines a named rule.
 -  Each ``rule`` element contains one or more ``conditionset`` elements.
@@ -748,7 +551,6 @@ Attributes
 -  Rules without sub elements should be ignored when compiling a font.
 -  For authoring tools it might be necessary to save designspace files without ``sub`` elements just because the work is incomplete.
 
-.. attributes-11:
 
 Attributes
 ----------
@@ -757,16 +559,15 @@ Attributes
    identify this rule if it needs to be referenced elsewhere. The name
    is not important for compiling variable fonts.
 
-5.1.1 conditionset element
-==========================
+conditionset element
+=================
 
 -  Child element of ``rule``
 -  Contains one or more ``condition`` elements.
 
-.. 512-condition-element:
 
-5.1.2 condition element
-=======================
+condition element
+=================
 
 -  Child element of ``conditionset``
 -  Between the ``minimum`` and ``maximum`` this condition is ``True``.
@@ -775,7 +576,6 @@ Attributes
 -  If ``maximum`` is not available, assume it is ``axis.maximum``, mapped to designspace coordinates.
 -  The condition must contain at least a minimum or maximum or both.
 
-.. attributes-12:
 
 Attributes
 ----------
@@ -785,10 +585,9 @@ Attributes
 -  ``minimum``: number, required*. The low value, in designspace coordinates.
 -  ``maximum``: number, required*. The high value, in designspace coordinates.
 
-.. 513-sub-element:
 
-5.1.3 sub element
-=================
+sub element
+===========
 
 -  Child element of ``rule``.
 -  Defines which glyph to replace when the rule evaluates to **True**.
@@ -796,7 +595,6 @@ Attributes
 
 Axis values in Conditions are in designspace coordinates.
 
-.. attributes-13:
 
 Attributes
 ----------
@@ -806,7 +604,6 @@ Attributes
 -  ``with``: string, required. The name of the glyph it is replaced
    with.
 
-.. example-8:
 
 Example
 -------
@@ -841,219 +638,4 @@ Example with ``conditionsets``. All conditions in a conditionset must be true.
             <sub name="dollar" with="dollar.alt"/>
         </rule>
     </rules>
-
-.. 6-notes:
-
-6 Notes
-=======
-
-Paths and filenames
--------------------
-
-A designspace file needs to store many references to UFO files.
-
--  designspace files can be part of versioning systems and appear on
-   different computers. This means it is not possible to store absolute
-   paths.
--  So, all paths are relative to the designspace document path.
--  Using relative paths allows designspace files and UFO files to be
-   **near** each other, and that they can be **found** without enforcing
-   one particular structure.
--  The **filename** attribute in the ``SourceDescriptor`` and
-   ``InstanceDescriptor`` classes stores the preferred relative path.
--  The **path** attribute in these objects stores the absolute path. It
-   is calculated from the document path and the relative path in the
-   filename attribute when the object is created.
--  Only the **filename** attribute is written to file.
--  Both **filename** and **path** must use forward slashes (``/``) as
-   path separators, even on Windows.
-
-Right before we save we need to identify and respond to the following
-situations:
-
-In each descriptor, we have to do the right thing for the filename
-attribute. Before writing to file, the ``documentObject.updatePaths()``
-method prepares the paths as follows:
-
-**Case 1**
-
-::
-
-    descriptor.filename == None
-    descriptor.path == None
-
-**Action**
-
--  write as is, descriptors will not have a filename attr. Useless, but
-   no reason to interfere.
-
-**Case 2**
-
-::
-
-    descriptor.filename == "../something"
-    descriptor.path == None
-
-**Action**
-
--  write as is. The filename attr should not be touched.
-
-**Case 3**
-
-::
-
-    descriptor.filename == None
-    descriptor.path == "~/absolute/path/there"
-
-**Action**
-
--  calculate the relative path for filename. We're not overwriting some
-   other value for filename, it should be fine.
-
-**Case 4**
-
-::
-
-    descriptor.filename == '../somewhere'
-    descriptor.path == "~/absolute/path/there"
-
-**Action**
-
--  There is a conflict between the given filename, and the path. The
-   difference could have happened for any number of reasons. Assuming
-   the values were not in conflict when the object was created, either
-   could have changed. We can't guess.
--  Assume the path attribute is more up to date. Calculate a new value
-   for filename based on the path and the document path.
-
-Recommendation for editors
---------------------------
-
--  If you want to explicitly set the **filename** attribute, leave the
-   path attribute empty.
--  If you want to explicitly set the **path** attribute, leave the
-   filename attribute empty. It will be recalculated.
--  Use ``documentObject.updateFilenameFromPath()`` to explicitly set the
-   **filename** attributes for all instance and source descriptors.
-
-.. 7-common-lib-key-registry:
-
-7 Common Lib Key Registry
-=========================
-
-public.skipExportGlyphs
------------------------
-
-This lib key works the same as the UFO lib key with the same name. The
-difference is that applications using a Designspace as the corner stone of the
-font compilation process should use the lib key in that Designspace instead of
-any of the UFOs. If the lib key is empty or not present in the Designspace, all
-glyphs should be exported, regardless of what the same lib key in any of the
-UFOs says.
-
-.. 8-implementation-and-differences:
-
-
-8 Implementation and differences
-================================
-
-The designspace format has gone through considerable development.
-
- -  the format was originally written for MutatorMath.
- -  the format is now also used in fontTools.varlib.
- -  not all values are be required by all implementations.
-
-8.1 Varlib vs. MutatorMath
---------------------------
-
-There are some differences between the way MutatorMath and fontTools.varlib handle designspaces.
-
- -  Varlib does not support anisotropic interpolations.
- -  MutatorMath will extrapolate over the boundaries of
-    the axes. Varlib can not (at the moment).
- -  Varlib requires much less data to define an instance than
-    MutatorMath.
- -  The goals of Varlib and MutatorMath are different, so not all
-    attributes are always needed.
-
-
-8.3 Rules and generating static UFO instances
----------------------------------------------
-
-When making instances as UFOs from a designspace with rules, it can
-be useful to evaluate the rules so that the characterset of the ufo
-reflects, as much as possible, the state of a variable font when seen
-at the same location. This can be done by some swapping and renaming of
-glyphs.
-
-While useful for proofing or development work, it should be noted that
-swapping and renaming leaves the UFOs with glyphnames that are no longer
-descriptive. For instance, after a swap `dollar.bar` could contain a shape
-without a bar. Also, when the swapped glyphs are part of other GSUB variations
-it can become complex very quickly. So proceed with caution.
-
- -  Assuming `rulesProcessingLast = True`:
- -  We need to swap the glyphs so that the original shape is still available.
-    For instance, if a rule swaps ``a`` for ``a.alt``, a glyph
-    that references ``a`` in a component would then show the new ``a.alt``.
- -  But that can lead to unexpected results, the two glyphs may have different
-    widths or height. So, glyphs that are not specifically referenced in a rule
-    **should not change appearance**. That means that the implementation that swaps
-    ``a`` and ``a.alt`` also swap all components that reference these
-    glyphs in order to preserve their appearance.
- -  The swap function also needs to take care of swapping the names in
-    kerning data and any GPOS code.
-
-9 Version history
-=================
-
-9.1 Version 5.0
----------------
-
-The format was extended to describe the entire design space of a reasonably
-regular font family in one file, with global data about the family to reduce
-repetition in sub-sections. "Reasonably regular" means that the sources and
-instances across the previously multiple Designspace files are positioned on a
-grid and derive their metadata (like style name) in a way that's compatible with
-the STAT model, based on their axis positions. Axis mappings must be the same
-across the entire space.
-
-1. Each axis can have labels attached to stops within the axis range, analogous to the
-   `OpenType STAT <https://docs.microsoft.com/en-us/typography/opentype/spec/stat>`_
-   table. Free-standing labels for locations are also allowed. The data is intended
-   to be compiled into a ``STAT`` table.
-2. The axes can be discrete, to say that they do not interpolate, like a distinctly
-   constructed upright and italic variant of a family.
-3. The data can be used to derive style and PostScript names for instances.
-4. A new ``variable-fonts`` element can subdivide the Designspace into multiple subsets that
-   mix and match the globally available axes. It is possible for these sub-spaces to have
-   a different default location from the global default location. It is required if the
-   Designspace contains a discrete axis and you want to produce a variable font.
-
-What is currently not supported is e.g.
-
-1. A setup where different sources sit at the same logical location in the design space,
-   think "MyFont Regular" and "MyFont SmallCaps Regular". (this situation could be
-   encoded by adding a "SmallCaps" discrete axis, if that makes sense).
-2. Anisotropic locations for axis labels.
-
-9.2 Older versions
-------------------
-
--  In some implementations that preceed Variable Fonts, the `copyInfo`
-   flag in a source indicated the source was to be treated as the default.
-   This is no longer compatible with the assumption that the default font
-   is located on the default value of each axis.
--  Older implementations did not require axis records to be present in
-   the designspace file. The axis extremes for instance were generated
-   from the locations used in the sources. This is no longer possible.
-
-
-.. 10-this-document
-
-10 This document
-================
-
--  Changes are to be expected.
-
 

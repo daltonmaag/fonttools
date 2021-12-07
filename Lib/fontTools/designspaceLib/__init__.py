@@ -1049,10 +1049,16 @@ class ValueAxisSubsetDescriptor(SimpleDescriptor):
 
 class BaseDocWriter(object):
     _whiteSpace = "    "
-    ruleDescriptorClass = RuleDescriptor
     axisDescriptorClass = AxisDescriptor
+    discreteAxisDescriptorClass = DiscreteAxisDescriptor
+    axisLabelDescriptorClass = AxisLabelDescriptor
+    locationLabelDescriptorClass = LocationLabelDescriptor
     sourceDescriptorClass = SourceDescriptor
+    variableFontsDescriptorClass = VariableFontDescriptor
+    valueAxisSubsetDescriptorClass = ValueAxisSubsetDescriptor
+    rangeAxisSubsetDescriptorClass = RangeAxisSubsetDescriptor
     instanceDescriptorClass = InstanceDescriptor
+    ruleDescriptorClass = RuleDescriptor
 
     @classmethod
     def getAxisDecriptor(cls):
@@ -1359,16 +1365,16 @@ class BaseDocWriter(object):
 
 
 class BaseDocReader(LogMixin):
-    ruleDescriptorClass = RuleDescriptor
     axisDescriptorClass = AxisDescriptor
     discreteAxisDescriptorClass = DiscreteAxisDescriptor
     axisLabelDescriptorClass = AxisLabelDescriptor
     locationLabelDescriptorClass = LocationLabelDescriptor
+    sourceDescriptorClass = SourceDescriptor
     variableFontsDescriptorClass = VariableFontDescriptor
     valueAxisSubsetDescriptorClass = ValueAxisSubsetDescriptor
     rangeAxisSubsetDescriptorClass = RangeAxisSubsetDescriptor
-    sourceDescriptorClass = SourceDescriptor
     instanceDescriptorClass = InstanceDescriptor
+    ruleDescriptorClass = RuleDescriptor
 
     def __init__(self, documentPath, documentObject):
         self.path = documentPath
