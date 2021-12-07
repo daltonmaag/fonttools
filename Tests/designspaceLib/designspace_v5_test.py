@@ -13,6 +13,7 @@ from fontTools.designspaceLib import (
     VariableFontDescriptor,
     RangeAxisSubsetDescriptor,
     ValueAxisSubsetDescriptor,
+    posix,
 )
 
 
@@ -157,7 +158,7 @@ def test_read_v5_document_simple(datadir):
     assert doc.instances == [
         InstanceDescriptor(
             filename="instances/instanceTest1.ufo",
-            path="C:/UsersLocal/jany.belluz/Documents/code/fonttools/Tests/designspaceLib/data/instances/instanceTest1.ufo",
+            path=posix(str((datadir / "instances/instanceTest1.ufo").resolve())),
             name="instance.ufo1",
             designLocation={"weight": 500.0, "width": 20.0},
             familyName="InstanceFamilyName",
@@ -173,7 +174,7 @@ def test_read_v5_document_simple(datadir):
         ),
         InstanceDescriptor(
             filename="instances/instanceTest2.ufo",
-            path="C:/UsersLocal/jany.belluz/Documents/code/fonttools/Tests/designspaceLib/data/instances/instanceTest2.ufo",
+            path=posix(str((datadir / "instances/instanceTest2.ufo").resolve())),
             name="instance.ufo2",
             designLocation={"weight": 500.0, "width": (400.0, 300.0)},
             familyName="InstanceFamilyName",
