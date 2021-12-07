@@ -10,11 +10,17 @@ BackgroundColor<<New>> PaleGreen
 
 class Designspace {
 + formatVersion: str = None
++ <color:green><b><<New>> elidedFallbackName: str = None
 + rulesProcessingLast: bool = False
 + lib: Dict = {}
 
 + findDefault()
 }
+
+note left of Designspace::elidedFallbackName
+STAT Style Attributes Header
+field ""elidedFallbackNameID""
+end note
 
 abstract class AbstractAxis {
 + tag: str

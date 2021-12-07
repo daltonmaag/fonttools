@@ -3,9 +3,6 @@
 # FIXME: we're building a stylespace as in statmake but it's not part of fontTools
 # TODO: either move this converter out of fontTools so it can keep creating the stylespace
 #       or make this converter use the fontTools APIs for stat/generate data for these
-# TODO: The STAT table has a fallback name id for styles where everything is elided, but it
-#       is a name id, which exists in a VF, but not in a Designspace. Make accessible somehow?
-#       It should be set to "2" most of the time.
 # FIXME: How to deal with Designspaces where e.g. the wght axis mapping differs slightly? See
 #        e.g. Source Serif 4.
 
@@ -75,7 +72,12 @@ def convert5to4(
             )
             for label in doc.locationLabels
         ],
-        elided_fallback_name_id=2,  # FIXME: should this be DSv5?
+        # FIXME(Jany): I've added the elidedFallbackName property on DSDoc as string
+        # I think it should be the compiler's job to make the ID point to 2 if
+        # the string happens to be the same as name ID 2. Otherwise, if you
+        # can only input a name ID, how could you set this fallback name to
+        # an arbitrary value that doesn't already have a name ID in the font?
+        elided_fallback_name_id=2
     )
 
     ribbi_mapping = get_ribbi_mapping(doc)

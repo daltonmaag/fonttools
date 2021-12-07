@@ -1258,6 +1258,8 @@ class BaseDocWriter(object):
 
     def write(self, pretty=True, encoding="UTF-8", xml_declaration=True):
         self.root.attrib['format'] = ".".join(str(i) for i in self.effectiveFormatTuple)
+        if self.documentObject.elidedFallbackName is not None:
+            self.root.attrib['elidedfallbackname'] = self.documentObject.elidedFallbackName
 
         if self.documentObject.axes:
             self.root.append(ET.Element("axes"))
@@ -1713,6 +1715,8 @@ class BaseDocReader(LogMixin):
         return self
 
     def read(self):
+        if 'elidedfallbackname' in self.root.attrib:
+            self.documentObject.elidedFallbackName = self.root.attrib['elidedfallbackname']
         self.readAxes()
         self.readLabels()
         self.readRules()
@@ -2251,9 +2255,12 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
         from fontTools.designspaceLib import DesignSpaceDocument
         doc = DesignSpaceDocument.fromfile("some/path/to/my.designspace")
+        doc.formatVersion
+        doc.elidedFallbackName
         doc.axes
         doc.locationLabels
         doc.rules
+        doc.rulesProcessingLast
         doc.sources
         doc.variableFonts
         doc.instances
@@ -2278,16 +2285,23 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.formatVersion: Optional[str] = None
         """Format version for this document, as a string. E.g. "4.0" """
 
-        self.sources: List[SourceDescriptor] = []
-        self.instances: List[InstanceDescriptor] = []
+        self.elidedFallbackName: Optional[str] = None
+        """STAT Style Attributes Header field ``elidedFallbackNameID``.
+
+
+        See: `OTSpec STAT Style Attributes Header <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#style-attributes-header>`_
+
+        .. versionadded:: 5.0
+        """
+
         self.axes: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = []
+        """List of this document's axes."""
         self.locationLabels: List[LocationLabelDescriptor] = []
-        """.. versionadded:: 5.0"""
+        """List of this document's STAT format 4 labels.
 
-        self.variableFonts: List[VariableFontDescriptor] = []
-        """.. versionadded:: 5.0"""
-
+        .. versionadded:: 5.0"""
         self.rules: List[RuleDescriptor] = []
+        """List of this document's rules."""
         self.rulesProcessingLast: bool = False
         """This flag indicates whether the substitution rules should be applied
         before or after other glyph substitution features.
@@ -2312,13 +2326,14 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
                 </dict>
             </lib>
         """
+        self.sources: List[SourceDescriptor] = []
+        """List of this document's sources."""
+        self.variableFonts: List[VariableFontDescriptor] = []
+        """List of this document's variable fonts.
 
-        self.default: Optional[str] = None
-        """Name of the default master.
-
-        This attribute is updated by the :meth:`findDefault`
-        """
-
+        .. versionadded:: 5.0"""
+        self.instances: List[InstanceDescriptor] = []
+        """List of this document's instances."""
         self.lib: Dict = {}
         """User defined, custom data associated with the whole document.
 
@@ -2326,7 +2341,12 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         Respect the data stored by others.
         """
 
-        #
+        self.default: Optional[str] = None
+        """Name of the default master.
+
+        This attribute is updated by the :meth:`findDefault`
+        """
+
         if readerClass is not None:
             self.readerClass = readerClass
         else:
