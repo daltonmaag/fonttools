@@ -2,7 +2,8 @@
 DesignSpaceDocument Specification
 #################################
 
-An object to read, write and edit interpolation systems for typefaces. Define sources, axes, rules and instances.
+An object to read, write and edit interpolation systems for typefaces.
+Define sources, axes, rules, variable fonts and instances.
 
 -  `The Python API of the objects <#python-api>`_
 -  `The document XML structure <#document-xml-structure>`_
@@ -19,284 +20,47 @@ Python API
 DesignSpaceDocument object
 ==========================
 
-The DesignSpaceDocument object can read and write ``.designspace`` data.
-It imports the axes, sources and instances to very basic **descriptor**
-objects that store the data in attributes. Data is added to the document
-by creating such descriptor objects, filling them with data and then
-adding them to the document. This makes it easy to integrate this object
-in different contexts.
+.. autoclass:: fontTools.designspaceLib::DesignSpaceDocument
+   :members:
+   :undoc-members:
+   :member-order: bysource
 
-The **DesignSpaceDocument** object can be subclassed to work with
-different objects, as long as they have the same attributes. Reader and
-Writer objects can be subclassed as well.
-
-**Note:** Python attribute names are usually camelCased, the
-corresponding `XML <#document-xml-structure>`_ attributes are usually
-all lowercase.
-
-.. example-1:
-
-.. code:: python
-
-    from fontTools.designspaceLib import DesignSpaceDocument
-    doc = DesignSpaceDocument()
-    doc.read("some/path/to/my.designspace")
-    doc.axes
-    doc.locationLabels
-    doc.sources
-    doc.variableFonts
-    doc.instances
-
-Attributes
-----------
-
--  ``axes``: list of axisDescriptors
--  ``locationLabels``: list of locationLabelDescriptors (since v5)
--  ``sources``: list of sourceDescriptors
--  ``variableFonts``: list of variableFontDescriptors (since v5)
--  ``instances``: list of instanceDescriptors
--  ``rules``: list if ruleDescriptors
--  ``readerClass``: class of the reader object
--  ``writerClass``: class of the writer object
--  ``lib``: dict for user defined, custom data that needs to be stored
-   in the designspace. Use reverse-DNS notation to identify your own data.
-   Respect the data stored by others.
--  ``rulesProcessingLast``: This flag indicates whether the substitution rules should be applied before or after other glyph substitution features. False: before, True: after.
-
-Methods
--------
-
--  ``read(path)``: read a designspace file from ``path``
--  ``write(path)``: write this designspace to ``path``
--  ``addSource(aSourceDescriptor)``: add this sourceDescriptor to
-   ``doc.sources``.
--  ``addInstance(anInstanceDescriptor)``: add this instanceDescriptor
-   to ``doc.instances``.
--  ``addAxis(anAxisDescriptor)``: add this instanceDescriptor to ``doc.axes``.
--  ``newDefaultLocation()``: returns a dict with the default location
-   in designspace coordinates.
--  ``updateFilenameFromPath(masters=True, instances=True, force=False)``:
-   set a descriptor filename attr from the path and this document.
--  ``newAxisDescriptor()``: return a new axisDescriptor object.
--  ``newSourceDescriptor()``: return a new sourceDescriptor object.
--  ``newInstanceDescriptor()``: return a new instanceDescriptor object.
--  ``getAxisOrder()``: return a list of axisnames
--  ``findDefault()``: return the sourceDescriptor that is on the default
-   location. Returns None if there isn't one.
--  ``normalizeLocation(aLocation)``: return a dict with normalized axis values.
--  ``normalize()``: normalize the geometry of this designspace: scale all the
-   locations of all masters and instances to the ``-1 - 0 - 1`` value.
--  ``loadSourceFonts()``: Ensure SourceDescriptor.font attributes are loaded,
-   and return list of fonts.
--  ``tostring(encoding=None)``: Returns the designspace as a string. Default
-   encoding `utf-8`.
-
-Class Methods
--------------
-- ``fromfile(path)``
-- ``fromstring(string)``
-
-
-
-
-.. _source-descriptor-object:
 
 SourceDescriptor object
 =======================
 
-Attributes
-----------
+.. autoclass:: fontTools.designspaceLib::SourceDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
 
--  ``filename``: string. A relative path to the source file, **as it is
-   in the document**. MutatorMath + Varlib.
--  ``path``: string. Absolute path to the source file, calculated from
-   the document path and the string in the filename attr. MutatorMath +
-   Varlib.
--  ``layerName``: string. The name of the layer in the source to look for
-   outline data. Default ``None`` which means ``foreground``.
--  ``font``: Any Python object. Optional. Points to a representation of
-   this source font that is loaded in memory, as a Python object
-   (e.g. a ``defcon.Font`` or a ``fontTools.ttFont.TTFont``). The default
-   document reader will not fill-in this attribute, and the default
-   writer will not use this attribute. It is up to the user of
-   ``designspaceLib`` to either load the resource identified by ``filename``
-   and store it in this field, or write the contents of this field to the
-   disk and make ``filename`` point to that.
--  ``name``: string. Optional. Unique identifier name for this source,
-   if there is one or more ``instance.glyph`` elements in the document.
-   MutatorMath.
--  ``location``: dict. Axis values for this source. MutatorMath + Varlib
--  ``copyLib``: bool. Indicates if the contents of the font.lib need to
-   be copied to the instances. MutatorMath.
-   Deprecated since v5.
--  ``copyInfo`` bool. Indicates if the non-interpolating font.info needs
-   to be copied to the instances. MutatorMath
-   Deprecated since v5.
--  ``copyGroups`` bool. Indicates if the groups need to be copied to the
-   instances. MutatorMath.
-   Deprecated since v5.
--  ``copyFeatures`` bool. Indicates if the feature text needs to be
-   copied to the instances. MutatorMath.
-   Deprecated since v5.
--  ``muteKerning``: bool. Indicates if the kerning data from this source
-   needs to be muted (i.e. not be part of the calculations).
-   MutatorMath.
-   Also VarLib since v5.
--  ``muteInfo``: bool. Indicated if the interpolating font.info data for
-   this source needs to be muted. MutatorMath.
-   Also VarLib since v5.
--  ``mutedGlyphNames``: list. Glyphnames that need to be muted in the
-   instances. MutatorMath.
-   Also VarLib since v5.
--  ``familyName``: string. Family name of this source. Though this data
-   can be extracted from the font, it can be efficient to have it right
-   here. Varlib.
--  ``styleName``: string. Style name of this source. Though this data
-   can be extracted from the font, it can be efficient to have it right
-   here. Varlib.
-
-.. code:: python
-
-    doc = DesignSpaceDocument()
-    s1 = SourceDescriptor()
-    s1.path = masterPath1
-    s1.name = "master.ufo1"
-    s1.font = defcon.Font("master.ufo1")
-    s1.copyLib = True
-    s1.copyInfo = True
-    s1.copyFeatures = True
-    s1.location = dict(weight=0)
-    s1.familyName = "MasterFamilyName"
-    s1.styleName = "MasterStyleNameOne"
-    s1.mutedGlyphNames.append("A")
-    s1.mutedGlyphNames.append("Z")
-    doc.addSource(s1)
-
-.. _instance-descriptor-object:
 
 InstanceDescriptor object
 =========================
 
-.. attributes-1:
+.. autoclass:: fontTools.designspaceLib::InstanceDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
 
-
-Attributes
-----------
-
--  ``filename``: string. Relative path to the instance file, **as it is
-   in the document**. The file may or may not exist. MutatorMath.
--  ``path``: string. Absolute path to the source file, calculated from
-   the document path and the string in the filename attr. The file may
-   or may not exist. MutatorMath.
--  ``name``: string. Unique identifier name of the instance, used to
-   identify it if it needs to be referenced from elsewhere in the
-   document.
--  ``location``: dict. Axis values for this source. MutatorMath +
-   Varlib.
--  ``familyName``: string. Family name of this instance. MutatorMath +
-   Varlib.
--  ``localisedFamilyName``: dict. A dictionary of localised family name
-   strings, keyed by language code.
--  ``styleName``: string. Style name of this source. MutatorMath +
-   Varlib.
--  ``localisedStyleName``: dict. A dictionary of localised stylename
-   strings, keyed by language code.
--  ``postScriptFontName``: string. Postscript fontname for this
-   instance. MutatorMath.
--  ``styleMapFamilyName``: string. StyleMap familyname for this
-   instance. MutatorMath.
--  ``localisedStyleMapFamilyName``: A dictionary of localised style map
-   familyname strings, keyed by language code.
--  ``localisedStyleMapStyleName``: A dictionary of localised style map
-   stylename strings, keyed by language code.
--  ``styleMapStyleName``: string. StyleMap stylename for this instance.
-   MutatorMath.
--  ``glyphs``: dict for special master definitions for glyphs. If glyphs
-   need special masters (to record the results of executed rules for
-   example). MutatorMath.
--  ``kerning``: bool. Indicates if this instance needs its kerning
-   calculated. MutatorMath.
--  ``info``: bool. Indicated if this instance needs the interpolating
-   font.info calculated.
--  ``lib``: dict. Custom data associated with this instance.
-
-Methods
--------
-
-These methods give easier access to the localised names.
-
--  ``setStyleName(styleName, languageCode="en")``
--  ``getStyleName(languageCode="en")``
--  ``setFamilyName(familyName, languageCode="en")``
--  ``getFamilyName(self, languageCode="en")``
--  ``setStyleMapStyleName(styleMapStyleName, languageCode="en")``
--  ``getStyleMapStyleName(languageCode="en")``
--  ``setStyleMapFamilyName(styleMapFamilyName, languageCode="en")``
--  ``getStyleMapFamilyName(languageCode="en")``
-
-Example
--------
-
-.. code:: python
-
-    i2 = InstanceDescriptor()
-    i2.path = instancePath2
-    i2.familyName = "InstanceFamilyName"
-    i2.styleName = "InstanceStyleName"
-    i2.name = "instance.ufo2"
-    # anisotropic location
-    i2.location = dict(weight=500, width=(400,300))
-    i2.postScriptFontName = "InstancePostscriptName"
-    i2.styleMapFamilyName = "InstanceStyleMapFamilyName"
-    i2.styleMapStyleName = "InstanceStyleMapStyleName"
-    glyphMasters = [dict(font="master.ufo1", glyphName="BB", location=dict(width=20,weight=20)), dict(font="master.ufo2", glyphName="CC", location=dict(width=900,weight=900))]
-    glyphData = dict(name="arrow", unicodeValue=1234)
-    glyphData['masters'] = glyphMasters
-    glyphData['note'] = "A note about this glyph"
-    glyphData['instanceLocation'] = dict(width=100, weight=120)
-    i2.glyphs['arrow'] = glyphData
-    i2.glyphs['arrow2'] = dict(mute=False)
-    i2.lib['com.coolDesignspaceApp.specimenText'] = 'Hamburgerwhatever'
-    doc.addInstance(i2)
-
-.. _axis-descriptor-object:
 
 AxisDescriptor object
 =====================
 
--  ``tag``: string. Four letter tag for this axis. Some might be
-   registered at the `OpenType
-   specification <https://www.microsoft.com/typography/otspec/fvar.htm#VAT>`__.
-   Privately-defined axis tags must begin with an uppercase letter and
-   use only uppercase letters or digits.
--  ``name``: string. Name of the axis as it is used in the location
-   dicts. MutatorMath + Varlib.
--  ``labelNames``: dict. When defining a non-registered axis, it will be
-   necessary to define user-facing readable names for the axis. Keyed by
-   xml:lang code. Values are required to be ``unicode`` strings, even if
-   they only contain ASCII characters.
--  ``minimum``: number. The minimum value for this axis in user space.
-   MutatorMath + Varlib.
--  ``maximum``: number. The maximum value for this axis in user space.
-   MutatorMath + Varlib.
--  ``default``: number. The default value for this axis, i.e. when a new
-   location is created, this is the value this axis will get in user
-   space. MutatorMath + Varlib.
--  ``map``: list of input / output values that can describe a warp
-   of user space to design space coordinates. If no map values are present, it is assumed user space is the same as design space, as
-   in [(minimum, minimum), (maximum, maximum)]. Varlib.
+.. autoclass:: fontTools.designspaceLib::AxisDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
 
-.. code:: python
 
-    a1 = AxisDescriptor()
-    a1.minimum = 1
-    a1.maximum = 1000
-    a1.default = 400
-    a1.name = "weight"
-    a1.tag = "wght"
-    a1.labelNames[u'fa-IR'] = u"قطر"
-    a1.labelNames[u'en'] = u"Wéíght"
-    a1.map = [(1.0, 10.0), (400.0, 66.0), (1000.0, 990.0)]
+DiscreteAxisDescriptor object
+=============================
+
+.. autoclass:: fontTools.designspaceLib::DiscreteAxisDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
 
 RuleDescriptor object
 =====================
@@ -867,8 +631,17 @@ Attributes
 ----------
 
 -  ``processing``: flag, optional. Valid values are [``first``, ``last``]. This flag indicates whether the substitution rules should be applied before or after other glyph substitution features.
--  If no ``processing`` attribute is given, interpret as ``first``, and put the substitution rule in the `rvrn` feature.
--  If ``processing`` is ``last``, put it in `rclt`.
+-  If no ``processing`` attribute is given, interpret as ``first``, and put the substitution rule in the ``rvrn`` feature.
+-  If ``processing`` is ``last``, put it in ``rclt``.
+-  If you want to use a different feature altogether, e.g. ``calt``, use the lib key ``com.github.fonttools.varLib.featureVarsFeatureTag``::
+
+    <lib>
+        <dict>
+            <key>com.github.fonttools.varLib.featureVarsFeatureTag</key>
+            <string>calt</string>
+        </dict>
+    </lib>
+
 
 .. 51-rule-element:
 

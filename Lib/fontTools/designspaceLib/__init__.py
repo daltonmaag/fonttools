@@ -100,7 +100,23 @@ class SimpleDescriptor(AsDictMixin):
 
 
 class SourceDescriptor(SimpleDescriptor):
-    """Simple container for data related to the source"""
+    """Simple container for data related to the source
+
+    .. code:: python
+
+        doc = DesignSpaceDocument()
+        s1 = SourceDescriptor()
+        s1.path = masterPath1
+        s1.name = "master.ufo1"
+        s1.font = defcon.Font("master.ufo1")
+        s1.location = dict(weight=0)
+        s1.familyName = "MasterFamilyName"
+        s1.styleName = "MasterStyleNameOne"
+        s1.mutedGlyphNames.append("A")
+        s1.mutedGlyphNames.append("Z")
+        doc.addSource(s1)
+
+    """
     flavor = "source"
     _attrs = ['filename', 'path', 'name', 'layerName',
               'location', 'copyLib',
@@ -108,6 +124,9 @@ class SourceDescriptor(SimpleDescriptor):
               'muteKerning', 'muteInfo',
               'mutedGlyphNames',
               'familyName', 'styleName']
+
+    filename = posixpath_property("_filename")
+    path = posixpath_property("_path")
 
     def __init__(
         self,
@@ -129,8 +148,10 @@ class SourceDescriptor(SimpleDescriptor):
         mutedGlyphNames=None,
     ):
         self.filename = filename
-        """The original path as found in the document."""
+        """string. A relative path to the source file, **as it is in the document**.
 
+        MutatorMath + VarLib.
+        """
         self.path = path
         """The absolute path, calculated from filename."""
 
@@ -147,29 +168,95 @@ class SourceDescriptor(SimpleDescriptor):
         """
 
         self.name = name
+        """string. Optional. Unique identifier name for this source,
+        if there is one or more ``instance.glyph`` elements in the document.
+
+        MutatorMath.
+        """
         self.location = location
+        """dict. Axis values for this source.
+
+        MutatorMath + Varlib.
+        """
+
         self.layerName = layerName
+        """string. The name of the layer in the source to look for
+        outline data. Default ``None`` which means ``foreground``.
+        """
         self.familyName = familyName
+        """string. Family name of this source. Though this data
+        can be extracted from the font, it can be efficient to have it right
+        here.
+
+        Varlib.
+        """
         self.styleName = styleName
+        """string. Style name of this source. Though this data
+        can be extracted from the font, it can be efficient to have it right
+        here.
+
+        Varlib.
+        """
 
         self.copyLib = copyLib
-        """(Deprecated in version 5)"""
+        """bool. Indicates if the contents of the font.lib need to
+        be copied to the instances.
+
+        MutatorMath.
+
+        .. deprecated:: 5.0
+        """
         self.copyInfo = copyInfo
-        """(Deprecated in version 5)"""
+        """bool. Indicates if the non-interpolating font.info needs
+        to be copied to the instances.
+
+        MutatorMath.
+
+        .. deprecated:: 5.0
+        """
         self.copyGroups = copyGroups
-        """(Deprecated in version 5)"""
+        """bool. Indicates if the groups need to be copied to the
+        instances.
+
+        MutatorMath.
+
+        .. deprecated:: 5.0
+        """
         self.copyFeatures = copyFeatures
-        """(Deprecated in version 5)"""
+        """bool. Indicates if the feature text needs to be
+        copied to the instances.
 
+        MutatorMath.
+
+        .. deprecated:: 5.0
+        """
         self.muteKerning = muteKerning
-        """(Changed in version 5) Now should also be used by varLib"""
-        self.muteInfo = muteInfo
-        """(Changed in version 5) Now should also be used by varLib"""
-        self.mutedGlyphNames = mutedGlyphNames or []
-        """(Changed in version 5) Now should also be used by varLib"""
+        """bool. Indicates if the kerning data from this source
+        needs to be muted (i.e. not be part of the calculations).
 
-    path = posixpath_property("_path")
-    filename = posixpath_property("_filename")
+        MutatorMath + VarLib.
+
+        .. versionchanged:: 5.0
+            Now should also be used by varLib
+        """
+        self.muteInfo = muteInfo
+        """bool. Indicated if the interpolating font.info data for
+        this source needs to be muted.
+
+        MutatorMath + VarLib.
+
+        .. versionchanged:: 5.0
+            Now should also be used by varLib
+        """
+        self.mutedGlyphNames = mutedGlyphNames or []
+        """list. Glyphnames that need to be muted in the
+        instances.
+
+        MutatorMath + VarLib.
+
+        .. versionchanged:: 5.0
+            Now should also be used by varLib
+        """
 
 
 class RuleDescriptor(SimpleDescriptor):
@@ -246,7 +333,24 @@ def processRules(rules, location, glyphNames):
 
 
 class InstanceDescriptor(SimpleDescriptor):
-    """Simple container for data related to the instance"""
+    """Simple container for data related to the instance
+
+
+    .. code:: python
+
+        i2 = InstanceDescriptor()
+        i2.path = instancePath2
+        i2.familyName = "InstanceFamilyName"
+        i2.styleName = "InstanceStyleName"
+        i2.name = "instance.ufo2"
+        # anisotropic location
+        i2.location = dict(weight=500, width=(400,300))
+        i2.postScriptFontName = "InstancePostscriptName"
+        i2.styleMapFamilyName = "InstanceStyleMapFamilyName"
+        i2.styleMapStyleName = "InstanceStyleMapStyleName"
+        i2.lib['com.coolDesignspaceApp.specimenText'] = 'Hamburgerwhatever'
+        doc.addInstance(i2)
+    """
     flavor = "instance"
     _defaultLanguageCode = "en"
     _attrs = ['path',
@@ -260,6 +364,9 @@ class InstanceDescriptor(SimpleDescriptor):
               'kerning',
               'info',
               'lib']
+
+    filename = posixpath_property("_filename")
+    path = posixpath_property("_path")
 
     def __init__(
         self,
@@ -283,47 +390,117 @@ class InstanceDescriptor(SimpleDescriptor):
         info=True,
         lib=None,
     ):
-        # the original path as found in the document
         self.filename = filename
-        # the absolute path, calculated from filename
-        self.path = path
-        # Same as in SourceDescriptor.
-        self.font = font
-        self.name = name
-        self.location: Optional[Union[Dict[str, Union[float, Tuple[float, float]]], str]] = location
-        """(Changed in version 5) Location can be either as in version 4 a
-        dictionary that maps axis names to (potentially anisotropic) locations,
-        or, new in version 5, a string that matches the name of a LocationLabel.
-        In that second case the instance should have the same location as the
-        LocationLabel.
+        """string. Relative path to the instance file, **as it is
+        in the document**. The file may or may not exist.
 
-        The type of this property changes but as long as the library is used
-        to open a DSv4, the property will never be a string. Only when opening
-        a DSv5 will it start being a string.
+        MutatorMath + VarLib.
+        """
+        self.path = path
+        """string. Absolute path to the source file, calculated from
+        the document path and the string in the filename attr. The file may
+        or may not exist.
+
+        MutatorMath.
+        """
+        self.font = font
+        """Same as :attr:`SourceDescriptor.font`
+
+        .. seealso:: :attr:`SourceDescriptor.font`
+        """
+        self.name = name
+        """string. Unique identifier name of the instance, used to
+        identify it if it needs to be referenced from elsewhere in the
+        document.
+        """
+        self.location: Optional[Union[Dict[str, Union[float, Tuple[float, float]]], str]] = location
+        """dict or string. Axis values for this instance.
+
+        MutatorMath + Varlib.
+
+        .. versionchanged:: 5.0
+            Location can be either as in version 4 a dictionary that maps axis
+            names to (potentially anisotropic) locations, or, new in version 5,
+            a string that matches the name of a
+            :class:`LocationLabel <LocationLabelDescriptor>`.  In that second
+            case the instance should have the same location as the
+            LocationLabel.
+
+            The type of this property changes but as long as the library is used
+            to open a DSv4, the property will never be a string. Only when
+            opening a DSv5 will it start being a string.
         """
         self.familyName = familyName
+        """string. Family name of this instance.
+
+        MutatorMath + Varlib.
+        """
         self.styleName = styleName
+        """string. Style name of this source.
+
+        MutatorMath + Varlib.
+        """
         self.postScriptFontName = postScriptFontName
+        """string. Postscript fontname for this instance.
+
+        MutatorMath.
+        """
         self.styleMapFamilyName = styleMapFamilyName
+        """string. StyleMap familyname for this instance.
+
+        MutatorMath.
+        """
         self.styleMapStyleName = styleMapStyleName
+        """string. StyleMap stylename for this instance.
+
+        MutatorMath.
+        """
         self.localisedFamilyName = localisedFamilyName or {}
+        """dict. A dictionary of localised family name
+        strings, keyed by language code.
+        """
         self.localisedStyleName = localisedStyleName or {}
+        """dict. A dictionary of localised stylename
+        strings, keyed by language code.
+        """
         self.localisedStyleMapFamilyName = localisedStyleMapFamilyName or {}
+        """A dictionary of localised style map
+        familyname strings, keyed by language code.
+        """
         self.localisedStyleMapStyleName = localisedStyleMapStyleName or {}
+        """A dictionary of localised style map
+        stylename strings, keyed by language code.
+        """
         self.glyphs = glyphs or {}
-        """(Deprecated in version 5)"""
+        """dict for special master definitions for glyphs. If glyphs
+        need special masters (to record the results of executed rules for
+        example).
+
+        MutatorMath.
+
+        .. deprecated:: 5.0
+            Use rules or sparse sources instead.
+        """
         self.kerning = kerning
-        """(Deprecated in version 5)"""
+        """ bool. Indicates if this instance needs its kerning
+        calculated.
+
+        MutatorMath.
+
+        .. deprecated:: 5.0
+        """
         self.info = info
-        """(Deprecated in version 5)"""
+        """bool. Indicated if this instance needs the interpolating
+        font.info calculated.
+
+        .. deprecated:: 5.0
+        """
 
         self.lib = lib or {}
         """Custom data associated with this instance."""
 
-    path = posixpath_property("_path")
-    filename = posixpath_property("_filename")
-
     def setStyleName(self, styleName, languageCode="en"):
+        """These methods give easier access to the localised names."""
         self.localisedStyleName[languageCode] = tostr(styleName)
 
     def getStyleName(self, languageCode="en"):
@@ -367,8 +544,21 @@ def tagForAxisName(name):
 
 
 class AxisDescriptor(SimpleDescriptor):
-    """ Simple container for the axis data
-        Add more localisations?
+    """ Simple container for the axis data.
+
+    Add more localisations?
+
+    .. code:: python
+
+        a1 = AxisDescriptor()
+        a1.minimum = 1
+        a1.maximum = 1000
+        a1.default = 400
+        a1.name = "weight"
+        a1.tag = "wght"
+        a1.labelNames[u'fa-IR'] = u"قطر"
+        a1.labelNames[u'en'] = u"Wéíght"
+        a1.map = [(1.0, 10.0), (400.0, 66.0), (1000.0, 990.0)]
     """
     flavor = "axis"
     _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map', 'axisOrdering', 'axisLabels']
@@ -389,17 +579,62 @@ class AxisDescriptor(SimpleDescriptor):
     ):
         # opentype tag for this axis
         self.tag = tag
+        """string. Four letter tag for this axis. Some might be
+        registered at the `OpenType
+        specification <https://www.microsoft.com/typography/otspec/fvar.htm#VAT>`__.
+        Privately-defined axis tags must begin with an uppercase letter and
+        use only uppercase letters or digits.
+        """
         # name of the axis used in locations
         self.name = name
+        """string. Name of the axis as it is used in the location dicts.
+
+        MutatorMath + Varlib.
+        """
         # names for UI purposes, if this is not a standard axis,
         self.labelNames = labelNames or {}
+        """dict. When defining a non-registered axis, it will be
+        necessary to define user-facing readable names for the axis. Keyed by
+        xml:lang code. Values are required to be ``unicode`` strings, even if
+        they only contain ASCII characters.
+        """
         self.minimum = minimum
+        """number. The minimum value for this axis in user space.
+
+        MutatorMath + Varlib.
+        """
         self.maximum = maximum
+        """number. The maximum value for this axis in user space.
+
+        MutatorMath + Varlib.
+        """
         self.default = default
+        """number. The default value for this axis, i.e. when a new location is
+        created, this is the value this axis will get in user space.
+
+        MutatorMath + Varlib.
+        """
         self.hidden = hidden
+        """bool. Whether this axis should be hidden in user interfaces.
+        """
         self.map = map or []
+        """list of input / output values that can describe a warp of user space
+        to design space coordinates. If no map values are present, it is assumed
+        user space is the same as design space, as in [(minimum, minimum),
+        (maximum, maximum)].
+
+        Varlib.
+        """
         self.axisOrdering = axisOrdering
+        """STAT table field
+
+        .. versionadded:: 5.0
+        """
         self.axisLabels: List[AxisLabelDescriptor] = axisLabels or []
+        """TODO
+
+        .. versionadded:: 5.0
+        """
 
     def serialize(self):
         # output to a dict, used in testing
@@ -435,6 +670,8 @@ class DiscreteAxisDescriptor(SimpleDescriptor):
     """Container for discrete axis data.
 
     Use this for axes that do not interpolate.
+
+    .. versionadded:: 5.0
     """
 
     flavor = "axis"
@@ -1449,9 +1686,40 @@ class BaseDocReader(LogMixin):
 
 
 class DesignSpaceDocument(LogMixin, AsDictMixin):
-    """ Read, write data from the designspace file"""
+    """The DesignSpaceDocument object can read and write ``.designspace`` data.
+    It imports the axes, sources, variable fonts and instances to very basic
+    **descriptor** objects that store the data in attributes. Data is added to
+    the document by creating such descriptor objects, filling them with data
+    and then adding them to the document. This makes it easy to integrate this
+    object in different contexts.
+
+    The **DesignSpaceDocument** object can be subclassed to work with
+    different objects, as long as they have the same attributes. Reader and
+    Writer objects can be subclassed as well.
+
+    **Note:** Python attribute names are usually camelCased, the
+    corresponding `XML <#document-xml-structure>`_ attributes are usually
+    all lowercase.
+
+    .. code:: python
+
+        from fontTools.designspaceLib import DesignSpaceDocument
+        doc = DesignSpaceDocument.fromfile("some/path/to/my.designspace")
+        doc.axes
+        doc.locationLabels
+        doc.rules
+        doc.sources
+        doc.variableFonts
+        doc.instances
+        doc.lib
+
+    """
+
     def __init__(self, readerClass=None, writerClass=None):
         self.path = None
+        """String, optional. When the document is read from the disk, this is
+        the full path that was given to :meth:`read` or :meth:`fromfile`.
+        """
         self.filename = None
         """String, optional. When the document is read from the disk, this is
         its original file name, i.e. the last part of its path.
@@ -1461,18 +1729,44 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         possible "good" filename, in case one wants to save the file somewhere.
         """
 
-        self.formatVersion = None
-        self.sources = []
-        self.instances = []
-        self.axes = []
-        self.locationLabels = []
-        self.variableFonts: List[VariableFontDescriptor] = []
-        self.rules = []
-        self.rulesProcessingLast = False
-        self.default = None         # name of the default master
+        self.formatVersion: Optional[str] = None
+        """Format version for this document, as a string. E.g. "4.0" """
 
-        self.lib = {}
-        """Custom data associated with the whole document."""
+        self.sources: List[SourceDescriptor] = []
+        self.instances: List[InstanceDescriptor] = []
+        self.axes: List[AxisDescriptor] = []
+        self.locationLabels: List[LocationLabelDescriptor] = []
+        """.. versionadded:: 5.0"""
+
+        self.variableFonts: List[VariableFontDescriptor] = []
+        """.. versionadded:: 5.0"""
+
+        self.rules: List[RuleDescriptor] = []
+        self.rulesProcessingLast: bool = False
+        """This flag indicates whether the substitution rules should be applied
+        before or after other glyph substitution features.
+
+        - False: before
+        - True: after.
+
+        Default is False. For new projects, you probably want True. See
+        the following issues for more information:
+        `#1371 <https://github.com/fonttools/fonttools/issues/1371#issuecomment-590214572>`_
+        `#2050 <https://github.com/fonttools/fonttools/issues/2050#issuecomment-678691020>`_
+        """
+
+        self.default: Optional[str] = None
+        """Name of the default master.
+
+        This attribute is updated by the :meth:`findDefault`
+        """
+
+        self.lib: Dict = {}
+        """User defined, custom data associated with the whole document.
+
+        Use reverse-DNS notation to identify your own data.
+        Respect the data stored by others.
+        """
 
         #
         if readerClass is not None:
@@ -1486,6 +1780,9 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
     @classmethod
     def fromfile(cls, path, readerClass=None, writerClass=None):
+        """Read a designspace file from ``path`` and return a new instance of
+        :class:.
+        """
         self = cls(readerClass=readerClass, writerClass=writerClass)
         self.read(path)
         return self
@@ -1500,6 +1797,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         return self
 
     def tostring(self, encoding=None):
+        """Returns the designspace as a string. Default encoding ``utf-8``."""
         if encoding is str or (
             encoding is not None and encoding.lower() == "unicode"
         ):
@@ -1516,6 +1814,9 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         return f.getvalue()
 
     def read(self, path):
+        """Read a designspace file from ``path`` and populates the fields of
+        ``self`` with the data.
+        """
         if hasattr(path, "__fspath__"):  # support os.PathLike objects
             path = path.__fspath__()
         self.path = path
@@ -1526,6 +1827,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
             self.findDefault()
 
     def write(self, path):
+        """Write this designspace to ``path``."""
         if hasattr(path, "__fspath__"):  # support os.PathLike objects
             path = path.__fspath__()
         self.path = path
@@ -1540,8 +1842,10 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
     def updatePaths(self):
         """
-            Right before we save we need to identify and respond to the following situations:
-            In each descriptor, we have to do the right thing for the filename attribute.
+        Right before we save we need to identify and respond to the following situations:
+        In each descriptor, we have to do the right thing for the filename attribute.
+
+        ::
 
             case 1.
             descriptor.filename == None
@@ -1577,8 +1881,6 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
             there is a conflict between the given filename, and the path.
             So we know where the file is relative to the document.
             Can't guess why they're different, we just choose for path to be correct and update filename.
-
-
         """
         assert self.path is not None
         for descriptor in self.sources + self.instances:
@@ -1586,40 +1888,90 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
                 # case 3 and 4: filename gets updated and relativized
                 descriptor.filename = self._posixRelativePath(descriptor.path)
 
-    def addSource(self, sourceDescriptor):
+    def addSource(self, sourceDescriptor: SourceDescriptor):
+        """Add the given ``sourceDescriptor`` to ``doc.sources``."""
         self.sources.append(sourceDescriptor)
 
     def addSourceDescriptor(self, **kwargs):
+        """Instanciate a new :class:`SourceDescriptor` using the given
+        ``kwargs`` and add it to ``doc.sources``.
+        """
         source = self.writerClass.sourceDescriptorClass(**kwargs)
         self.addSource(source)
         return source
 
-    def addInstance(self, instanceDescriptor):
+    def addInstance(self, instanceDescriptor: InstanceDescriptor):
+        """Add the given ``instanceDescriptor`` to :attr:`instances`."""
         self.instances.append(instanceDescriptor)
 
     def addInstanceDescriptor(self, **kwargs):
+        """Instanciate a new :class:`InstanceDescriptor` using the given
+        ``kwargs`` and add it to :attr:`instances`.
+        """
         instance = self.writerClass.instanceDescriptorClass(**kwargs)
         self.addInstance(instance)
         return instance
 
-    def addAxis(self, axisDescriptor):
+    def addAxis(self, axisDescriptor: AxisDescriptor):
+        """Add the given ``axisDescriptor`` to :attr:`axes`."""
         self.axes.append(axisDescriptor)
 
     def addAxisDescriptor(self, **kwargs):
+        """Instanciate a new :class:`AxisDescriptor` using the given
+        ``kwargs`` and add it to :attr:`axes`.
+        """
         axis = self.writerClass.axisDescriptorClass(**kwargs)
         self.addAxis(axis)
         return axis
 
-    def addRule(self, ruleDescriptor):
+    def addRule(self, ruleDescriptor: RuleDescriptor):
+        """Add the given ``ruleDescriptor`` to :attr:`rules`."""
         self.rules.append(ruleDescriptor)
 
     def addRuleDescriptor(self, **kwargs):
+        """Instanciate a new :class:`RuleDescriptor` using the given
+        ``kwargs`` and add it to :attr:`rules`.
+        """
         rule = self.writerClass.ruleDescriptorClass(**kwargs)
         self.addRule(rule)
         return rule
 
+    def addVariableFont(self, variableFontDescriptor: VariableFontDescriptor):
+        """Add the given ``variableFontDescriptor`` to :attr:`variableFonts`.
+
+        .. versionadded: 5.0
+        """
+        self.variableFonts.append(variableFontDescriptor)
+
+    def addVariableFontDescriptor(self, **kwargs):
+        """Instanciate a new :class:`VariableFontDescriptor` using the given
+        ``kwargs`` and add it to :attr:`variableFonts`.
+
+        .. versionadded: 5.0
+        """
+        variableFont = self.writerClass.variablefontDescriptorClass(**kwargs)
+        self.addVariableFont(variableFont)
+        return variableFont
+
+    def addLocationLabel(self, locationLabelDescriptor: LocationLabelDescriptor):
+        """Add the given ``locationLabelDescriptor`` to :attr:`locationLabels`.
+
+        .. versionadded: 5.0
+        """
+        self.locationLabels.append(locationLabelDescriptor)
+
+    def addLocationLabelDescriptor(self, **kwargs):
+        """Instanciate a new :class:`LocationLabelDescriptor` using the given
+        ``kwargs`` and add it to :attr:`locationLabels`.
+
+        .. versionadded: 5.0
+        """
+        locationLabel = self.writerClass.locationLabelDescriptorClass(**kwargs)
+        self.addLocationLabel(locationLabel)
+        return locationLabel
+
     def newDefaultLocation(self):
-        """Return default location in design space."""
+        """Return a dict with the default location in design space coordinates."""
         # Without OrderedDict, output XML would be non-deterministic.
         # https://github.com/LettError/designSpaceDocument/issues/10
         loc = collections.OrderedDict()
@@ -1629,14 +1981,19 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
             )
         return loc
 
-    def labelForUserLocation(self, user_location: Location) -> Optional[LocationLabelDescriptor]:
+    def labelForUserLocation(self, userLocation: Location) -> Optional[LocationLabelDescriptor]:
+        """Return the :class:`LocationLabel` that matches the given
+        ``userLocation``, or ``None`` if no such label exists.
+        """
         return next(
-            (label for label in self.locationLabels if label.location == user_location), None
+            (label for label in self.locationLabels if label.location == userLocation), None
         )
 
     def updateFilenameFromPath(self, masters=True, instances=True, force=False):
-        # set a descriptor filename attr from the path and this document path
-        # if the filename attribute is not None: skip it.
+        """Set a descriptor filename attr from the path and this document path.
+
+        If the filename attribute is not None: skip it.
+        """
         if masters:
             for descriptor in self.sources:
                 if descriptor.filename is not None and not force:
@@ -1651,24 +2008,26 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
                     descriptor.filename = self._posixRelativePath(descriptor.path)
 
     def newAxisDescriptor(self):
-        # Ask the writer class to make us a new axisDescriptor
+        """Ask the writer class to make us a new axisDescriptor."""
         return self.writerClass.getAxisDecriptor()
 
     def newSourceDescriptor(self):
-        # Ask the writer class to make us a new sourceDescriptor
+        """Ask the writer class to make us a new sourceDescriptor."""
         return self.writerClass.getSourceDescriptor()
 
     def newInstanceDescriptor(self):
-        # Ask the writer class to make us a new instanceDescriptor
+        """Ask the writer class to make us a new instanceDescriptor."""
         return self.writerClass.getInstanceDescriptor()
 
     def getAxisOrder(self):
+        """Return a list of axis names, in the same order as defined in the document."""
         names = []
         for axisDescriptor in self.axes:
             names.append(axisDescriptor.name)
         return names
 
     def getAxis(self, name):
+        """Return the axis with the given ``name``, or ``None`` if no such axis exists."""
         for axisDescriptor in self.axes:
             if axisDescriptor.name == name:
                 return axisDescriptor
@@ -1679,6 +2038,8 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
         The default location is the set of all `default` values in user space
         of all axes.
+
+        This function updates the document's :attr:`default` value.
         """
         self.default = None
 
@@ -1694,6 +2055,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         return None
 
     def normalizeLocation(self, location):
+        """Return a dict with normalized axis values."""
         from fontTools.varLib.models import normalizeValue
 
         new = {}
@@ -1712,9 +2074,12 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         return new
 
     def normalize(self):
-        # Normalise the geometry of this designspace:
-        #   scale all the locations of all masters and instances to the -1 - 0 - 1 value.
-        #   we need the axis data to do the scaling, so we do those last.
+        """
+        Normalise the geometry of this designspace:
+
+        - scale all the locations of all masters and instances to the -1 - 0 - 1 value.
+        - we need the axis data to do the scaling, so we do those last.
+        """
         # masters
         for item in self.sources:
             item.location = self.normalizeLocation(item.location)
