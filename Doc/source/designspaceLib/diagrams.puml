@@ -6,10 +6,6 @@ title Designspace v5 Class Diagram \n\n
 
 skinparam class {
 BackgroundColor<<New>> PaleGreen
-' TODO
-' AttributeFontColor<<New>> red
-' AttributeFontStyle<<New>> bold
-
 }
 
 class Designspace {
@@ -27,7 +23,6 @@ abstract class AbstractAxis {
 + hidden: bool
 + map: List[Tuple[float, float]]
 + <color:green><b><<New>> axisOrdering: int
-' + <color:green><b><<New>> labels = labels or []
 }
 Designspace *-- "*" AbstractAxis: axes >
 note right of AbstractAxis::axisOrdering
@@ -78,7 +73,7 @@ class AxisLabel <<New>> {
 + linkedUserValue: Optional[float]
 + labelNames: Dict[str, str]
 
-getFormat(): 1 | 2 | 3
++ getFormat(): 1 | 2 | 3
 }
 note right of AxisLabel
 Label for a
@@ -115,7 +110,8 @@ class Source {
 + filename: str
 + path: str
 + layerName: Optional[str]
-+ location: Location
++ <color:brown><s><<Deprecated>> location: Location
++ <color:green><b><<New>> designLocation: AnisotropicLocation
 ....
 + font: Optional[Font]
 ....
@@ -131,6 +127,7 @@ class Source {
 + <color:orange><b><<Changed>> muteInfo: bool
 + <color:orange><b><<Changed>> mutedGlyphNames: List[str]
 ----
++ getFullDesignLocation(doc)
 }
 Designspace *-- "*" Source: sources >
 note right of Source::copyLib
@@ -150,9 +147,27 @@ definitions of sparse sources.
 (to be discussed)
 end note
 
+note as NLocSource
+The location of
+sources can still only
+be defined in design
+coordinates, and now
+also by relying on
+axis defaults.
+
+To build the final,
+"full" location, a
+helper method is
+provided, that uses
+axis defaults and
+axis mappings to
+fill in the blanks.
+end note
+NLocSource . Source::designLocation
+NLocSource . Source::getFullDesignLocation
+
 class VariableFont <<New>> {
 + filename: str
-' + axisSubsets: List[AbstractAxisSubset]
 + lib: Dict
 }
 Designspace *--- "*" VariableFont: <<New>> \n variableFonts >
@@ -202,7 +217,10 @@ AbstractAxisSubset <|-- ValueAxisSubset
 class Instance {
 + filename: str
 + path: str
-+ <color:orange><b><<Changed>> location: Union[Location, str]
++ <color:brown><s><<Deprecated>> location: Location
++ <color:green><b><<New>> locationLabel: str
++ <color:green><b><<New>> designLocation: AnisotropicLocation
++ <color:green><b><<New>> userLocation: SimpleLocation
 ....
 + font: Optional[Font]
 ....
@@ -223,9 +241,13 @@ class Instance {
 ....
 + lib: Dict
 ----
++ clearLocation()
++ getLocationLabelDescriptor(doc)
++ getFullDesignLocation(doc)
++ getFullUserLocation(doc)
 }
 Designspace *-- "*" Instance: instances >
-note right of Instance::location
+note right of Instance::locationLabel
 The location can now alternatively
 be a string = name of a LocationLabel
 (STAT format 4). The instance then
@@ -249,5 +271,24 @@ All instances get kerning and info
 nowadays.
 (are we missing something here?)
 end note
+
+note as NLocInstance
+The location of instances
+can now be defined using
+either:
+- a STAT LocationLabel
+- design coordinates
+- user coordinates.
+- relying on axis defaults
+
+To build the final, "full"
+location, a few helper
+methods are provided,
+that aggregate data from
+these sources and apply
+the axis mappings.
+end note
+NLocInstance . Instance::designLocation
+NLocInstance . Instance::getFullDesignLocation
 
 @enduml

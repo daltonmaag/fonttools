@@ -203,7 +203,7 @@ STAT Format  uservalue  userminimum  usermaximum  linkeduservalue
 
 
 ``<labelname>`` element (axis STAT label)
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 User-facing translations of this STAT label. Keyed by ``xml:lang`` code.
 
@@ -326,6 +326,8 @@ User-facing translations of this STAT label. Keyed by ``xml:lang`` code.
 
 Same attribute and value as :ref:`the axis' \<labelname\> element <labelname>`.
 
+
+.. _rules-element:
 
 ===================
 ``<rules>`` element
@@ -626,15 +628,48 @@ The ``<variable-fonts>`` element contains one or more ``<variable-font>`` elemen
 ``<variable-font>`` element
 ===========================
 
-TODO
+- Child of ``<variable-fonts>``
+- Describe a variable font that can be built from an interpolating subset of
+  the design space.
+- The document may have zero to many variable fonts.
+
+  - If no variable fonts are defined, and all the axes are continuous, then we
+    assume, as in version 4 of the format, that the whole document describes
+    one variable font covering the whole space.
+
+- Each variable font covers a subset of the whole designspace, defined using
+  ``<axis-subset>`` elements.
+- Each variable font can have custom associated data using a ``<lib>`` element.
 
 .. versionadded:: 5.0
+
+.. rubric:: Attributes
+
+- ``filename``: string, required. Each variable font has a filename, that can be
+  used by build tools to name the fonts that gets built from this element. The
+  filename may include an extension (e.g. `.ttf`) and the build tools can replace
+  that extension with another (e.g. `.otf` or `.woff2`) as needed.
+
+.. rubric:: Example
+
+.. code:: xml
+
+    <variable-font filename="MyFontVF_Italic.ttf">
+      <axis-subsets>
+        <axis-subset name="Weight"/>
+        <axis-subset name="Italic" uservalue="1"/>
+      </axis-subsets>
+    </variable-font>
 
 
 ``<axis-subsets>`` element
 --------------------------
 
-TODO
+- Child of ``<variable-font>``
+- Defines the portion of the design space that this variable font covers.
+- Each axis that you want to include in the VF needs to be mentioned here.
+- Not mentioning an axis is equivalent to slicing the space at the default
+  value of that axis.
 
 .. versionadded:: 5.0
 
@@ -642,9 +677,64 @@ TODO
 ``<axis-subset>`` element
 .........................
 
-TODO
+- Child of ``<axis-subsets>``
+- Defines the subset of one axis, by ``name=""``, that the variable font covers.
+- If this axis is continuous, the VF can either cover:
+
+  1. the whole axis
+
+     .. code:: xml
+
+        <axis-subset name="Weight"/>
+
+  2. a sub-range of the full axis
+
+     .. code:: xml
+
+        <axis-subset name="Weight" userminimum="400" usermaximum="500" userdefault="400"/>
+
+  3. a specific value along that axis; then the axis is not functional in the VF
+     but the design space is sliced at the given location.
+
+     .. code:: xml
+
+        <!-- Make a bold VF -->
+        <axis-subset name="Weight" uservalue="700"/>
+
+- If this axis is discrete, then only the third option above is possible:
+  give one value along the axis.
+
+  .. code:: xml
+
+      <!-- Make an italic VF -->
+      <axis-subset name="Italic" uservalue="1"/>
+
 
 .. versionadded:: 5.0
+
+.. rubric:: Attributes
+
+- ``name``: required, string. Name of the axis to subset.
+
+When defining a range:
+
+- ``userminimum``: optional, number.
+  Lower end of the range, in user coordinates.
+  If not mentioned, assume the axis's minimum.
+- ``usermaximum``: optional, number.
+  Upper end of the range, in user coordinates.
+  If not mentioned, assume the axis's maximum.
+- ``userdefault``: optional, number.
+  New default value of subset axis, in user coordinates.
+  If not mentioned, assume the axis's default.
+  If the axis's default falls outside of the subset range, then the new default
+  will be the extremum that is closest to the full axis's default.
+
+When defining a single value:
+
+- ``uservalue``: required, number.
+  Single value, in user coordinates, at which to snapshot the design space
+  while building this VF.
 
 
 ``<lib>`` element (variable font)
@@ -655,6 +745,18 @@ Arbitrary data about this variable font.
 .. versionadded:: 5.0
 
 .. seealso:: :ref:`lib`
+
+
+Instances included in the variable font
+---------------------------------------
+
+.. figure:: v5_variable_fonts_vs_instances.png
+   :width: 650px
+   :alt: A designspace version 5 lists many instances and variable fonts. Each
+         variable font gets in its fvar table whichever instances fall within
+         the bounds of the variable font's subset axes.
+
+   Illustration of instances included in a variable font.
 
 
 =======================

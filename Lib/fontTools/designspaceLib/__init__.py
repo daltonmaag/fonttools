@@ -334,9 +334,9 @@ class RuleDescriptor(SimpleDescriptor):
 
         -  Each substitution is stored as tuples of glyphnames, e.g. ("a", "a.alt").
         -  Note: By default, rules are applied first, before other text
-        shaping/OpenType layout, as they are part of the
-        `Required Variation Alternates OpenType feature <https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#-tag-rvrn>`_.
-        See `5.0 rules element`_ § Attributes.
+           shaping/OpenType layout, as they are part of the
+           `Required Variation Alternates OpenType feature <https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#-tag-rvrn>`_.
+           See ref:`rules-element` § Attributes.
         """
 
 
@@ -703,7 +703,7 @@ class InstanceDescriptor(SimpleDescriptor):
           axis. No anisotropy.
         - ``axis.default``: default axis value. No anisotropy.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         label = self.getLocationLabelDescriptor(doc)
         if label is not None:
@@ -968,9 +968,9 @@ class DiscreteAxisDescriptor(AbstractAxisDescriptor):
         However, this default value is less important than in continuous axes:
 
         -  it doesn't define the "neutral" version of outlines from which
-        deltas would apply, as this axis does not interpolate.
+           deltas would apply, as this axis does not interpolate.
         -  it doesn't provide the reference glyph set for the designspace, as
-        fonts at each value can have different glyph sets.
+           fonts at each value can have different glyph sets.
         """
         self.values: List[float] = values or []
         """List of possible values for this axis. Contrary to continuous axes,
@@ -1133,7 +1133,7 @@ class LocationLabelDescriptor(SimpleDescriptor):
         """Get the complete user location of this label, by combining data
         from the explicit user location and default axis values.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         return {
             axis.name: self.userLocation.get(axis.name, axis.default)
@@ -1147,10 +1147,10 @@ class VariableFontDescriptor(SimpleDescriptor):
     Use-cases:
 
     - From a single DesignSpace with discrete axes, define 1 variable font
-    per value on the discrete axes. Before version 5, you would have needed
-    1 DesignSpace per such variable font, and a lot of data duplication.
+      per value on the discrete axes. Before version 5, you would have needed
+      1 DesignSpace per such variable font, and a lot of data duplication.
     - From a big variable font with many axes, define subsets of that variable
-    font that only include some axes and freeze other axes at a given location.
+      font that only include some axes and freeze other axes at a given location.
 
     .. versionadded:: 5.0
     """
@@ -1203,8 +1203,6 @@ class RangeAxisSubsetDescriptor(SimpleDescriptor):
         If not specified, assume the same maximum value as the full axis.
         (default = ``math.inf``)
         """
-
-        # TODO reject if range not wide (minimum==maximum) and tell the user to specify value=... instead
 
 
 class ValueAxisSubsetDescriptor(SimpleDescriptor):
@@ -2634,7 +2632,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
         When the input has anisotropic locations, only the xvalue is used.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         return {
             axis.name: (

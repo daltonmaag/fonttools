@@ -28,6 +28,8 @@ DesignSpaceDocument
    :member-order: bysource
 
 
+.. _axis-descriptor-object:
+
 AxisDescriptor
 ==============
 
@@ -58,7 +60,7 @@ AxisLabelDescriptor
 
 
 LocationLabelDescriptor
-===================
+=======================
 
 .. autoclass:: fontTools.designspaceLib::LocationLabelDescriptor
    :members:
@@ -82,6 +84,8 @@ Evaluating rules
 .. autofunction:: fontTools.designspaceLib::evaluateConditions
 .. autofunction:: fontTools.designspaceLib::processRules
 
+
+.. _source-descriptor-object:
 
 SourceDescriptor
 ================
@@ -118,6 +122,8 @@ ValueAxisSubsetDescriptor
    :undoc-members:
    :member-order: bysource
 
+
+.. _instance-descriptor-object:
 
 InstanceDescriptor
 ==================
