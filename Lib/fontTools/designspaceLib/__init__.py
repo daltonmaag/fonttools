@@ -260,9 +260,18 @@ class SourceDescriptor(SimpleDescriptor):
 
 
 class RuleDescriptor(SimpleDescriptor):
-    """Represents the rule descriptor element
+    """Represents the rule descriptor element: a set of glyph substitutions to
+    trigger conditionally in some parts of the designspace.
 
-    .. code-block:: xml
+    .. code:: python
+
+        r1 = RuleDescriptor()
+        r1.name = "unique.rule.name"
+        r1.conditionSets.append([dict(name="weight", minimum=-10, maximum=10), dict(...)])
+        r1.conditionSets.append([dict(...), dict(...)])
+        r1.subs.append(("a", "a.alt"))
+
+    .. code:: xml
 
         <!-- optional: list of substitution rules -->
         <rules>
@@ -281,21 +290,36 @@ class RuleDescriptor(SimpleDescriptor):
 
     def __init__(self, *, name=None, conditionSets=None, subs=None):
         self.name = name
+        """string. Unique name for this rule. Can be used to reference this rule data."""
         # list of lists of dict(name='aaaa', minimum=0, maximum=1000)
         self.conditionSets = conditionSets or []
+        """a list of conditionsets.
+
+        -  Each conditionset is a list of conditions.
+        -  Each condition is a dict with ``name``, ``minimum`` and ``maximum`` keys.
+        """
         # list of substitutions stored as tuples of glyphnames ("a", "a.alt")
         self.subs = subs or []
+        """list of substitutions.
+
+        -  Each substitution is stored as tuples of glyphnames, e.g. ("a", "a.alt").
+        -  Note: By default, rules are applied first, before other text
+        shaping/OpenType layout, as they are part of the
+        `Required Variation Alternates OpenType feature <https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#-tag-rvrn>`_.
+        See `5.0 rules element`_ § Attributes.
+        """
 
 
 def evaluateRule(rule, location):
-    """ Return True if any of the rule's conditionsets matches the given location."""
+    """Return True if any of the rule's conditionsets matches the given location."""
     return any(evaluateConditions(c, location) for c in rule.conditionSets)
 
 
 def evaluateConditions(conditions, location):
-    """ Return True if all the conditions matches the given location.
-        If a condition has no minimum, check for < maximum.
-        If a condition has no maximum, check for > minimum.
+    """Return True if all the conditions matches the given location.
+
+    - If a condition has no minimum, check for < maximum.
+    - If a condition has no maximum, check for > minimum.
     """
     for cd in conditions:
         value = location[cd['name']]
@@ -311,8 +335,11 @@ def evaluateConditions(conditions, location):
 
 
 def processRules(rules, location, glyphNames):
-    """ Apply these rules at this location to these glyphnames
-        - rule order matters
+    """Apply these rules at this location to these glyphnames.
+
+    Return a new list of glyphNames with substitutions applied.
+
+    - rule order matters
     """
     newNames = []
     for rule in rules:
@@ -397,7 +424,7 @@ class InstanceDescriptor(SimpleDescriptor):
         MutatorMath + VarLib.
         """
         self.path = path
-        """string. Absolute path to the source file, calculated from
+        """string. Absolute path to the instance file, calculated from
         the document path and the string in the filename attr. The file may
         or may not exist.
 
@@ -443,17 +470,17 @@ class InstanceDescriptor(SimpleDescriptor):
         self.postScriptFontName = postScriptFontName
         """string. Postscript fontname for this instance.
 
-        MutatorMath.
+        MutatorMath + Varlib.
         """
         self.styleMapFamilyName = styleMapFamilyName
         """string. StyleMap familyname for this instance.
 
-        MutatorMath.
+        MutatorMath + Varlib.
         """
         self.styleMapStyleName = styleMapStyleName
         """string. StyleMap stylename for this instance.
 
-        MutatorMath.
+        MutatorMath + Varlib.
         """
         self.localisedFamilyName = localisedFamilyName or {}
         """dict. A dictionary of localised family name
@@ -543,25 +570,8 @@ def tagForAxisName(name):
     return tag, dict(en=name)
 
 
-class AxisDescriptor(SimpleDescriptor):
-    """ Simple container for the axis data.
-
-    Add more localisations?
-
-    .. code:: python
-
-        a1 = AxisDescriptor()
-        a1.minimum = 1
-        a1.maximum = 1000
-        a1.default = 400
-        a1.name = "weight"
-        a1.tag = "wght"
-        a1.labelNames[u'fa-IR'] = u"قطر"
-        a1.labelNames[u'en'] = u"Wéíght"
-        a1.map = [(1.0, 10.0), (400.0, 66.0), (1000.0, 990.0)]
-    """
+class AbstractAxisDescriptor(SimpleDescriptor):
     flavor = "axis"
-    _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map', 'axisOrdering', 'axisLabels']
 
     def __init__(
         self,
@@ -569,9 +579,6 @@ class AxisDescriptor(SimpleDescriptor):
         tag=None,
         name=None,
         labelNames=None,
-        minimum=None,
-        default=None,
-        maximum=None,
         hidden=False,
         map=None,
         axisOrdering=None,
@@ -598,6 +605,80 @@ class AxisDescriptor(SimpleDescriptor):
         xml:lang code. Values are required to be ``unicode`` strings, even if
         they only contain ASCII characters.
         """
+        self.hidden = hidden
+        """bool. Whether this axis should be hidden in user interfaces.
+        """
+        self.map = map or []
+        """list of input / output values that can describe a warp of user space
+        to design space coordinates. If no map values are present, it is assumed
+        user space is the same as design space, as in [(minimum, minimum),
+        (maximum, maximum)].
+
+        Varlib.
+        """
+        self.axisOrdering = axisOrdering
+        """STAT table field ``axisOrdering``.
+
+        See: `OTSpec STAT Axis Record <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#axis-records>`_
+
+        .. versionadded:: 5.0
+        """
+        self.axisLabels: List[AxisLabelDescriptor] = axisLabels or []
+        """STAT table entries for Axis Value Tables format 1, 2, 3.
+
+        See: `OTSpec STAT Axis Value Tables <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#axis-value-tables>`_
+
+        .. versionadded:: 5.0
+        """
+
+
+class AxisDescriptor(AbstractAxisDescriptor):
+    """ Simple container for the axis data.
+
+    Add more localisations?
+
+    .. code:: python
+
+        a1 = AxisDescriptor()
+        a1.minimum = 1
+        a1.maximum = 1000
+        a1.default = 400
+        a1.name = "weight"
+        a1.tag = "wght"
+        a1.labelNames['fa-IR'] = "قطر"
+        a1.labelNames['en'] = "Wéíght"
+        a1.map = [(1.0, 10.0), (400.0, 66.0), (1000.0, 990.0)]
+        a1.axisOrdering = 1
+        a1.axisLabels = [
+            AxisLabelDescriptor(name="Regular", userValue=400, elidable=True)
+        ]
+        doc.addAxis(a1)
+    """
+    _attrs = ['tag', 'name', 'maximum', 'minimum', 'default', 'map', 'axisOrdering', 'axisLabels']
+
+    def __init__(
+        self,
+        *,
+        tag=None,
+        name=None,
+        labelNames=None,
+        minimum=None,
+        default=None,
+        maximum=None,
+        hidden=False,
+        map=None,
+        axisOrdering=None,
+        axisLabels=None,
+    ):
+        super().__init__(
+            tag=tag,
+            name=name,
+            labelNames=labelNames,
+            hidden=hidden,
+            map=map,
+            axisOrdering=axisOrdering,
+            axisLabels=axisLabels,
+        )
         self.minimum = minimum
         """number. The minimum value for this axis in user space.
 
@@ -613,27 +694,6 @@ class AxisDescriptor(SimpleDescriptor):
         created, this is the value this axis will get in user space.
 
         MutatorMath + Varlib.
-        """
-        self.hidden = hidden
-        """bool. Whether this axis should be hidden in user interfaces.
-        """
-        self.map = map or []
-        """list of input / output values that can describe a warp of user space
-        to design space coordinates. If no map values are present, it is assumed
-        user space is the same as design space, as in [(minimum, minimum),
-        (maximum, maximum)].
-
-        Varlib.
-        """
-        self.axisOrdering = axisOrdering
-        """STAT table field
-
-        .. versionadded:: 5.0
-        """
-        self.axisLabels: List[AxisLabelDescriptor] = axisLabels or []
-        """TODO
-
-        .. versionadded:: 5.0
         """
 
     def serialize(self):
@@ -652,6 +712,7 @@ class AxisDescriptor(SimpleDescriptor):
         )
 
     def map_forward(self, v):
+        """Maps value from axis mapping's input (user) to output (design)."""
         from fontTools.varLib.models import piecewiseLinearMap
 
         if not self.map:
@@ -659,6 +720,7 @@ class AxisDescriptor(SimpleDescriptor):
         return piecewiseLinearMap(v, {k: v for k, v in self.map})
 
     def map_backward(self, v):
+        """Maps value from axis mapping's output (design) to input (user)."""
         from fontTools.varLib.models import piecewiseLinearMap
 
         if not self.map:
@@ -666,10 +728,31 @@ class AxisDescriptor(SimpleDescriptor):
         return piecewiseLinearMap(v, {v: k for k, v in self.map})
 
 
-class DiscreteAxisDescriptor(SimpleDescriptor):
+class DiscreteAxisDescriptor(AbstractAxisDescriptor):
     """Container for discrete axis data.
 
-    Use this for axes that do not interpolate.
+    Use this for axes that do not interpolate. The main difference from a
+    continuous axis is that a continuous axis has a ``minimum`` and ``maximum``,
+    while a discrete axis has a list of ``values``.
+
+    Example: an Italic axis with 2 stops, Roman and Italic, that are not
+    compatible. The axis still allows to bind together the full font family,
+    which is useful for the STAT table, however it can't become a variation
+    axis in a VF.
+
+    .. code:: python
+
+        a2 = DiscreteAxisDescriptor()
+        a2.values = [0, 1]
+        a2.name = "Italic"
+        a2.tag = "ITAL"
+        a2.labelNames['fr'] = "Italique"
+        a2.map = [(0, 0), (1, -11)]
+        a2.axisOrdering = 2
+        a2.axisLabels = [
+            AxisLabelDescriptor(name="Roman", userValue=0, elidable=True)
+        ]
+        doc.addAxis(a2)
 
     .. versionadded:: 5.0
     """
@@ -690,23 +773,38 @@ class DiscreteAxisDescriptor(SimpleDescriptor):
         axisOrdering=None,
         axisLabels=None,
     ):
-        # opentype tag for this axis
-        self.tag = tag
-        # name of the axis used in locations
-        self.name = name
-        # names for UI purposes, if this is not a standard axis,
-        self.labelNames = labelNames or {}
-        self.default = default
-        self.values = values
-        self.hidden = hidden
-        self.map: List[Tuple[float, float]] = map or []
-        self.axisOrdering: Optional[int] = axisOrdering
-        self.axisLabels: List[AxisLabelDescriptor] = axisLabels or []
+        super().__init__(
+            tag=tag,
+            name=name,
+            labelNames=labelNames,
+            hidden=hidden,
+            map=map,
+            axisOrdering=axisOrdering,
+            axisLabels=axisLabels,
+        )
+        self.default: float = default
+        """The default value for this axis, i.e. when a new location is
+        created, this is the value this axis will get in user space.
+
+        However, this default value is less important than in continuous axes:
+
+        -  it doesn't define the "neutral" version of outlines from which
+        deltas would apply, as this axis does not interpolate.
+        -  it doesn't provide the reference glyph set for the designspace, as
+        fonts at each value can have different glyph sets.
+        """
+        self.values: List[float] = values or []
+        """List of possible values for this axis. Contrary to continuous axes,
+        only the values in this list can be taken by the axis, nothing in-between.
+        """
 
     def map_forward(self, value):
         """Maps value from axis mapping's input to output.
 
         Returns value unchanged if no mapping entry is found.
+
+        Note: for discrete axes, each value must have its mapping entry, if
+        you intend that value to be mapped.
         """
         return next((v for k, v in self.map if k == value), value)
 
@@ -714,6 +812,9 @@ class DiscreteAxisDescriptor(SimpleDescriptor):
         """Maps value from axis mapping's output to input.
 
         Returns value unchanged if no mapping entry is found.
+
+        Note: for discrete axes, each value must have its mapping entry, if
+        you intend that value to be mapped.
         """
         return next((k for k, v in self.map if v == value), value)
 
@@ -723,6 +824,12 @@ class AxisLabelDescriptor(SimpleDescriptor):
 
     Analogue of OpenType's STAT data for a single axis (formats 1, 2 and 3).
     All values are user values.
+    See: `OTSpec STAT Axis value table, format 1, 2, 3 <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#axis-value-table-format-1>`_
+
+    The STAT format of the Axis value depends on which field are filled-in,
+    see :meth:`getFormat`
+
+    .. versionadded:: 5.0
     """
 
     flavor = "label"
@@ -741,15 +848,41 @@ class AxisLabelDescriptor(SimpleDescriptor):
         labelNames=None,
     ):
         self.userMinimum: Optional[float] = userMinimum
+        """STAT field ``rangeMinValue`` (format 2)."""
         self.userValue: float = userValue
+        """STAT field ``value`` (format 1, 3) or ``nominalValue`` (format 2)."""
         self.userMaximum: Optional[float] = userMaximum
+        """STAT field ``rangeMaxValue`` (format 2)."""
         self.name: str = name
+        """Label for this axis location, STAT field ``valueNameID``."""
         self.elidable: bool = elidable
+        """STAT flag ``ELIDABLE_AXIS_VALUE_NAME``.
+
+        See: `OTSpec STAT Flags <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#flags>`_
+        """
         self.olderSibling: bool = olderSibling
+        """STAT flag ``OLDER_SIBLING_FONT_ATTRIBUTE``.
+
+        See: `OTSpec STAT Flags <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#flags>`_
+        """
         self.linkedUserValue: Optional[float] = linkedUserValue
+        """STAT field ``linkedValue`` (format 3)."""
         self.labelNames: MutableMapping[str, str] = labelNames or {}
+        """User-facing translations of this location's label. Keyed by
+        xml:lang code.
+        """
 
     def getFormat(self) -> int:
+        """Determine which format of STAT Axis value to use to encode this label.
+
+        ===========  =========  ===========  ===========  ===============
+        STAT Format  userValue  userMinimum  userMaximum  linkedUserValue
+        ===========  =========  ===========  ===========  ===============
+        1            ✅         ❌           ❌            ❌
+        2            ✅         ✅           ✅            ❌
+        3            ✅         ❌           ❌            ✅
+        ===========  =========  ===========  ===========  ===============
+        """
         if self.linkedUserValue is not None:
             return 3
         if self.userMinimum is not None:
@@ -758,6 +891,7 @@ class AxisLabelDescriptor(SimpleDescriptor):
 
     @property
     def defaultName(self) -> str:
+        """Return the English name from :attr:`labelNames` or the :attr:`name`."""
         return self.labelNames.get("en") or self.name
 
 
@@ -766,6 +900,10 @@ class LocationLabelDescriptor(SimpleDescriptor):
 
     Analogue of OpenType's STAT data for a free-floating location (format 4).
     All values are user values.
+
+    See: `OTSpec STAT Axis value table, format 4 <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#axis-value-table-format-4>`_
+
+    .. versionadded:: 5.0
     """
 
     flavor = "label"
@@ -781,13 +919,30 @@ class LocationLabelDescriptor(SimpleDescriptor):
         labelNames=None,
     ):
         self.name: str = name
+        """Label for this named location, STAT field ``valueNameID``."""
         self.location: Mapping[str, float] = location
+        """Location in user coordinates along each axis.
+
+        If an axis is not mentioned, it is assumed to be at its default location.
+        """
         self.elidable: bool = elidable
+        """STAT flag ``ELIDABLE_AXIS_VALUE_NAME``.
+
+        See: `OTSpec STAT Flags <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#flags>`_
+        """
         self.olderSibling: bool = olderSibling
+        """STAT flag ``OLDER_SIBLING_FONT_ATTRIBUTE``.
+
+        See: `OTSpec STAT Flags <https://docs.microsoft.com/en-us/typography/opentype/spec/stat#flags>`_
+        """
         self.labelNames: Dict[str, str] = labelNames or {}
+        """User-facing translations of this location's label. Keyed by
+        xml:lang code.
+        """
 
     @property
     def defaultName(self) -> str:
+        """Return the English name from :attr:`labelNames` or the :attr:`name`."""
         return self.labelNames.get("en") or self.name
 
     def __eq__(self, other):
@@ -810,37 +965,86 @@ class LocationLabelDescriptor(SimpleDescriptor):
 
 
 class VariableFontDescriptor(SimpleDescriptor):
-    """Container for variations, sub-spaces of the Designspace."""
+    """Container for variable fonts, sub-spaces of the Designspace.
+
+    Use-cases:
+
+    - From a single DesignSpace with discrete axes, define 1 variable font
+    per value on the discrete axes. Before version 5, you would have needed
+    1 DesignSpace per such variable font, and a lot of data duplication.
+    - From a big variable font with many axes, define subsets of that variable
+    font that only include some axes and freeze other axes at a given location.
+
+    .. versionadded:: 5.0
+    """
 
     flavor = "variable-font"
-    _attrs = ('name', 'axisSubsets', 'lib')
+    _attrs = ('filename', 'path', 'axisSubsets', 'lib')
 
-    def __init__(self, *, name, axisSubsets, lib=None):
-        self.name: str = name
-        self.axisSubsets: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = axisSubsets
+    filename = posixpath_property("_filename")
+
+    def __init__(self, *, filename, path, axisSubsets, lib=None):
+        self.filename: str = filename
+        """string. Relative path to the variable font file, **as it is
+        in the document**. The file may or may not exist.
+
+        MutatorMath + VarLib.
+        """
+        self.axisSubsets: List[Union[RangeAxisSubsetDescriptor, ValueAxisSubsetDescriptor]] = axisSubsets
+        """Axis subsets to include in this variable font.
+
+        If an axis is not mentioned, assume that we only want the default
+        location of that axis (same as a :class:`ValueAxisSubsetDescriptor`).
+        """
         self.lib: MutableMapping[str, Any] = lib or {}
+        """Custom data associated with this variable font."""
 
 
 class RangeAxisSubsetDescriptor(SimpleDescriptor):
+    """Subset of a continuous axis to include in a variable font.
+
+    .. versionadded:: 5.0
+    """
     flavor = "axis-subset"
     _attrs = ('name', 'userMinimum', 'userDefault', 'userMaximum')
 
     def __init__(self, *, name, userMinimum=-math.inf, userDefault=None, userMaximum=math.inf):
         self.name: str = name
+        """Name of the :class:`AxisDescriptor` to subset."""
         self.userMinimum: float = userMinimum
+        """New minimum value of the axis in the target variable font.
+        If not specified, assume the same minimum value as the full axis.
+        (default = ``-math.inf``)
+        """
         self.userDefault: Optional[float] = userDefault
+        """New default value of the axis in the target variable font.
+        If not specified, assume the same default value as the full axis.
+        (default = ``None``)
+        """
         self.userMaximum: float = userMaximum
+        """New maximum value of the axis in the target variable font.
+        If not specified, assume the same maximum value as the full axis.
+        (default = ``math.inf``)
+        """
 
         # TODO reject if range not wide (minimum==maximum) and tell the user to specify value=... instead
 
 
 class ValueAxisSubsetDescriptor(SimpleDescriptor):
+    """Single value of a discrete or continuous axis to use in a variable font.
+
+    .. versionadded:: 5.0
+    """
     flavor = "axis-subset"
     _attrs = ('name', 'userValue')
 
     def __init__(self, *, name, userValue):
         self.name: str = name
+        """Name of the :class:`AxisDescriptor` or :class:`DiscreteAxisDescriptor`
+        to "snapshot" or "freeze".
+        """
         self.userValue: float = userValue
+        """Value in user coordinates at which to freeze the given axis."""
 
 
 class BaseDocWriter(object):
@@ -1734,7 +1938,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
         self.sources: List[SourceDescriptor] = []
         self.instances: List[InstanceDescriptor] = []
-        self.axes: List[AxisDescriptor] = []
+        self.axes: List[Union[AxisDescriptor, DiscreteAxisDescriptor]] = []
         self.locationLabels: List[LocationLabelDescriptor] = []
         """.. versionadded:: 5.0"""
 
@@ -1912,15 +2116,21 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.addInstance(instance)
         return instance
 
-    def addAxis(self, axisDescriptor: AxisDescriptor):
+    def addAxis(self, axisDescriptor: Union[AxisDescriptor, DiscreteAxisDescriptor]):
         """Add the given ``axisDescriptor`` to :attr:`axes`."""
         self.axes.append(axisDescriptor)
 
     def addAxisDescriptor(self, **kwargs):
         """Instanciate a new :class:`AxisDescriptor` using the given
         ``kwargs`` and add it to :attr:`axes`.
+
+        The axis will be and instance of :class:`DiscreteAxisDescriptor` if
+        the ``kwargs`` provide a ``value``, or a :class:`AxisDescriptor` otherwise.
         """
-        axis = self.writerClass.axisDescriptorClass(**kwargs)
+        if "values" in kwargs:
+            axis = self.writerClass.discreteAxisDescriptorClass(**kwargs)
+        else:
+            axis = self.writerClass.axisDescriptorClass(**kwargs)
         self.addAxis(axis)
         return axis
 
@@ -1939,7 +2149,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
     def addVariableFont(self, variableFontDescriptor: VariableFontDescriptor):
         """Add the given ``variableFontDescriptor`` to :attr:`variableFonts`.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         self.variableFonts.append(variableFontDescriptor)
 
@@ -1947,7 +2157,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         """Instanciate a new :class:`VariableFontDescriptor` using the given
         ``kwargs`` and add it to :attr:`variableFonts`.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         variableFont = self.writerClass.variablefontDescriptorClass(**kwargs)
         self.addVariableFont(variableFont)
@@ -1956,7 +2166,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
     def addLocationLabel(self, locationLabelDescriptor: LocationLabelDescriptor):
         """Add the given ``locationLabelDescriptor`` to :attr:`locationLabels`.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         self.locationLabels.append(locationLabelDescriptor)
 
@@ -1964,7 +2174,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         """Instanciate a new :class:`LocationLabelDescriptor` using the given
         ``kwargs`` and add it to :attr:`locationLabels`.
 
-        .. versionadded: 5.0
+        .. versionadded:: 5.0
         """
         locationLabel = self.writerClass.locationLabelDescriptorClass(**kwargs)
         self.addLocationLabel(locationLabel)
@@ -1984,6 +2194,8 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
     def labelForUserLocation(self, userLocation: Location) -> Optional[LocationLabelDescriptor]:
         """Return the :class:`LocationLabel` that matches the given
         ``userLocation``, or ``None`` if no such label exists.
+
+        .. versionadded:: 5.0
         """
         return next(
             (label for label in self.locationLabels if label.location == userLocation), None

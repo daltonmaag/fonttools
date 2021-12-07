@@ -42,7 +42,7 @@
       Discrete axes provide a list of discrete values.
       No interpolation is allowed between these.
     -->
-    <axis default="0" values="0 1" name="Italic" tag="ital">
+    <axis name="Italic" tag="ital" default="0" values="0 1">
       <labels>
         <!-- Discrete axes also provide STAT information. -->
         <label uservalue="0" name="Roman" elidable="true" linkeduservalue="1" />

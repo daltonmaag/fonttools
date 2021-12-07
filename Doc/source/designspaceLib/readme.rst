@@ -26,10 +26,75 @@ DesignSpaceDocument object
    :member-order: bysource
 
 
+AxisDescriptor object
+=====================
+
+.. autoclass:: fontTools.designspaceLib::AxisDescriptor
+   :members:
+   :undoc-members:
+   :inherited-members: SimpleDescriptor
+   :member-order: bysource
+
+
+DiscreteAxisDescriptor object
+=============================
+
+.. autoclass:: fontTools.designspaceLib::DiscreteAxisDescriptor
+   :members:
+   :undoc-members:
+   :inherited-members: SimpleDescriptor
+   :member-order: bysource
+
+
+AxisLabelDescriptor object
+==========================
+
+.. autoclass:: fontTools.designspaceLib::AxisLabelDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+LocationLabelDescriptor object
+==========================
+
+.. autoclass:: fontTools.designspaceLib::LocationLabelDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
 SourceDescriptor object
 =======================
 
 .. autoclass:: fontTools.designspaceLib::SourceDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+VariableFontDescriptor object
+=============================
+
+.. autoclass:: fontTools.designspaceLib::VariableFontDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+RangeAxisSubsetDescriptor object
+================================
+
+.. autoclass:: fontTools.designspaceLib::RangeAxisSubsetDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
+ValueAxisSubsetDescriptor object
+================================
+
+.. autoclass:: fontTools.designspaceLib::ValueAxisSubsetDescriptor
    :members:
    :undoc-members:
    :member-order: bysource
@@ -44,53 +109,21 @@ InstanceDescriptor object
    :member-order: bysource
 
 
-AxisDescriptor object
-=====================
-
-.. autoclass:: fontTools.designspaceLib::AxisDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
-DiscreteAxisDescriptor object
-=============================
-
-.. autoclass:: fontTools.designspaceLib::DiscreteAxisDescriptor
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
-
 RuleDescriptor object
 =====================
 
--  ``name``: string. Unique name for this rule. Can be used to
-   reference this rule data.
--  ``conditionSets``: a list of conditionsets
--  Each conditionset is a list of conditions.
--  Each condition is a dict with ``name``, ``minimum`` and ``maximum`` keys.
--  ``subs``: list of substitutions
--  Each substitution is stored as tuples of glyphnames, e.g. ("a", "a.alt").
--  Note: By default, rules are applied first, before other text shaping/OpenType layout, as they are part of the `Required Variation Alternates OpenType feature <https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#-tag-rvrn>`_. See `5.0 rules element`_ § Attributes.
+.. autoclass:: fontTools.designspaceLib::RuleDescriptor
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
 
 Evaluating rules
 ----------------
 
--  ``evaluateRule(rule, location)``: Return True if any of the rule's conditionsets
-   matches the given location.
--  ``evaluateConditions(conditions, location)``: Return True if all the conditions
-   matches the given location.
--  ``processRules(rules, location, glyphNames)``: Apply all the rules to the list
-   of glyphNames. Return a new list of glyphNames with substitutions applied.
-
-.. code:: python
-
-    r1 = RuleDescriptor()
-    r1.name = "unique.rule.name"
-    r1.conditionSets.append([dict(name="weight", minimum=-10, maximum=10), dict(...)])
-    r1.conditionSets.append([dict(...), dict(...)])
-    r1.subs.append(("a", "a.alt"))
+.. autofunction:: fontTools.designspaceLib::evaluateRule
+.. autofunction:: fontTools.designspaceLib::evaluateConditions
+.. autofunction:: fontTools.designspaceLib::processRules
 
 
 .. _subclassing-descriptors:
@@ -106,25 +139,41 @@ descriptor does not need to be a subclass.
 .. code:: python
 
     class MyDocReader(BaseDocReader):
-        ruleDescriptorClass = MyRuleDescriptor
         axisDescriptorClass = MyAxisDescriptor
+        discreteAxisDescriptorClass = MyDiscreteAxisDescriptor
+        axisLabelDescriptorClass = MyAxisLabelDescriptor
+        locationLabelDescriptorClass = MyLocationLabelDescriptor
         sourceDescriptorClass = MySourceDescriptor
+        variableFontsDescriptorClass = MyVariableFontDescriptor
+        valueAxisSubsetDescriptorClass = MyValueAxisSubsetDescriptor
+        rangeAxisSubsetDescriptorClass = MyRangeAxisSubsetDescriptor
         instanceDescriptorClass = MyInstanceDescriptor
+        ruleDescriptorClass = MyRuleDescriptor
 
     class MyDocWriter(BaseDocWriter):
-        ruleDescriptorClass = MyRuleDescriptor
         axisDescriptorClass = MyAxisDescriptor
+        discreteAxisDescriptorClass = MyDiscreteAxisDescriptor
+        axisLabelDescriptorClass = MyAxisLabelDescriptor
+        locationLabelDescriptorClass = MyLocationLabelDescriptor
         sourceDescriptorClass = MySourceDescriptor
+        variableFontsDescriptorClass = MyVariableFontDescriptor
+        valueAxisSubsetDescriptorClass = MyValueAxisSubsetDescriptor
+        rangeAxisSubsetDescriptorClass = MyRangeAxisSubsetDescriptor
         instanceDescriptorClass = MyInstanceDescriptor
+        ruleDescriptorClass = MyRuleDescriptor
 
-    myDoc = DesignSpaceDocument(KeyedDocReader, KeyedDocWriter)
+    myDoc = DesignSpaceDocument(MyDocReader, MyDocWriter)
+
 
 **********************
 Document xml structure
 **********************
 
+
 -  The ``axes`` element contains one or more ``axis`` elements.
+-  The ``labels`` element contains one or more ``label`` elements.
 -  The ``sources`` element contains one or more ``source`` elements.
+-  The ``variable-fonts`` element contains one or more ``variable-font`` elements.
 -  The ``instances`` element contains one or more ``instance`` elements.
 -  The ``rules`` element contains one or more ``rule`` elements.
 -  The ``lib`` element contains arbitrary data.
@@ -135,19 +184,29 @@ Document xml structure
     <designspace format="3">
         <axes>
             <!-- define axes here -->
-            <axis../>
+            <axis ... />
         </axes>
+        <labels>
+            <!-- define STAT format 4 labels here -->
+            <!-- New in version 5.0 -->
+            <label ... />
+        </labels>
         <sources>
             <!-- define masters here -->
-            <source../>
+            <source ... />
         </sources>
+        <variable-fonts>
+            <!-- define variable fonts here -->
+            <!-- New in version 5.0 -->
+            <variable-font ... />
+        </variable-fonts>
         <instances>
             <!-- define instances here -->
-            <instance../>
+            <instance ... />
         </instances>
         <rules>
             <!-- define rules here -->
-            <rule../>
+            <rule ... />
         </rules>
         <lib>
             <dict>
@@ -163,6 +222,8 @@ Document xml structure
 
 -  Define a single axis
 -  Child element of ``axes``
+-  The axis can be either continuous (as in version 4.0) or discrete (new in version 5.0).
+Discrete axes have a list of discrete values instead of a range.
 
 .. attributes-2:
 
@@ -173,15 +234,22 @@ Attributes
    location elements.
 -  ``tag``: required, string, 4 letters. Some axis tags are registered
    in the OpenType Specification.
--  ``minimum``: required, number. The minimum value for this axis, in user space coordinates.
--  ``maximum``: required, number. The maximum value for this axis, in user space coordinates.
 -  ``default``: required, number. The default value for this axis, in user space coordinates.
 -  ``hidden``: optional, 0 or 1. Records whether this axis needs to be
    hidden in interfaces.
 
+-  ``minimum``: required, number. The minimum value for this axis, in user space coordinates.
+-  ``maximum``: required, number. The maximum value for this axis, in user space coordinates.
+
 .. code:: xml
 
     <axis name="weight" tag="wght" minimum="1" maximum="1000" default="400">
+
+    <!--
+      Discrete axes provide a list of discrete values.
+      No interpolation is allowed between these.
+    -->
+    <axis name="Italic" tag="ital" default="0" values="0 1">
 
 .. 11-labelname-element:
 
@@ -216,6 +284,7 @@ Example
     <labelname xml:lang="fa-IR">قطر</labelname>
     <labelname xml:lang="en">Wéíght</labelname>
 
+
 .. 12-map-element:
 
 1.2 map element
@@ -237,6 +306,28 @@ Example
     <map input="400.0" output="66.0" />
     <map input="1000.0" output="990.0" />
 
+
+.. 13-labels-element:
+
+1.3 labels and label elements
+=============================
+
+-  Define STAT format 1, 2, 3 labels for the locations on this axis.
+-  The axis can have several ``label`` elements,
+TODO here
+
+.. example-3:
+
+Example
+-------
+
+.. code:: xml
+
+    <map input="1.0" output="10.0" />
+    <map input="400.0" output="66.0" />
+    <map input="1000.0" output="990.0" />
+
+
 Example of all axis elements together:
 --------------------------------------
 
@@ -256,7 +347,7 @@ Example of all axis elements together:
 
 .. 2-location-element:
 
-2. location element
+1. location element
 ===================
 
 -  Defines a coordinate in the design space.
