@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from textwrap import indent
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 from fontTools.designspaceLib.types import Location
 
 from fontTools.misc.loggingTools import LogMixin
@@ -1160,14 +1160,14 @@ class VariableFontDescriptor(SimpleDescriptor):
 
     filename = posixpath_property("_filename")
 
-    def __init__(self, *, filename, axisSubsets, lib=None):
+    def __init__(self, *, filename, axisSubsets=None, lib=None):
         self.filename: str = filename
         """string. Relative path to the variable font file, **as it is
         in the document**. The file may or may not exist.
 
         MutatorMath + VarLib.
         """
-        self.axisSubsets: List[Union[RangeAxisSubsetDescriptor, ValueAxisSubsetDescriptor]] = axisSubsets
+        self.axisSubsets: List[Union[RangeAxisSubsetDescriptor, ValueAxisSubsetDescriptor]] = axisSubsets or []
         """Axis subsets to include in this variable font.
 
         If an axis is not mentioned, assume that we only want the default
@@ -1253,20 +1253,25 @@ class BaseDocWriter(object):
     def getRuleDescriptor(cls):
         return cls.ruleDescriptorClass()
 
-    def __init__(self, documentPath, documentObject):
+    def __init__(self, documentPath, documentObject: DesignSpaceDocument):
         self.path = documentPath
         self.documentObject = documentObject
-        self.documentVersion = "4.1"
+        self.effectiveFormatTuple = self._getEffectiveFormatTuple()
         self.root = ET.Element("designspace")
-        self.root.attrib['format'] = self.documentVersion
-        self._axes = []     # for use by the writer only
-        self._rules = []    # for use by the writer only
 
     def write(self, pretty=True, encoding="UTF-8", xml_declaration=True):
+        self.root.attrib['format'] = ".".join(str(i) for i in self.effectiveFormatTuple)
+
         if self.documentObject.axes:
             self.root.append(ET.Element("axes"))
         for axisObject in self.documentObject.axes:
             self._addAxis(axisObject)
+
+        if self.documentObject.locationLabels:
+            labelsElement = ET.Element("labels")
+            for labelObject in self.documentObject.locationLabels:
+                self._addLocationLabel(labelsElement, labelObject)
+            self.root.append(labelsElement)
 
         if self.documentObject.rules:
             if getattr(self.documentObject, "rulesProcessingLast", False):
@@ -1282,13 +1287,19 @@ class BaseDocWriter(object):
         for sourceObject in self.documentObject.sources:
             self._addSource(sourceObject)
 
+        if self.documentObject.variableFonts:
+            variableFontsElement = ET.Element("variable-fonts")
+            for variableFont in self.documentObject.variableFonts:
+                self._addVariableFont(variableFontsElement, variableFont)
+            self.root.append(variableFontsElement)
+
         if self.documentObject.instances:
             self.root.append(ET.Element("instances"))
         for instanceObject in self.documentObject.instances:
             self._addInstance(instanceObject)
 
         if self.documentObject.lib:
-            self._addLib(self.documentObject.lib)
+            self._addLib(self.root, self.documentObject.lib, 2)
 
         tree = ET.ElementTree(self.root)
         tree.write(
@@ -1298,6 +1309,30 @@ class BaseDocWriter(object):
             xml_declaration=xml_declaration,
             pretty_print=pretty,
         )
+
+    def _getEffectiveFormatTuple(self):
+        """Try to use the version specified in the document, or a sufficiently
+        recent version to be able to encode what the document contains.
+        """
+        minVersion = self.documentObject.formatTuple
+        if (
+            any(
+                isinstance(axis, DiscreteAxisDescriptor) or
+                axis.axisOrdering is not None or
+                axis.axisLabels
+                for axis in self.documentObject.axes
+            ) or
+            self.documentObject.locationLabels or
+            self.documentObject.variableFonts or
+            any(
+                instance.locationLabel or
+                instance.userLocation
+                for instance in self.documentObject.instances
+            )
+        ):
+            if minVersion < (5, 0):
+                minVersion = (5, 0)
+        return minVersion
 
     def _makeLocationElement(self, locationObject, name=None):
         """ Convert Location dict to a locationElement."""
@@ -1323,11 +1358,10 @@ class BaseDocWriter(object):
     def intOrFloat(self, num):
         if int(num) == num:
             return "%d" % num
-        return "%f" % num
+        return ("%f" % num).rstrip('0').rstrip('.')
 
     def _addRule(self, ruleObject):
         # if none of the conditions have minimum or maximum values, do not add the rule.
-        self._rules.append(ruleObject)
         ruleElement = ET.Element('rule')
         if ruleObject.name is not None:
             ruleElement.attrib['name'] = ruleObject.name
@@ -1355,32 +1389,102 @@ class BaseDocWriter(object):
             self.root.findall('.rules')[0].append(ruleElement)
 
     def _addAxis(self, axisObject):
-        self._axes.append(axisObject)
         axisElement = ET.Element('axis')
         axisElement.attrib['tag'] = axisObject.tag
         axisElement.attrib['name'] = axisObject.name
-        axisElement.attrib['minimum'] = self.intOrFloat(axisObject.minimum)
-        axisElement.attrib['maximum'] = self.intOrFloat(axisObject.maximum)
-        axisElement.attrib['default'] = self.intOrFloat(axisObject.default)
-        if axisObject.hidden:
-            axisElement.attrib['hidden'] = "1"
-        for languageCode, labelName in sorted(axisObject.labelNames.items()):
-            languageElement = ET.Element('labelname')
-            languageElement.attrib[XML_LANG] = languageCode
-            languageElement.text = labelName
-            axisElement.append(languageElement)
+        self._addLabelNames(axisElement, axisObject.labelNames)
         if axisObject.map:
             for inputValue, outputValue in axisObject.map:
                 mapElement = ET.Element('map')
                 mapElement.attrib['input'] = self.intOrFloat(inputValue)
                 mapElement.attrib['output'] = self.intOrFloat(outputValue)
                 axisElement.append(mapElement)
+        if axisObject.axisOrdering or axisObject.axisLabels:
+            labelsElement = ET.Element('labels')
+            if axisObject.axisOrdering is not None:
+                labelsElement.attrib['ordering'] = str(axisObject.axisOrdering)
+            for label in axisObject.axisLabels:
+                self._addAxisLabel(labelsElement, label)
+            axisElement.append(labelsElement)
+        if isinstance(axisObject, AxisDescriptor):
+            axisElement.attrib['minimum'] = self.intOrFloat(axisObject.minimum)
+            axisElement.attrib['maximum'] = self.intOrFloat(axisObject.maximum)
+        elif isinstance(axisObject, DiscreteAxisDescriptor):
+            axisElement.attrib['values'] = " ".join(self.intOrFloat(v) for v in axisObject.values)
+        axisElement.attrib['default'] = self.intOrFloat(axisObject.default)
+        if axisObject.hidden:
+            axisElement.attrib['hidden'] = "1"
         self.root.findall('.axes')[0].append(axisElement)
+
+    def _addAxisLabel(self, axisElement: ET.Element, label: AxisLabelDescriptor) -> None:
+        labelElement = ET.Element('label')
+        labelElement.attrib['uservalue'] = self.intOrFloat(label.userValue)
+        if label.userMinimum is not None:
+            labelElement.attrib['userminimum'] = self.intOrFloat(label.userMinimum)
+        if label.userMaximum is not None:
+            labelElement.attrib['usermaximum'] = self.intOrFloat(label.userMaximum)
+        labelElement.attrib['name'] = label.name
+        if label.elidable:
+            labelElement.attrib['elidable'] = "true"
+        if label.olderSibling:
+            labelElement.attrib['oldersibling'] = "true"
+        if label.linkedUserValue is not None:
+            labelElement.attrib['linkeduservalue'] = self.intOrFloat(label.linkedUserValue)
+        self._addLabelNames(labelElement, label.labelNames)
+        axisElement.append(labelElement)
+
+    def _addLabelNames(self, parentElement, labelNames):
+        for languageCode, labelName in sorted(labelNames.items()):
+            languageElement = ET.Element('labelname')
+            languageElement.attrib[XML_LANG] = languageCode
+            languageElement.text = labelName
+            parentElement.append(languageElement)
+
+    def _addLocationLabel(self, parentElement: ET.Element, label: LocationLabelDescriptor) -> None:
+        labelElement = ET.Element('label')
+        labelElement.attrib['name'] = label.name
+        if label.elidable:
+            labelElement.attrib['elidable'] = "true"
+        if label.olderSibling:
+            labelElement.attrib['oldersibling'] = "true"
+        self._addLabelNames(labelElement, label.labelNames)
+        self._addLocationElement(labelElement, userLocation=label.userLocation)
+        parentElement.append(labelElement)
+
+    def _addLocationElement(
+        self,
+        parentElement,
+        *,
+        designLocation: AnisotropicLocationDict = None,
+        userLocation: SimpleLocationDict = None
+    ):
+        locElement = ET.Element("location")
+        for axis in self.documentObject.axes:
+            if designLocation is not None and axis.name in designLocation:
+                dimElement = ET.Element('dimension')
+                dimElement.attrib['name'] = axis.name
+                value = designLocation[axis.name]
+                if isinstance(value, tuple):
+                    dimElement.attrib['xvalue'] = self.intOrFloat(value[0])
+                    dimElement.attrib['yvalue'] = self.intOrFloat(value[1])
+                else:
+                    dimElement.attrib['xvalue'] = self.intOrFloat(value)
+                locElement.append(dimElement)
+            elif userLocation is not None and axis.name in userLocation:
+                dimElement = ET.Element('dimension')
+                dimElement.attrib['name'] = axis.name
+                value = userLocation[axis.name]
+                dimElement.attrib['uservalue'] = self.intOrFloat(value)
+                locElement.append(dimElement)
+        if locElement:
+            parentElement.append(locElement)
 
     def _addInstance(self, instanceObject):
         instanceElement = ET.Element('instance')
         if instanceObject.name is not None:
             instanceElement.attrib['name'] = instanceObject.name
+        if instanceObject.locationLabel is not None:
+            instanceElement.attrib['location'] = instanceObject.locationLabel
         if instanceObject.familyName is not None:
             instanceElement.attrib['familyname'] = instanceObject.familyName
         if instanceObject.styleName is not None:
@@ -1427,9 +1531,19 @@ class BaseDocWriter(object):
                 localisedStyleMapFamilyNameElement.text = instanceObject.getStyleMapFamilyName(code)
                 instanceElement.append(localisedStyleMapFamilyNameElement)
 
-        if instanceObject.location is not None:
-            locationElement, instanceObject.location = self._makeLocationElement(instanceObject.location)
-            instanceElement.append(locationElement)
+        if self.effectiveFormatTuple >= (5, 0):
+            if instanceObject.locationLabel is None:
+                self._addLocationElement(
+                    instanceElement,
+                    designLocation=instanceObject.designLocation,
+                    userLocation=instanceObject.userLocation
+                )
+        else:
+            # Pre-version 5.0 code was validating and filling in the location
+            # dict while writing it out, as preserved below.
+            if instanceObject.location is not None:
+                locationElement, instanceObject.location = self._makeLocationElement(instanceObject.location)
+                instanceElement.append(locationElement)
         if instanceObject.filename is not None:
             instanceElement.attrib['filename'] = instanceObject.filename
         if instanceObject.postScriptFontName is not None:
@@ -1438,24 +1552,23 @@ class BaseDocWriter(object):
             instanceElement.attrib['stylemapfamilyname'] = instanceObject.styleMapFamilyName
         if instanceObject.styleMapStyleName is not None:
             instanceElement.attrib['stylemapstylename'] = instanceObject.styleMapStyleName
-        if instanceObject.glyphs:
-            if instanceElement.findall('.glyphs') == []:
-                glyphsElement = ET.Element('glyphs')
-                instanceElement.append(glyphsElement)
-            glyphsElement = instanceElement.findall('.glyphs')[0]
-            for glyphName, data in sorted(instanceObject.glyphs.items()):
-                glyphElement = self._writeGlyphElement(instanceElement, instanceObject, glyphName, data)
-                glyphsElement.append(glyphElement)
-        if instanceObject.kerning:
-            kerningElement = ET.Element('kerning')
-            instanceElement.append(kerningElement)
-        if instanceObject.info:
-            infoElement = ET.Element('info')
-            instanceElement.append(infoElement)
-        if instanceObject.lib:
-            libElement = ET.Element('lib')
-            libElement.append(plistlib.totree(instanceObject.lib, indent_level=4))
-            instanceElement.append(libElement)
+        if self.effectiveFormatTuple < (5, 0):
+            # Deprecated members as of version 5.0
+            if instanceObject.glyphs:
+                if instanceElement.findall('.glyphs') == []:
+                    glyphsElement = ET.Element('glyphs')
+                    instanceElement.append(glyphsElement)
+                glyphsElement = instanceElement.findall('.glyphs')[0]
+                for glyphName, data in sorted(instanceObject.glyphs.items()):
+                    glyphElement = self._writeGlyphElement(instanceElement, instanceObject, glyphName, data)
+                    glyphsElement.append(glyphElement)
+            if instanceObject.kerning:
+                kerningElement = ET.Element('kerning')
+                instanceElement.append(kerningElement)
+            if instanceObject.info:
+                infoElement = ET.Element('info')
+                instanceElement.append(infoElement)
+        self._addLib(instanceElement, instanceObject.lib, 4)
         self.root.findall('.instances')[0].append(instanceElement)
 
     def _addSource(self, sourceObject):
@@ -1501,14 +1614,43 @@ class BaseDocWriter(object):
                 glyphElement.attrib["name"] = name
                 glyphElement.attrib["mute"] = '1'
                 sourceElement.append(glyphElement)
-        locationElement, sourceObject.location = self._makeLocationElement(sourceObject.location)
-        sourceElement.append(locationElement)
+        if self.effectiveFormatTuple >= (5, 0):
+            self._addLocationElement(sourceElement, designLocation=sourceObject.location)
+        else:
+            # Pre-version 5.0 code was validating and filling in the location
+            # dict while writing it out, as preserved below.
+            locationElement, sourceObject.location = self._makeLocationElement(sourceObject.location)
+            sourceElement.append(locationElement)
         self.root.findall('.sources')[0].append(sourceElement)
 
-    def _addLib(self, dict):
+    def _addVariableFont(self, parentElement: ET.Element, vf: VariableFontDescriptor) -> None:
+        vfElement = ET.Element('variable-font')
+        vfElement.attrib['filename'] = vf.filename
+        if vf.axisSubsets:
+            subsetsElement = ET.Element('axis-subsets')
+            for subset in vf.axisSubsets:
+                subsetElement = ET.Element('axis-subset')
+                subsetElement.attrib['name'] = subset.name
+                if isinstance(subset, RangeAxisSubsetDescriptor):
+                    if subset.userMinimum != -math.inf:
+                        subsetElement.attrib['userminimum'] = self.intOrFloat(subset.userMinimum)
+                    if subset.userMaximum != math.inf:
+                        subsetElement.attrib['usermaximum'] = self.intOrFloat(subset.userMaximum)
+                    if subset.userDefault is not None:
+                        subsetElement.attrib['userdefault'] = self.intOrFloat(subset.userDefault)
+                elif isinstance(subset, ValueAxisSubsetDescriptor):
+                    subsetElement.attrib['uservalue'] = self.intOrFloat(subset.userValue)
+                subsetsElement.append(subsetElement)
+            vfElement.append(subsetsElement)
+        self._addLib(vfElement, vf.lib, 4)
+        parentElement.append(vfElement)
+
+    def _addLib(self, parentElement: ET.Element, data: Any, indent_level: int) -> None:
+        if not data:
+            return
         libElement = ET.Element('lib')
-        libElement.append(plistlib.totree(dict, indent_level=2))
-        self.root.append(libElement)
+        libElement.append(plistlib.totree(data, indent_level=indent_level))
+        parentElement.append(libElement)
 
     def _writeGlyphElement(self, instanceElement, instanceObject, glyphName, data):
         glyphElement = ET.Element('glyph')
@@ -1652,9 +1794,8 @@ class BaseDocReader(LogMixin):
         axisElements = self.root.findall(".axes/axis")
         if not axisElements:
             return
-        is_v5: bool = self.documentObject.formatVersion.startswith("5")
         for axisElement in axisElements:
-            if is_v5 and "values" in axisElement.attrib:
+            if self.documentObject.formatTuple >= (5, 0) and "values" in axisElement.attrib:
                 axisObject = self.discreteAxisDescriptorClass()
                 axisObject.values = [float(s) for s in axisElement.attrib["values"].split(" ")]
             else:
@@ -1726,7 +1867,7 @@ class BaseDocReader(LogMixin):
         )
 
     def readLabels(self):
-        if not self.documentObject.formatVersion.startswith("5"):
+        if self.documentObject.formatTuple < (5, 0):
             return
 
         xml_attrs = {'name', 'elidable', 'oldersibling'}
@@ -1761,7 +1902,7 @@ class BaseDocReader(LogMixin):
             self.documentObject.locationLabels.append(locationLabel)
 
     def readVariableFonts(self):
-        if not self.documentObject.formatVersion.startswith("5"):
+        if self.documentObject.formatTuple < (5, 0):
             return
 
         xml_attrs = {'filename'}
@@ -2643,3 +2784,16 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
                 loaded[source.path] = source.font
             fonts.append(source.font)
         return fonts
+
+    @property
+    def formatTuple(self):
+        """Return the formatVersion as a tuple of (major, minor).
+
+        .. versionadded:: 5.0
+        """
+        if self.formatVersion is None:
+            return (5, 0)
+        numbers = (int(i) for i in self.formatVersion.split("."))
+        major = next(numbers)
+        minor = next(numbers, 0)
+        return (major, minor)

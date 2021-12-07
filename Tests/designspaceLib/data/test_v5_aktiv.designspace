@@ -383,7 +383,7 @@
         <dimension name="Italic" xvalue="1"/>
       </location>
     </instance>
-    <instance name="Aktiv Grotesk Regular" filename="instances/AktivGrotesk_Rg.ufo" stylename="Regular" stylemapfamilyname="Aktiv Grotesk">
+    <instance name="Aktiv Grotesk Regular" stylename="Regular" filename="instances/AktivGrotesk_Rg.ufo" stylemapfamilyname="Aktiv Grotesk">
       <location>
         <dimension name="Weight" xvalue="84"/>
         <dimension name="Width" xvalue="100"/>

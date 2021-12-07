@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import os
+import re
 import sys
 import pytest
 import warnings
@@ -36,13 +37,16 @@ def assert_equals_test_file(path, test_filename):
     test_path = os.path.join(os.path.dirname(__file__), test_filename)
     with open(test_path) as fp:
         expected = fp.read()
+        expected = re.sub(r"<!--(.|\n)*?-->", "", expected)
+        expected = re.sub(r"\s*\n+", "\n", expected)
 
     assert actual == expected
 
 
 def test_fill_document(tmpdir):
     tmpdir = str(tmpdir)
-    testDocPath = os.path.join(tmpdir, "test.designspace")
+    testDocPath = os.path.join(tmpdir, "test_v4.designspace")
+    testDocPath5 = os.path.join(tmpdir, "test_v5.designspace")
     masterPath1 = os.path.join(tmpdir, "masters", "masterTest1.ufo")
     masterPath2 = os.path.join(tmpdir, "masters", "masterTest2.ufo")
     instancePath1 = os.path.join(tmpdir, "instances", "instanceTest1.ufo")
@@ -158,16 +162,21 @@ def test_fill_document(tmpdir):
     ])
     r1.subs.append(("a", "a.alt"))
     doc.addRule(r1)
-    # write the document
+    # write the document; without an explicit format it will be 5.0 by default
+    doc.write(testDocPath5)
+    assert os.path.exists(testDocPath5)
+    assert_equals_test_file(testDocPath5, 'data/test_v5_original.designspace')
+    # write again with an explicit format = 4.1
+    doc.formatVersion = "4.1"
     doc.write(testDocPath)
     assert os.path.exists(testDocPath)
-    assert_equals_test_file(testDocPath, 'data/test.designspace')
+    assert_equals_test_file(testDocPath, 'data/test_v4_original.designspace')
     # import it again
     new = DesignSpaceDocument()
     new.read(testDocPath)
 
     assert new.default.location == {'width': 20.0, 'weight': 0.0}
-    assert new.filename == 'test.designspace'
+    assert new.filename == 'test_v4.designspace'
     assert new.lib == doc.lib
     assert new.instances[0].lib == doc.instances[0].lib
 
@@ -197,6 +206,7 @@ def test_unicodes(tmpdir):
     instancePath1 = os.path.join(tmpdir, "instances", "instanceTest1.ufo")
     instancePath2 = os.path.join(tmpdir, "instances", "instanceTest2.ufo")
     doc = DesignSpaceDocument()
+    doc.formatVersion = "4.1"  # This test about instance glyphs is deprecated in v5
     # add master 1
     s1 = SourceDescriptor()
     s1.filename = os.path.relpath(masterPath1, os.path.dirname(testDocPath))
@@ -832,7 +842,7 @@ def test_updatePaths(tmpdir):
 
 def test_read_with_path_object():
     import pathlib
-    source = (pathlib.Path(__file__) / "../data/test.designspace").resolve()
+    source = (pathlib.Path(__file__) / "../data/test_v4_original.designspace").resolve()
     assert source.exists()
     doc = DesignSpaceDocument()
     doc.read(source)
@@ -841,7 +851,7 @@ def test_read_with_path_object():
 def test_with_with_path_object(tmpdir):
     import pathlib
     tmpdir = str(tmpdir)
-    dest = pathlib.Path(tmpdir) / "test.designspace"
+    dest = pathlib.Path(tmpdir) / "test_v4_original.designspace"
     doc = DesignSpaceDocument()
     doc.write(dest)
     assert dest.exists()

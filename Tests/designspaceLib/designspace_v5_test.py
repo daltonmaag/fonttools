@@ -99,10 +99,12 @@ def test_read_v5_document_simple(datadir):
 
     assert doc.locationLabels == [
         LocationLabelDescriptor(
-            name="asdf", userLocation={"weight": 10, "width": 50, "Italic": 0}
+            name="Some Style",
+            labelNames={"fr": "Un Style"},
+            userLocation={"weight": 10, "width": 50, "Italic": 0},
         ),
         LocationLabelDescriptor(
-            name="dfdf", userLocation={"weight": 100, "width": 100, "Italic": 1}
+            name="Other", userLocation={"weight": 100, "width": 100, "Italic": 1}
         ),
     ]
 
@@ -658,16 +660,17 @@ def test_instance_location_mix(map_doc):
 @pytest.mark.parametrize(
     "filename",
     [
+        "test_v4_original.designspace",
+        "test_v5_original.designspace",
         "test_v5_aktiv.designspace",
         "test_v5_decovar.designspace",
         "test_v5_discrete.designspace",
         "test_v5_sourceserif.designspace",
         "test_v5.designspace",
-        "test.designspace",
     ],
 )
 def test_roundtrip(tmpdir, datadir, filename):
-    test_file = datadir/filename
+    test_file = datadir / filename
     output_path = tmpdir / filename
     # Move the file to the tmpdir so that the filenames stay the same
     # (they're relative to the file's path)
@@ -676,6 +679,23 @@ def test_roundtrip(tmpdir, datadir, filename):
     doc.write(output_path)
     # The input XML has comments and empty lines for documentation purposes
     xml = test_file.read_text(encoding="utf-8")
-    xml = re.sub(r"<!--((?!-->).)*-->", "", xml)
-    xml = re.sub(r"\n+", "\n", xml)
-    assert xml == output_path.read_text(encoding="utf-8")
+    xml = re.sub(
+        r"<!-- ROUNDTRIP_TEST_REMOVE_ME_BEGIN -->(.|\n)*?<!-- ROUNDTRIP_TEST_REMOVE_ME_END -->",
+        "",
+        xml,
+    )
+    xml = re.sub(r"<!--(.|\n)*?-->", "", xml)
+    xml = re.sub(r"\s*\n+", "\n", xml)
+    assert output_path.read_text(encoding="utf-8") == xml
+
+
+def test_using_v5_features_upgrades_format(tmpdir, datadir):
+    test_file = datadir / "test_v4_original.designspace"
+    output_4_path = tmpdir / "test_v4.designspace"
+    output_5_path = tmpdir / "test_v5.designspace"
+    doc = DesignSpaceDocument.fromfile(test_file)
+    doc.write(output_4_path)
+    assert 'format="4.1"' in output_4_path.read_text(encoding="utf-8")
+    doc.addVariableFont(VariableFontDescriptor(filename="TestVF.ttf"))
+    doc.write(output_5_path)
+    assert 'format="5.0"' in output_5_path.read_text(encoding="utf-8")

@@ -4,23 +4,23 @@
     <axis tag="wght" name="weight" minimum="0" maximum="1000" default="0">
       <labelname xml:lang="en">Wéíght</labelname>
       <labelname xml:lang="fa-IR">قطر</labelname>
-      <map input="200" output="0" />
-      <map input="300" output="100" />
-      <map input="400" output="368" />
-      <map input="600" output="600" />
-      <map input="700" output="824" />
-      <map input="900" output="1000" />
+      <map input="200" output="0"/>
+      <map input="300" output="100"/>
+      <map input="400" output="368"/>
+      <map input="600" output="600"/>
+      <map input="700" output="824"/>
+      <map input="900" output="1000"/>
       <!-- All axes provide STAT information with the "labels" element. -->
       <labels>
-        <label userminimum="200" uservalue="200" usermaximum="250" name="Extra Light">
+        <label uservalue="200" userminimum="200" usermaximum="250" name="Extra Light">
           <labelname xml:lang="de">Extraleicht</labelname>
           <labelname xml:lang="fr">Extra léger</labelname>
         </label>
-        <label userminimum="250" uservalue="300" usermaximum="350" name="Light" />
-        <label userminimum="350" uservalue="400" usermaximum="450" name="Regular" elidable="true" />
-        <label userminimum="450" uservalue="600" usermaximum="650" name="Semi Bold" />
-        <label userminimum="650" uservalue="700" usermaximum="850" name="Bold" />
-        <label userminimum="850" uservalue="900" usermaximum="900" name="Black" />
+        <label uservalue="300" userminimum="250" usermaximum="350" name="Light"/>
+        <label uservalue="400" userminimum="350" usermaximum="450" name="Regular" elidable="true"/>
+        <label uservalue="600" userminimum="450" usermaximum="650" name="Semi Bold"/>
+        <label uservalue="700" userminimum="650" usermaximum="850" name="Bold"/>
+        <label uservalue="900" userminimum="850" usermaximum="900" name="Black"/>
       </labels>
     </axis>
 
@@ -31,10 +31,10 @@
       <map input="125" output="66"/>
       <map input="150" output="990"/>
       <labels>
-        <label uservalue="50" name="Condensed" />
-        <label uservalue="100" name="Normal" elidable="true" oldersibling="true" />
-        <label uservalue="125" name="Wide" />
-        <label uservalue="150" name="Extra Wide" />
+        <label uservalue="50" name="Condensed"/>
+        <label uservalue="100" name="Normal" elidable="true" oldersibling="true"/>
+        <label uservalue="125" name="Wide"/>
+        <label uservalue="150" name="Extra Wide"/>
       </labels>
     </axis>
 
@@ -42,11 +42,11 @@
       Discrete axes provide a list of discrete values.
       No interpolation is allowed between these.
     -->
-    <axis name="Italic" tag="ital" default="0" values="0 1">
+    <axis tag="ital" name="Italic" values="0 1" default="0">
       <labels>
         <!-- Discrete axes also provide STAT information. -->
-        <label uservalue="0" name="Roman" elidable="true" linkeduservalue="1" />
-        <label uservalue="1" name="Italic" />
+        <label uservalue="0" name="Roman" elidable="true" linkeduservalue="1"/>
+        <label uservalue="1" name="Italic"/>
       </labels>
     </axis>
   </axes>
@@ -54,14 +54,15 @@
   <!-- Freestanding labels are analogues of STAT format 4 entries.
         They give names to freestyle locations. -->
   <labels>
-    <label name="asdf">
+    <label name="Some Style">
+      <labelname xml:lang="fr">Un Style</labelname>
       <location>
         <dimension name="weight" uservalue="10"/>
         <dimension name="width" uservalue="50"/>
         <dimension name="Italic" uservalue="0"/>
       </location>
     </label>
-    <label name="dfdf">
+    <label name="Other">
       <location>
         <dimension name="weight" uservalue="100"/>
         <dimension name="width" uservalue="100"/>
@@ -184,11 +185,17 @@
         <dimension name="weight" xvalue="500"/>
         <dimension name="width" xvalue="20"/>
       </location>
+
+      <!-- The following elements are deprecated in v5.0. They can still be
+           read, but they won't be written out again (they don't roundtrip). -->
+      <!-- ROUNDTRIP_TEST_REMOVE_ME_BEGIN -->
       <glyphs>
         <glyph mute="1" unicode="0x123 0x124 0x125" name="arrow"/>
       </glyphs>
       <kerning/>
       <info/>
+      <!-- ROUNDTRIP_TEST_REMOVE_ME_END -->
+
       <lib>
         <dict>
           <key>com.coolDesignspaceApp.binaryData</key>
@@ -205,6 +212,7 @@
         <dimension name="weight" xvalue="500"/>
         <dimension name="width" xvalue="400" yvalue="300"/>
       </location>
+      <!-- ROUNDTRIP_TEST_REMOVE_ME_BEGIN -->
       <glyphs>
         <glyph unicode="0x65 0xc9 0x12d" name="arrow">
           <location>
@@ -231,6 +239,7 @@
       </glyphs>
       <kerning/>
       <info/>
+      <!-- ROUNDTRIP_TEST_REMOVE_ME_END -->
     </instance>
 
     <!--
