@@ -11,3 +11,6 @@ skia-pathops==0.7.2; platform_python_implementation != "PyPy"
 # this is only required to run Tests/cu2qu/{ufo,cli}_test.py
 ufoLib2==0.12.1
 pyobjc==8.1; sys_platform == "darwin"
+
+# NOT TO BE MERGED! Needed while we discuss Designspace version 5
+statmake==0.4

@@ -126,6 +126,10 @@ extras_require = {
 	"pathops": [
 		"skia-pathops >= 0.5.0",
 	],
+	# NOT TO BE MERGED! Needed while we discuss Designspace version 5
+	"ds5": [
+		"statmake == 0.4",
+	],
 }
 # use a special 'all' key as shorthand to includes all the extra dependencies
 extras_require["all"] = sum(extras_require.values(), [])
