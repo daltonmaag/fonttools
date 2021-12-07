@@ -694,7 +694,8 @@ def test_using_v5_features_upgrades_format(tmpdir, datadir):
     test_file = datadir / "test_v4_original.designspace"
     output_4_path = tmpdir / "test_v4.designspace"
     output_5_path = tmpdir / "test_v5.designspace"
-    doc = DesignSpaceDocument.fromfile(test_file)
+    shutil.copy(test_file, output_4_path)
+    doc = DesignSpaceDocument.fromfile(output_4_path)
     doc.write(output_4_path)
     assert 'format="4.1"' in output_4_path.read_text(encoding="utf-8")
     doc.addVariableFont(VariableFontDescriptor(filename="TestVF.ttf"))
