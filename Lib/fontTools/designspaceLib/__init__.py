@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 from textwrap import indent
 from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
-from fontTools.designspaceLib.types import Location
 
 from fontTools.misc.loggingTools import LogMixin
 from fontTools.misc.textTools import tobytes, tostr
@@ -2452,7 +2451,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.sources.append(sourceDescriptor)
 
     def addSourceDescriptor(self, **kwargs):
-        """Instanciate a new :class:`SourceDescriptor` using the given
+        """Instantiate a new :class:`SourceDescriptor` using the given
         ``kwargs`` and add it to ``doc.sources``.
         """
         source = self.writerClass.sourceDescriptorClass(**kwargs)
@@ -2464,7 +2463,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.instances.append(instanceDescriptor)
 
     def addInstanceDescriptor(self, **kwargs):
-        """Instanciate a new :class:`InstanceDescriptor` using the given
+        """Instantiate a new :class:`InstanceDescriptor` using the given
         ``kwargs`` and add it to :attr:`instances`.
         """
         instance = self.writerClass.instanceDescriptorClass(**kwargs)
@@ -2476,7 +2475,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.axes.append(axisDescriptor)
 
     def addAxisDescriptor(self, **kwargs):
-        """Instanciate a new :class:`AxisDescriptor` using the given
+        """Instantiate a new :class:`AxisDescriptor` using the given
         ``kwargs`` and add it to :attr:`axes`.
 
         The axis will be and instance of :class:`DiscreteAxisDescriptor` if
@@ -2494,7 +2493,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.rules.append(ruleDescriptor)
 
     def addRuleDescriptor(self, **kwargs):
-        """Instanciate a new :class:`RuleDescriptor` using the given
+        """Instantiate a new :class:`RuleDescriptor` using the given
         ``kwargs`` and add it to :attr:`rules`.
         """
         rule = self.writerClass.ruleDescriptorClass(**kwargs)
@@ -2509,7 +2508,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.variableFonts.append(variableFontDescriptor)
 
     def addVariableFontDescriptor(self, **kwargs):
-        """Instanciate a new :class:`VariableFontDescriptor` using the given
+        """Instantiate a new :class:`VariableFontDescriptor` using the given
         ``kwargs`` and add it to :attr:`variableFonts`.
 
         .. versionadded:: 5.0
@@ -2526,7 +2525,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         self.locationLabels.append(locationLabelDescriptor)
 
     def addLocationLabelDescriptor(self, **kwargs):
-        """Instanciate a new :class:`LocationLabelDescriptor` using the given
+        """Instantiate a new :class:`LocationLabelDescriptor` using the given
         ``kwargs`` and add it to :attr:`locationLabels`.
 
         .. versionadded:: 5.0
@@ -2546,7 +2545,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
             )
         return loc
 
-    def labelForUserLocation(self, userLocation: Location) -> Optional[LocationLabelDescriptor]:
+    def labelForUserLocation(self, userLocation: SimpleLocationDict) -> Optional[LocationLabelDescriptor]:
         """Return the :class:`LocationLabel` that matches the given
         ``userLocation``, or ``None`` if no such label exists.
 

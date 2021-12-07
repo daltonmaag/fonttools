@@ -11,7 +11,9 @@ class Range:
     __slots__ = "start", "end"
 
     start: float
+    """Inclusive start of the range."""
     end: float
+    """Inclusive end of the range."""
 
     def __contains__(self, value: Union[float, Range, Stops]) -> bool:
         if isinstance(value, Range):
