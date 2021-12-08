@@ -1,6 +1,10 @@
 @startuml v5_class_diagram
 
-title Designspace v5 Class Diagram \n\n
+title
+  Designspace v5 Class Diagram
+
+  <size:12>Note: the ""Descriptor"" suffix is omitted from most classes
+end title
 
 ' left to right direction
 
@@ -8,7 +12,7 @@ skinparam class {
 BackgroundColor<<New>> PaleGreen
 }
 
-class Designspace {
+class DesignSpaceDocument {
 + formatVersion: str = None
 + <color:green><b><<New>> elidedFallbackName: str = None
 + rulesProcessingLast: bool = False
@@ -35,13 +39,13 @@ note right of AbstractAxis::axisOrdering
 STAT Axis Record field
 end note
 
-class ContinuousAxis {
+class Axis {
 + minimum: float
 + maximum: float
 + default: float
 }
-AbstractAxis <|--- ContinuousAxis
-note bottom of ContinuousAxis
+AbstractAxis <|--- Axis
+note bottom of Axis
 This is the usual
 Axis, with a range
 of values.
@@ -67,7 +71,7 @@ default value for discrete
 axes? See open question.
 end note
 
-ContinuousAxis .[hidden] DiscreteAxis
+Axis .[hidden] DiscreteAxis
 
 class AxisLabel <<New>> {
 + userMinimum: Optional[float]
