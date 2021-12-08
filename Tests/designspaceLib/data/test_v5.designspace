@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<designspace format="5.0" elidedfallbackname="Regular">
-  <axes>
+<designspace format="5.0">
+  <axes elidedfallbackname="Regular">
     <axis tag="wght" name="weight" minimum="0" maximum="1000" default="0">
       <labelname xml:lang="en">Wéíght</labelname>
       <labelname xml:lang="fa-IR">قطر</labelname>

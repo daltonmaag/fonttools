@@ -1258,11 +1258,12 @@ class BaseDocWriter(object):
 
     def write(self, pretty=True, encoding="UTF-8", xml_declaration=True):
         self.root.attrib['format'] = ".".join(str(i) for i in self.effectiveFormatTuple)
-        if self.documentObject.elidedFallbackName is not None:
-            self.root.attrib['elidedfallbackname'] = self.documentObject.elidedFallbackName
 
-        if self.documentObject.axes:
-            self.root.append(ET.Element("axes"))
+        if self.documentObject.axes or self.documentObject.elidedFallbackName is not None:
+            axesElement = ET.Element("axes")
+            if self.documentObject.elidedFallbackName is not None:
+                axesElement.attrib['elidedfallbackname'] = self.documentObject.elidedFallbackName
+            self.root.append(axesElement)
         for axisObject in self.documentObject.axes:
             self._addAxis(axisObject)
 
@@ -1715,8 +1716,6 @@ class BaseDocReader(LogMixin):
         return self
 
     def read(self):
-        if 'elidedfallbackname' in self.root.attrib:
-            self.documentObject.elidedFallbackName = self.root.attrib['elidedfallbackname']
         self.readAxes()
         self.readLabels()
         self.readRules()
@@ -1792,6 +1791,9 @@ class BaseDocReader(LogMixin):
 
     def readAxes(self):
         # read the axes elements, including the warp map.
+        axesElement = self.root.find(".axes")
+        if axesElement and 'elidedfallbackname' in axesElement.attrib:
+            self.documentObject.elidedFallbackName = axesElement.attrib['elidedfallbackname']
         axisElements = self.root.findall(".axes/axis")
         if not axisElements:
             return
