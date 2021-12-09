@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from textwrap import indent
-from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, TypedDict, Union
 
 from fontTools.misc.loggingTools import LogMixin
 from fontTools.misc.textTools import tobytes, tostr
@@ -2816,3 +2816,9 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         major = next(numbers)
         minor = next(numbers, 0)
         return (major, minor)
+
+    # STAT-related methods
+    from .stat import getStatAxes, getStatLocations, buildStatTable
+
+    # Convert a designspace v5 to a bunch of designspaces v4
+    from .convert5to4 import convert5to4

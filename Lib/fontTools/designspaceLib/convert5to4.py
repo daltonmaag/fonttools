@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # pyright: basic
 
 # FIXME: we're building a stylespace as in statmake but it's not part of fontTools
@@ -80,6 +81,14 @@ def convert5to4(
         elided_fallback_name_id=2
     )
 
+=======
+from typing import Dict, Tuple
+
+
+def convert5to4(
+    self: DesignSpaceDocument,
+) -> Dict[str, DesignSpaceDocument]:
+>>>>>>> Stashed changes
     ribbi_mapping = get_ribbi_mapping(doc)
 
     # Make one DesignspaceDoc v4 for each variable font
@@ -221,6 +230,7 @@ def convert5to4(
         variable_fonts[vf.filename] = vf_doc
 
     return (variable_fonts, stylespace)
+<<<<<<< Updated upstream
 
 
 def _label_to_flag_list(
@@ -538,3 +548,5 @@ def get_ribbi_mapping(
         mapping[tuple(bd_it_location.items())] = "bold italic"
 
     return mapping
+=======
+>>>>>>> Stashed changes
