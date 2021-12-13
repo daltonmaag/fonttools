@@ -1,4 +1,6 @@
-<<<<<<< Updated upstream
+"""Extra method for DesignSpaceDocument to convert itself from a version 5
+document to a list of version 4 documents, one per variable font.
+"""
 # pyright: basic
 
 # FIXME: we're building a stylespace as in statmake but it's not part of fontTools
@@ -33,67 +35,18 @@ from fontTools.designspaceLib.types import (
     RegionSelection,
     location_in_selection,
 )
-from statmake.classes import (
-    DESIGNSPACE_STYLESPACE_INLINE_KEY,
-    Axis,
-    AxisValueFlag,
-    FlagList,
-    LocationFormat1,
-    LocationFormat2,
-    LocationFormat3,
-    LocationFormat4,
-    NameRecord,
-    Stylespace,
-)
 
 LOGGER = logging.getLogger(__name__)
 
 
 def convert5to4(
-    doc: DesignSpaceDocument,
-) -> Tuple[Dict[str, DesignSpaceDocument], Stylespace]:
-    stylespace = Stylespace(
-        axes=[
-            Axis(
-                name=NameRecord({"en": axis.name, **axis.labelNames}),
-                tag=axis.tag,
-                locations=[
-                    _axis_label_to_stylespace_location(label)
-                    for label in axis.axisLabels
-                ],
-                ordering=axis.axisOrdering,  # TODO: rename to axisOrdering
-            )
-            for axis in doc.axes
-        ],
-        locations=[
-            LocationFormat4(
-                name=NameRecord({"en": label.name, **label.labelNames}),
-                axis_values=label.location,
-                flags=_label_to_flag_list(label),
-            )
-            for label in doc.locationLabels
-        ],
-        # FIXME(Jany): I've added the elidedFallbackName property on DSDoc as string
-        # I think it should be the compiler's job to make the ID point to 2 if
-        # the string happens to be the same as name ID 2. Otherwise, if you
-        # can only input a name ID, how could you set this fallback name to
-        # an arbitrary value that doesn't already have a name ID in the font?
-        elided_fallback_name_id=2
-    )
-
-=======
-from typing import Dict, Tuple
-
-
-def convert5to4(
     self: DesignSpaceDocument,
 ) -> Dict[str, DesignSpaceDocument]:
->>>>>>> Stashed changes
-    ribbi_mapping = get_ribbi_mapping(doc)
+    ribbi_mapping = self.getRibbiMapping()
 
     # Make one DesignspaceDoc v4 for each variable font
     variable_fonts = {}
-    for vf in doc.variableFonts:
+    for vf in self.variableFonts:
         vf_doc = DesignSpaceDocument()
 
         # For each axis, 2 cases:
@@ -102,7 +55,7 @@ def convert5to4(
         axes_with_range: Dict[str, AxisDescriptor] = {}
         axes_with_single_location: Dict[str, float] = {}
         for axis_subset in vf.axisSubsets:
-            axis = doc.getAxis(axis_subset.name)
+            axis = self.getAxis(axis_subset.name)
             if isinstance(axis_subset, RangeAxisSubsetDescriptor):
                 vf_axis = AxisDescriptor(
                     # Same info
@@ -128,7 +81,7 @@ def convert5to4(
             else:
                 axes_with_single_location[axis.name] = axis_subset.userValue
         # Any axis not mentioned explicitly has a single location = default value
-        for axis in doc.axes:
+        for axis in self.axes:
             if (
                 axis.name not in axes_with_range
                 and axis.name not in axes_with_single_location
@@ -139,14 +92,11 @@ def convert5to4(
             axes_with_range, axes_with_single_location
         )
         # Rules: subset them based on conditions
-        vf_doc.rules = _subset_rules_based_on_conditions(doc.rules, region_selection)
-        vf_doc.rulesProcessingLast = doc.rulesProcessingLast
+        vf_doc.rules = _subset_rules_based_on_conditions(self.rules, region_selection)
+        vf_doc.rulesProcessingLast = self.rulesProcessingLast
 
         # Sources: keep only the ones that fall within the kept axis ranges
-        # FIXME: validate in advance that sources exist at the corners of the subset?
-        #           argument to not bother = it will blow up anyway eventually
-        #           should be done later though in order to provide a nice error message immediately after reading the designspace
-        for source in doc.sources:
+        for source in self.sources:
             if not location_in_selection(source.location, region_selection):
                 continue
 
@@ -171,11 +121,11 @@ def convert5to4(
             )
 
         # Instances: same as Sources + compute missing names
-        for instance in doc.instances:
+        for instance in self.instances:
             if not location_in_selection(instance.location, region_selection):
                 continue
 
-            vf_instance_names = _make_STAT_names(doc, instance, ribbi_mapping)
+            stat_names = _make_STAT_names(self, instance, ribbi_mapping)
             vf_doc.addInstance(
                 InstanceDescriptor(
                     filename=instance.filename,
@@ -184,22 +134,22 @@ def convert5to4(
                     name=instance.name,
                     location=_filter_location(axes_with_range, instance.location),
                     familyName=(
-                        instance.familyName or vf_instance_names.familyName or None
+                        instance.familyName or stat_names.familyName or None
                     ),
-                    styleName=instance.styleName or vf_instance_names.styleName or None,
+                    styleName=instance.styleName or stat_names.styleName or None,
                     postScriptFontName=(
                         instance.postScriptFontName
-                        or vf_instance_names.postScriptFontName
+                        or stat_names.postScriptFontName
                         or None
                     ),
                     styleMapFamilyName=(
                         instance.styleMapFamilyName
-                        or vf_instance_names.styleMapFamilyName
+                        or stat_names.styleMapFamilyName
                         or None
                     ),
                     styleMapStyleName=(
                         instance.styleMapStyleName
-                        or vf_instance_names.styleMapStyleName
+                        or stat_names.styleMapStyleName
                         or None
                     ),
                     # localisedFamilyName=instance.localisedFamilyName
@@ -221,16 +171,13 @@ def convert5to4(
             )
 
         vf_doc.lib = {
-            **doc.lib,
+            **self.lib,
             **vf.lib,
-            DESIGNSPACE_STYLESPACE_INLINE_KEY: asdict(stylespace),
-            "org.statmake.additionalLocations": axes_with_single_location,
         }
 
         variable_fonts[vf.filename] = vf_doc
 
-    return (variable_fonts, stylespace)
-<<<<<<< Updated upstream
+    return variable_fonts
 
 
 def _label_to_flag_list(
@@ -371,76 +318,6 @@ def _filter_location(
     return {k: v for k, v in location.items() if k in axes_with_range}
 
 
-@dataclass
-class StatNames:
-    familyName: str
-    styleName: str
-    postScriptFontName: str
-    styleMapFamilyName: str | None
-    styleMapStyleName: str | None
-
-
-# TODO: Deal with anisotropic locations.
-# TODO: Deal with localization.
-# TODO: Decide how to deal with familyName, for which there would need to be a
-#       new localized familyname element in sources, unless it's ok to query the
-#       source UFO directly (but what about source TTFs?)
-# TODO: Deal with STAT format 2 ranges.
-def _make_STAT_names(
-    doc: DesignSpaceDocument,
-    instance: InstanceDescriptor,
-    ribbi_mapping: dict[tuple[tuple[str, float], ...], RibbiStyle],
-) -> StatNames:
-    user_location = location_to_user_location(doc, instance.location)
-
-    family_name: Optional[str] = None
-    default_source: Optional[SourceDescriptor] = doc.findDefault()
-    if default_source is None:
-        LOGGER.warning("Cannot determine default source to look up family name.")
-    elif default_source.familyName is None:
-        LOGGER.warning(
-            "Cannot look up family name, assign the 'familyname' attribute to the default source."
-        )
-    else:
-        family_name = default_source.familyName
-
-    # If a free-standing label matches the location, use it for name generation.
-    label = doc.labelForUserLocation(user_location)
-    if label is not None:
-        style_name = label.defaultName
-    # Otherwise, scour the axis labels for matches.
-    else:
-        labels = get_axis_labels_for_user_location(doc.axes, user_location)
-        style_name = " ".join(
-            label.defaultName for label in labels if not label.elidable
-        )
-        if not style_name:
-            if instance.styleName is None:
-                instance_id: str = instance.name or repr(instance.location)
-                raise DesignSpaceDocumentError(
-                    f"Cannot infer style name for instance '{instance_id}' because all "
-                    "labels are elided. Please fill in the 'stylename' attribute yourself."
-                )
-            else:
-                style_name = instance.styleName
-
-    if family_name is None:
-        post_script_font_name = None
-    else:
-        post_script_font_name = f"{family_name}-{style_name}".replace(" ", "")
-
-    # TODO: look at how ufo2ft generates style_map_family_name
-    style_map_family_name = None
-    style_map_style_name = ribbi_mapping.get(tuple(instance.location.items()))
-
-    return StatNames(
-        familyName=family_name,
-        styleName=style_name,
-        postScriptFontName=post_script_font_name,
-        styleMapFamilyName=style_map_family_name,
-        styleMapStyleName=style_map_style_name,
-    )
-
 
 def location_to_user_location(doc: DesignSpaceDocument, location: Location) -> Location:
     axes_by_name: Dict[str, AxisDescriptor] = {a.name: a for a in doc.axes}
@@ -495,58 +372,3 @@ def get_axis_labels_for_user_location(
         labels.append(label)
 
     return labels
-
-
-# TODO(Python 3.8): use Literal
-# RibbiStyle = Union[Literal["regular"], Literal["bold"], Literal["italic"], Literal["bold italic"]]
-RibbiStyle = str
-
-
-# TODO: Also grab labels when no linkedUserValue is set? I.e. from well-known axis positions?
-def get_ribbi_mapping(
-    doc: DesignSpaceDocument,
-) -> dict[tuple[tuple[str, float], ...], RibbiStyle]:
-    default_location: Location = doc.newDefaultLocation()
-    if default_location is None:
-        raise DesignSpaceDocumentError("Cannot determine default location.")
-    mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = {}
-
-    bold_value: tuple[str, float] | None = None
-    italic_value: tuple[str, float] | None = None
-
-    axes_by_tag = {a.tag: a for a in doc.axes}
-    axis = axes_by_tag.get("wght")
-    if axis is not None:
-        rg_label = next(
-            (label for label in axis.axisLabels if label.userValue == 400), None
-        )
-        if rg_label is not None:
-            rg_value = axis.map_forward(400)
-            rg_location = {**default_location, axis.name: rg_value}
-            mapping[tuple(rg_location.items())] = "regular"
-            if rg_label.linkedUserValue is not None:
-                bd_value = axis.map_forward(rg_label.linkedUserValue)
-                bd_location = {**default_location, axis.name: bd_value}
-                mapping[tuple(bd_location.items())] = "bold"
-                bold_value = (axis.name, bd_value)
-
-    axis = axes_by_tag.get("ital") or axes_by_tag.get("slnt")
-    if axis is not None:
-        rg_label = next(
-            (label for label in axis.axisLabels if label.userValue == 0), None
-        )
-        if rg_label is not None and rg_label.linkedUserValue is not None:
-            it_value = axis.map_forward(rg_label.linkedUserValue)
-            it_location = {**default_location, axis.name: it_value}
-            mapping[tuple(it_location.items())] = "italic"
-            italic_value = (axis.name, it_value)
-
-    if bold_value is not None and italic_value is not None:
-        bd_name, bd_value = bold_value
-        it_name, it_value = italic_value
-        bd_it_location = {**default_location, bd_name: bd_value, it_name: it_value}
-        mapping[tuple(bd_it_location.items())] = "bold italic"
-
-    return mapping
-=======
->>>>>>> Stashed changes

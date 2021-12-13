@@ -2819,6 +2819,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
 
     # STAT-related methods
     from .stat import getStatAxes, getStatLocations, buildStatTable
+    from .statNames import getRibbiMapping
 
     # Convert a designspace v5 to a bunch of designspaces v4
     from .convert5to4 import convert5to4

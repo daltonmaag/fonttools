@@ -1,5 +1,10 @@
+"""Extra methods for DesignSpaceDocument to generate its STAT table data."""
+
+from __future__ import annotations
+
 from typing import Dict, List, Union
 import fontTools.otlLib.builder
+from fontTools.ttLib import TTFont
 from fontTools.designspaceLib import (
     AxisLabelDescriptor,
     DesignSpaceDocument,
@@ -64,12 +69,12 @@ def buildStatTable(self: DesignSpaceDocument, ttFont: TTFont) -> None:
 
 
 def _label_to_flags(label: Union[AxisLabelDescriptor, LocationLabelDescriptor]) -> int:
-    flag_list = []
+    flags = 0
     if label.olderSibling:
-        flag_list.append(AxisValueFlag.OlderSiblingFontAttribute)
+        flags |= 1
     if label.elidable:
-        flag_list.append(AxisValueFlag.ElidableAxisValueName)
-    return FlagList(flag_list)
+        flags |= 2
+    return flags
 
 
 def _axis_label_to_STAT_location(
