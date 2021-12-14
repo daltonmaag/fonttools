@@ -3,9 +3,6 @@ document to a list of version 4 documents, one per variable font.
 """
 # pyright: basic
 
-# FIXME: we're building a stylespace as in statmake but it's not part of fontTools
-# TODO: either move this converter out of fontTools so it can keep creating the stylespace
-#       or make this converter use the fontTools APIs for stat/generate data for these
 # FIXME: How to deal with Designspaces where e.g. the wght axis mapping differs slightly? See
 #        e.g. Source Serif 4.
 
@@ -14,35 +11,28 @@ from __future__ import annotations
 import logging
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
-from attr import asdict
 from fontTools.designspaceLib import (
     AxisDescriptor,
-    AxisLabelDescriptor,
-    RangeAxisSubsetDescriptor,
     DesignSpaceDocument,
-    DesignSpaceDocumentError,
     InstanceDescriptor,
-    LocationLabelDescriptor,
+    RangeAxisSubsetDescriptor,
     RuleDescriptor,
+    SimpleLocationDict,
     SourceDescriptor,
 )
-from fontTools.designspaceLib.types import (
-    ConditionSet,
-    Location,
-    Range,
-    RegionSelection,
-    location_in_selection,
-)
+from fontTools.designspaceLib.statNames import RibbiStyle
 
 LOGGER = logging.getLogger(__name__)
 
 
 def convert5to4(
     self: DesignSpaceDocument,
+    ribbi_mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = None,
 ) -> Dict[str, DesignSpaceDocument]:
-    ribbi_mapping = self.getRibbiMapping()
+    if ribbi_mapping is None:
+        ribbi_mapping = self.getRibbiMapping()
 
     # Make one DesignspaceDoc v4 for each variable font
     variable_fonts = {}
@@ -125,7 +115,7 @@ def convert5to4(
             if not location_in_selection(instance.location, region_selection):
                 continue
 
-            stat_names = _make_STAT_names(self, instance, ribbi_mapping)
+            stat_names = instance.getStatNames(self, ribbi_mapping)
             vf_doc.addInstance(
                 InstanceDescriptor(
                     filename=instance.filename,
@@ -133,9 +123,7 @@ def convert5to4(
                     font=instance.font,
                     name=instance.name,
                     location=_filter_location(axes_with_range, instance.location),
-                    familyName=(
-                        instance.familyName or stat_names.familyName or None
-                    ),
+                    familyName=(instance.familyName or stat_names.familyName or None),
                     styleName=instance.styleName or stat_names.styleName or None,
                     postScriptFontName=(
                         instance.postScriptFontName
@@ -178,42 +166,6 @@ def convert5to4(
         variable_fonts[vf.filename] = vf_doc
 
     return variable_fonts
-
-
-def _label_to_flag_list(
-    label: Union[AxisLabelDescriptor, LocationLabelDescriptor]
-) -> FlagList:
-    flag_list = []
-    if label.olderSibling:
-        flag_list.append(AxisValueFlag.OlderSiblingFontAttribute)
-    if label.elidable:
-        flag_list.append(AxisValueFlag.ElidableAxisValueName)
-    return FlagList(flag_list)
-
-
-def _axis_label_to_stylespace_location(
-    label: AxisLabelDescriptor,
-) -> Union[LocationFormat1, LocationFormat2, LocationFormat3]:
-    label_format = label.getFormat()
-    name = NameRecord({"en": label.name, **label.labelNames})
-    flags = _label_to_flag_list(label)
-    if label_format == 1:
-        return LocationFormat1(name=name, value=label.userValue, flags=flags)
-    if label_format == 2:
-        return LocationFormat2(
-            name=name,
-            value=label.userValue,
-            range=[label.userMinimum, label.userMaximum],
-            flags=flags,
-        )
-    if label_format == 3:
-        return LocationFormat3(
-            name=name,
-            value=label.userValue,
-            linked_value=label.linkedUserValue,
-            flags=flags,
-        )
-    raise Exception("unreachable")
 
 
 def _region_selection_from(
@@ -318,57 +270,81 @@ def _filter_location(
     return {k: v for k, v in location.items() if k in axes_with_range}
 
 
+@dataclass
+class Range:
+    __slots__ = "start", "end"
 
-def location_to_user_location(doc: DesignSpaceDocument, location: Location) -> Location:
-    axes_by_name: Dict[str, AxisDescriptor] = {a.name: a for a in doc.axes}
-    return {k: axes_by_name[k].map_backward(v) for k, v in location.items()}
+    start: float
+    """Inclusive start of the range."""
+    end: float
+    """Inclusive end of the range."""
+
+    def __contains__(self, value: Union[float, Range, Stops]) -> bool:
+        if isinstance(value, Range):
+            start, end = sorted((value.start, value.end))
+            return self.start <= start <= self.end and self.start <= end <= self.end
+        if isinstance(value, Stops):
+            return all(self.start <= stop <= self.end for stop in value.stops)
+        return self.start <= value <= self.end
+
+    def intersection(self, other: Range) -> Optional[Range]:
+        self_start, self_end = sorted((self.start, self.end))
+        other_start, other_end = sorted((other.start, other.end))
+        if self_end < other_start or self_start > other_end:
+            return None
+        else:
+            return Range(max(self_start, other_start), min(self_end, other_end))
 
 
-def get_sorted_axis_labels(
-    axes: list[AxisDescriptor],
-) -> dict[str, list[AxisLabelDescriptor]]:
-    """Returns axis labels sorted by their ordering, with unordered ones appended as
-    they are listed."""
+@dataclass
+class Stops:
+    __slots__ = "stops"
 
-    # First, get the axis labels with explicit ordering...
-    sorted_axes = sorted(
-        (axis for axis in axes if axis.axisOrdering is not None),
-        key=lambda a: a.axisOrdering,
+    stops: set[float]
+
+    def __contains__(self, value: Union[float, Range, Stops]) -> bool:
+        if isinstance(value, Range):
+            return value.start == value.end and value.start in self.stops
+        if isinstance(value, Stops):
+            return all(stop in self.stops for stop in value.stops)
+        return value in self.stops
+
+
+Region = Mapping[str, Union[Range, Stops]]
+
+
+# A region selection is either a range or a single value, as a Designspace v5
+# axis-subset element only allows a single discrete value or a range for a
+# variable-font element.
+RegionSelection = Mapping[str, Union[Range, float]]
+
+# A conditionset is a set of named ranges.
+ConditionSet = Mapping[str, Range]
+
+# A rule is a list of conditionsets where any has to be relevant for the whole rule to be relevant.
+Rule = List[ConditionSet]
+Rules = Dict[str, Rule]
+
+
+def in_region(
+    value: Union[SimpleLocationDict, RegionSelection, Region], region: Region
+) -> bool:
+    return value.keys() == region.keys() and all(
+        value in region[name] for name, value in value.items()
     )
-    sorted_labels: dict[str, list[AxisLabelDescriptor]] = {
-        axis.name: axis.axisLabels for axis in sorted_axes
-    }
-
-    # ... then append the others in the order they appear.
-    # NOTE: This relies on Python 3.7+ dict's preserved insertion order.
-    for axis in axes:
-        if axis.axisOrdering is None:
-            sorted_labels[axis.name] = axis.axisLabels
-
-    return sorted_labels
 
 
-def get_axis_labels_for_user_location(
-    axes: list[AxisDescriptor], user_location: Location
-) -> list[AxisLabelDescriptor]:
-    labels: list[AxisLabelDescriptor] = []
-
-    all_axis_labels = get_sorted_axis_labels(axes)
-    if all_axis_labels.keys() != user_location.keys():
-        raise DesignSpaceDocumentError(
-            f"Mismatch between user location '{user_location.keys()}' and available "
-            f"labels for '{all_axis_labels.keys()}'."
-        )
-
-    for axis_name, axis_labels in all_axis_labels.items():
-        user_value = user_location[axis_name]
-        label: Optional[AxisLabelDescriptor] = next(
-            (l for l in axis_labels if l.userValue == user_value), None
-        )
-        if label is None:
-            raise DesignSpaceDocumentError(
-                f"Document needs a label for axis '{axis_name}', user value '{user_value}'."
-            )
-        labels.append(label)
-
-    return labels
+def location_in_selection(
+    location: SimpleLocationDict, selection: RegionSelection
+) -> bool:
+    if location.keys() != selection.keys():
+        return False
+    for name, value in location.items():
+        selection_value = selection[name]
+        if isinstance(selection_value, (float, int)):
+            if value != selection_value:
+                return False
+        else:
+            if value not in selection_value:
+                return False
+    return True

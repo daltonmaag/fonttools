@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="wght" name="weight" minimum="200" maximum="900" default="400">
+      <map input="200" output="0"/>
+      <map input="300" output="145"/>
+      <map input="400" output="394"/>
+      <map input="600" output="594"/>
+      <map input="700" output="823"/>
+      <map input="900" output="1000"/>
+    </axis>
+    <axis tag="opsz" name="optical" minimum="8" maximum="60" default="20"/>
+  </axes>
+  <sources>
+    <source filename="../caption/master_0/SourceSerif-Italic_c0.ufo">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </source>
+    <source filename="../caption/master_1/SourceSerif-Italic_c1.ufo">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </source>
+    <source filename="../caption/master_2/SourceSerif-Italic_c2.ufo">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </source>
+    <source filename="../text/master_0/SourceSerif-Italic_0.ufo">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </source>
+    <source filename="../text/master_1/SourceSerif-Italic_1.ufo">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </source>
+    <source filename="../text/master_2/SourceSerif-Italic_2.ufo">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </source>
+    <source filename="../display/master_0/SourceSerif-Italic_d0.ufo">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </source>
+    <source filename="../display/master_1/SourceSerif-Italic_d1.ufo">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </source>
+    <source filename="../display/master_2/SourceSerif-Italic_d2.ufo">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance stylename="Caption ExtraLight Italic" postscriptfontname="SourceSerif4Italic-CaptionExtraLight">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </instance>
+    <instance stylename="Caption Light Italic" postscriptfontname="SourceSerif4Italic-CaptionLight">
+      <location>
+        <dimension name="weight" xvalue="145"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </instance>
+    <instance stylename="Caption Italic" postscriptfontname="SourceSerif4Italic-CaptionRegular">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </instance>
+    <instance stylename="Caption Semibold Italic" postscriptfontname="SourceSerif4Italic-CaptionSemibold">
+      <location>
+        <dimension name="weight" xvalue="594"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </instance>
+    <instance stylename="Caption Bold Italic" postscriptfontname="SourceSerif4Italic-CaptionBold">
+      <location>
+        <dimension name="weight" xvalue="823"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </instance>
+    <instance stylename="Caption Black Italic" postscriptfontname="SourceSerif4Italic-CaptionBlack">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="8"/>
+      </location>
+    </instance>
+    <instance stylename="SmText ExtraLight Italic" postscriptfontname="SourceSerif4Italic-SmTextExtraLight">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="16"/>
+      </location>
+    </instance>
+    <instance stylename="SmText Light Italic" postscriptfontname="SourceSerif4Italic-SmTextLight">
+      <location>
+        <dimension name="weight" xvalue="145"/>
+        <dimension name="optical" xvalue="16"/>
+      </location>
+    </instance>
+    <instance stylename="SmText Italic" postscriptfontname="SourceSerif4Italic-SmTextRegular">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="16"/>
+      </location>
+    </instance>
+    <instance stylename="SmText Semibold Italic" postscriptfontname="SourceSerif4Italic-SmTextSemibold">
+      <location>
+        <dimension name="weight" xvalue="594"/>
+        <dimension name="optical" xvalue="16"/>
+      </location>
+    </instance>
+    <instance stylename="SmText Bold Italic" postscriptfontname="SourceSerif4Italic-SmTextBold">
+      <location>
+        <dimension name="weight" xvalue="823"/>
+        <dimension name="optical" xvalue="16"/>
+      </location>
+    </instance>
+    <instance stylename="SmText Black Italic" postscriptfontname="SourceSerif4Italic-SmTextBlack">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="16"/>
+      </location>
+    </instance>
+    <instance stylename="ExtraLight Italic" postscriptfontname="SourceSerif4Italic-ExtraLight">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </instance>
+    <instance stylename="Light Italic" postscriptfontname="SourceSerif4Italic-Light">
+      <location>
+        <dimension name="weight" xvalue="145"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </instance>
+    <instance stylename="Italic" postscriptfontname="SourceSerif4Italic-Regular">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </instance>
+    <instance stylename="Semibold Italic" postscriptfontname="SourceSerif4Italic-Semibold">
+      <location>
+        <dimension name="weight" xvalue="594"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </instance>
+    <instance stylename="Bold Italic" postscriptfontname="SourceSerif4Italic-Bold">
+      <location>
+        <dimension name="weight" xvalue="823"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </instance>
+    <instance stylename="Black Italic" postscriptfontname="SourceSerif4Italic-Black">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="20"/>
+      </location>
+    </instance>
+    <instance stylename="Subhead ExtraLight Italic" postscriptfontname="SourceSerif4Italic-SubheadExtraLight">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="32"/>
+      </location>
+    </instance>
+    <instance stylename="Subhead Light Italic" postscriptfontname="SourceSerif4Italic-SubheadLight">
+      <location>
+        <dimension name="weight" xvalue="145"/>
+        <dimension name="optical" xvalue="32"/>
+      </location>
+    </instance>
+    <instance stylename="Subhead Italic" postscriptfontname="SourceSerif4Italic-SubheadRegular">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="32"/>
+      </location>
+    </instance>
+    <instance stylename="Subhead Semibold Italic" postscriptfontname="SourceSerif4Italic-SubheadSemibold">
+      <location>
+        <dimension name="weight" xvalue="594"/>
+        <dimension name="optical" xvalue="32"/>
+      </location>
+    </instance>
+    <instance stylename="Subhead Bold Italic" postscriptfontname="SourceSerif4Italic-SubheadBold">
+      <location>
+        <dimension name="weight" xvalue="823"/>
+        <dimension name="optical" xvalue="32"/>
+      </location>
+    </instance>
+    <instance stylename="Subhead Black Italic" postscriptfontname="SourceSerif4Italic-SubheadBlack">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="32"/>
+      </location>
+    </instance>
+    <instance stylename="Display ExtraLight Italic" postscriptfontname="SourceSerif4Italic-DisplayExtraLight">
+      <location>
+        <dimension name="weight" xvalue="0"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </instance>
+    <instance stylename="Display Light Italic" postscriptfontname="SourceSerif4Italic-DisplayLight">
+      <location>
+        <dimension name="weight" xvalue="145"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </instance>
+    <instance stylename="Display Italic" postscriptfontname="SourceSerif4Italic-DisplayRegular">
+      <location>
+        <dimension name="weight" xvalue="394"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </instance>
+    <instance stylename="Display Semibold Italic" postscriptfontname="SourceSerif4Italic-DisplaySemibold">
+      <location>
+        <dimension name="weight" xvalue="594"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </instance>
+    <instance stylename="Display Bold Italic" postscriptfontname="SourceSerif4Italic-DisplayBold">
+      <location>
+        <dimension name="weight" xvalue="823"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </instance>
+    <instance stylename="Display Black Italic" postscriptfontname="SourceSerif4Italic-DisplayBlack">
+      <location>
+        <dimension name="weight" xvalue="1000"/>
+        <dimension name="optical" xvalue="60"/>
+      </location>
+    </instance>
+  </instances>
+  <lib>
+    <dict>
+      <key>public.skipExportGlyphs</key>
+      <array>
+        <string>caron.alt</string>
+        <string>commabelowcmb.alt</string>
+        <string>f.liga</string>
+        <string>f.ligalong</string>
+        <string>tonos.cap</string>
+        <string>dieresiscmb.tight</string>
+        <string>turkicdsccmb</string>
+      </array>
+    </dict>
+  </lib>
+</designspace>

@@ -1,25 +1,21 @@
-from pathlib import Path
 import re
 import shutil
 
 import pytest
 from fontTools.designspaceLib import (
     AxisDescriptor,
+    AxisLabelDescriptor,
     DesignSpaceDocument,
     DiscreteAxisDescriptor,
-    AxisLabelDescriptor,
     InstanceDescriptor,
     LocationLabelDescriptor,
-    VariableFontDescriptor,
     RangeAxisSubsetDescriptor,
     ValueAxisSubsetDescriptor,
+    VariableFontDescriptor,
     posix,
 )
 
-
-@pytest.fixture
-def datadir():
-    return Path(__file__).parent / "data"
+from .fixtures import datadir
 
 
 def test_read_v5_document_simple(datadir):
@@ -479,41 +475,6 @@ def test_read_v5_document_aktiv(datadir):
             ],
         ),
     ]
-
-
-def test_convert_v5_document_aktiv_to_v4(datadir):
-    doc = DesignSpaceDocument.fromfile(datadir / "test_v5_aktiv.designspace")
-
-    import fontTools.designspaceLib.convert5to4
-
-    variable_fonts, stylespace = fontTools.designspaceLib.convert5to4.convert5to4(doc)
-    for vf_name, vf in variable_fonts.items():
-        vf.lib["org.statmake.stylespace"] = stylespace.to_dict()
-        vf.write(datadir / "out" / (vf_name + ".designspace"))
-
-
-def test_convert_v5_document_sourceserif_to_v4(datadir):
-    doc = DesignSpaceDocument.fromfile(datadir / "test_v5_sourceserif.designspace")
-
-    import fontTools.designspaceLib.convert5to4
-
-    variable_fonts, stylespace = fontTools.designspaceLib.convert5to4.convert5to4(doc)
-    for vf_name, vf in variable_fonts.items():
-        vf.lib["org.statmake.stylespace"] = stylespace.to_dict()
-        vf.write(datadir / "out" / (vf_name + ".designspace"))
-
-
-def test_detect_ribbi_aktiv(datadir):
-    doc = DesignSpaceDocument.fromfile(datadir / "test_v5_aktiv.designspace")
-
-    from fontTools.designspaceLib.convert5to4 import get_ribbi_mapping
-
-    assert get_ribbi_mapping(doc) == {
-        (("Weight", 84), ("Width", 100), ("Italic", 0)): "regular",
-        (("Weight", 133), ("Width", 100), ("Italic", 0)): "bold",
-        (("Weight", 84), ("Width", 100), ("Italic", 1)): "italic",
-        (("Weight", 133), ("Width", 100), ("Italic", 1)): "bold italic",
-    }
 
 
 @pytest.fixture

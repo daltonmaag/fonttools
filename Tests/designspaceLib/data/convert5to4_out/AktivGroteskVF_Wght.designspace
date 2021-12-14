@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="wght" name="Weight" minimum="100" maximum="900" default="400">
+      <map input="100" output="22"/>
+      <map input="200" output="38"/>
+      <map input="300" output="57"/>
+      <map input="400" output="84"/>
+      <map input="500" output="98"/>
+      <map input="600" output="115"/>
+      <map input="700" output="133"/>
+      <map input="800" output="158"/>
+      <map input="900" output="185"/>
+    </axis>
+  </axes>
+  <sources>
+    <source filename="../AktivGrotesk_Hair.ufo" name="Aktiv Grotesk Hair">
+      <location>
+        <dimension name="Weight" xvalue="22"/>
+      </location>
+    </source>
+    <source filename="../AktivGrotesk_Rg.ufo" name="Aktiv Grotesk Regular">
+      <location>
+        <dimension name="Weight" xvalue="84"/>
+      </location>
+    </source>
+    <source filename="../AktivGrotesk_Rg.ufo" name="Aktiv Grotesk Regular" layer="{126,100,0}">
+      <location>
+        <dimension name="Weight" xvalue="133"/>
+      </location>
+    </source>
+    <source filename="../AktivGrotesk_Blk.ufo" name="Aktiv Grotesk Black">
+      <location>
+        <dimension name="Weight" xvalue="185"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance name="Aktiv Grotesk Hair" stylename="Hair" filename="../instances/AktivGrotesk_Hair.ufo" stylemapfamilyname="Aktiv Grotesk Hair">
+      <location>
+        <dimension name="Weight" xvalue="22"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk Thin" stylename="Thin" filename="../instances/AktivGrotesk_Th.ufo" stylemapfamilyname="Aktiv Grotesk Thin">
+      <location>
+        <dimension name="Weight" xvalue="38"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk Light" stylename="Light" filename="../instances/AktivGrotesk_Lt.ufo" stylemapfamilyname="Aktiv Grotesk Light">
+      <location>
+        <dimension name="Weight" xvalue="57"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk Regular" stylename="Regular" filename="../instances/AktivGrotesk_Rg.ufo" stylemapfamilyname="Aktiv Grotesk" stylemapstylename="regular">
+      <location>
+        <dimension name="Weight" xvalue="84"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk Medium" stylename="Medium" filename="../instances/AktivGrotesk_Md.ufo" stylemapfamilyname="Aktiv Grotesk Medium">
+      <location>
+        <dimension name="Weight" xvalue="98"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk SemiBold" stylename="SemiBold" filename="../../build/instances/AktivGrotesk_SBd.ufo" stylemapfamilyname="Aktiv Grotesk SemiBold">
+      <location>
+        <dimension name="Weight" xvalue="115"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk Bold" stylename="Bold" filename="../instances/AktivGrotesk_Bd.ufo" stylemapfamilyname="Aktiv Grotesk" stylemapstylename="bold">
+      <location>
+        <dimension name="Weight" xvalue="133"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk XBold" stylename="XBold" filename="../instances/AktivGrotesk_XBd.ufo" stylemapfamilyname="Aktiv Grotesk XBold">
+      <location>
+        <dimension name="Weight" xvalue="158"/>
+      </location>
+    </instance>
+    <instance name="Aktiv Grotesk Black" stylename="Black" filename="../instances/AktivGrotesk_Blk.ufo" stylemapfamilyname="Aktiv Grotesk Black">
+      <location>
+        <dimension name="Weight" xvalue="185"/>
+      </location>
+    </instance>
+  </instances>
+</designspace>

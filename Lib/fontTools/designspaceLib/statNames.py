@@ -7,20 +7,30 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, Optional, Union
 import logging
 
-from fontTools.designspaceLib import AxisDescriptor, AxisLabelDescriptor, DesignSpaceDocument, DesignSpaceDocumentError, InstanceDescriptor, SourceDescriptor
+from fontTools.designspaceLib import (
+    AxisDescriptor,
+    AxisLabelDescriptor,
+    DesignSpaceDocument,
+    DesignSpaceDocumentError,
+    DiscreteAxisDescriptor,
+    InstanceDescriptor,
+    SimpleLocationDict,
+    SourceDescriptor,
+)
 
 LOGGER = logging.getLogger(__name__)
 
+
 @dataclass
 class StatNames:
-    familyName: str
-    styleName: str
-    postScriptFontName: str
-    styleMapFamilyName: Optional[str]
-    styleMapStyleName: Optional[str]
+    familyNames: Dict[str, str]
+    styleNames: Dict[str, str]
+    styleMapFamilyNames: Dict[str, str]
+    styleMapStyleNames: Dict[str, str]
+    postScriptFontName: Optional[str]
 
 
 # TODO: Deal with anisotropic locations.
@@ -32,11 +42,21 @@ class StatNames:
 def getStatNames(
     self: InstanceDescriptor,
     doc: DesignSpaceDocument,
-    ribbi_mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = None
+    ribbi_mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = None,
 ) -> StatNames:
-    user_location = self.getFullUserLocation()
+    """Compute names, including localizations, using only STAT data, for this instance.
 
-    family_name: Optional[str] = None
+    If not enough STAT data is available for a given name, either its dict of
+    localized names will be empty (family and style names), or the name will be
+    None (PostScript name).
+
+    .. versionadded:: 5.0
+    """
+    if ribbi_mapping is None:
+        ribbi_mapping = doc.getRibbiMapping()
+    user_location = self.getFullUserLocation(doc)
+
+    family_names: Dict[str, str] = {}
     default_source: Optional[SourceDescriptor] = doc.findDefault()
     if default_source is None:
         LOGGER.warning("Cannot determine default source to look up family name.")
@@ -45,43 +65,48 @@ def getStatNames(
             "Cannot look up family name, assign the 'familyname' attribute to the default source."
         )
     else:
-        family_name = default_source.familyName
+        family_names["en"] = default_source.familyName
 
+    style_names: Dict[str, str] = None
     # If a free-standing label matches the location, use it for name generation.
     label = doc.labelForUserLocation(user_location)
     if label is not None:
-        style_name = label.defaultName
+        style_names = {'en': label.name, **label.labelNames}
     # Otherwise, scour the axis labels for matches.
     else:
+        # Gather all languages in which at least one translation is provided
+        # Then build names for all these languages, but fallback to English
+        # whenever a translation is missing.
+        # TODO (Jany)
         labels = get_axis_labels_for_user_location(doc.axes, user_location)
-        style_name = " ".join(
+        style_names = " ".join(
             label.defaultName for label in labels if not label.elidable
         )
-        if not style_name:
-            if self.styleName is None:
-                instance_id: str = self.name or repr(self.location)
-                raise DesignSpaceDocumentError(
-                    f"Cannot infer style name for instance '{instance_id}' because all "
-                    "labels are elided. Please fill in the 'stylename' attribute yourself."
-                )
-            else:
-                style_name = self.styleName
+        if not style_names and doc.elidedFallbackName is not None:
+            style_names = doc.elidedFallbackName
 
-    if family_name is None:
-        post_script_font_name = None
+    # if not style_names:
+    #     instance_id: str = self.name or repr(self.location)
+    #     raise DesignSpaceDocumentError(
+    #         f"Cannot infer style name for instance '{instance_id}' because all "
+    #         "labels are elided. Please fill in the 'stylename' attribute yourself."
+    #     )
+
+    if family_names is None:
+        post_script_font_names = None
     else:
-        post_script_font_name = f"{family_name}-{style_name}".replace(" ", "")
+        post_script_font_names = f"{family_names}-{style_names}".replace(" ", "")
 
-    # TODO: look at how ufo2ft generates style_map_family_name
-    style_map_family_name = None
-    style_map_style_name = ribbi_mapping.get(tuple(self.location.items()))
+    # TODO: look at how ufo2ft generates style_map_family_names
+    style_map_family_names = None
+    style_map_style_names = ribbi_mapping.get(tuple(self.location.items()))
 
     return StatNames(
-        familyName=family_name,
-        styleName=style_name,
-        postScriptFontName=post_script_font_name,
-        styleMapFamilyName=style_map_family_name,
-        styleMapStyleName=style_map_style_name,
+        familyName=family_names,
+        styleName=style_names,
+        postScriptFontName=post_script_font_names,
+        styleMapFamilyName=style_map_family_names,
+        styleMapStyleName=style_map_style_names,
     )
 
 
@@ -110,7 +135,8 @@ def get_sorted_axis_labels(
 
 
 def get_axis_labels_for_user_location(
-    axes: list[AxisDescriptor], user_location: Location
+    axes: list[Union[AxisDescriptor, DiscreteAxisDescriptor]],
+    user_location: SimpleLocationDict,
 ) -> list[AxisLabelDescriptor]:
     labels: list[AxisLabelDescriptor] = []
 
@@ -133,7 +159,6 @@ def get_axis_labels_for_user_location(
         labels.append(label)
 
     return labels
-
 
 
 # TODO(Python 3.8): use Literal

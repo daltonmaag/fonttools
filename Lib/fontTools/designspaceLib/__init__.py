@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from textwrap import indent
-from typing import Any, Dict, List, MutableMapping, Optional, Tuple, TypedDict, Union
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 from fontTools.misc.loggingTools import LogMixin
 from fontTools.misc.textTools import tobytes, tostr
@@ -725,7 +725,6 @@ class InstanceDescriptor(SimpleDescriptor):
         .. versionadded:: 5.0
         """
         return doc.map_backward(self.getFullDesignLocation(doc))
-
 
 
 def tagForAxisName(name):
@@ -2817,9 +2816,16 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         minor = next(numbers, 0)
         return (major, minor)
 
-    # STAT-related methods
-    from .stat import getStatAxes, getStatLocations, buildStatTable
-    from .statNames import getRibbiMapping
 
-    # Convert a designspace v5 to a bunch of designspaces v4
-    from .convert5to4 import convert5to4
+# Add STAT-related methods after all class definitions to prevent issues with
+# circular imports
+from .stat import getStatAxes, getStatLocations, buildStatTable
+from .statNames import getRibbiMapping, getStatNames
+from .convert5to4 import convert5to4
+
+DesignSpaceDocument.getStatAxes = getStatAxes
+DesignSpaceDocument.getStatLocations = getStatLocations
+DesignSpaceDocument.buildStatTable = buildStatTable
+DesignSpaceDocument.getRibbiMapping = getRibbiMapping
+DesignSpaceDocument.convert5to4 = convert5to4
+InstanceDescriptor.getStatNames = getStatNames

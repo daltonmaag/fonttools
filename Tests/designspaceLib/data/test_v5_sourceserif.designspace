@@ -29,7 +29,7 @@
     </axis>
     <axis tag="ital" name="italic" values="0 1" default="0">
       <labels ordering="2">
-        <label uservalue="0" name="Regular" elidable="true"/>
+        <label uservalue="0" name="Roman" elidable="true"/>
         <label uservalue="1" name="Italic"/>
       </labels>
     </axis>
@@ -166,7 +166,7 @@
   </sources>
 
   <variable-fonts>
-    <variable-font filename="SourceSerif4Variable-Roman.ttf">
+    <variable-font filename="SourceSerif4Variable-Roman.otf">
       <axis-subsets>
         <axis-subset name="weight"/>
         <axis-subset name="optical"/>
@@ -197,7 +197,7 @@
         </dict>
       </lib>
     </variable-font>
-    <variable-font filename="SourceSerif4Variable-Italic.ttf">
+    <variable-font filename="SourceSerif4Variable-Italic.otf">
       <axis-subsets>
         <axis-subset name="weight"/>
         <axis-subset name="optical"/>
