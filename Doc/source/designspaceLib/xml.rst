@@ -502,6 +502,23 @@ The ``<sources>`` element contains one or more ``<source>`` elements.
    If no layer attribute is given assume the foreground layer should be used.
 
 
+``<familyname>`` element: localised names for sources
+-----------------------------------------------------
+
+Localised family names for sources can be included with this ``<familyname>``
+element with an ``xml:lang`` attribute:
+`XML language definition <https://www.w3.org/International/questions/qa-when-xmllang.en>`__
+
+.. versionadded:: 5.0
+
+.. rubric:: Example
+
+.. code:: xml
+
+    <familyname xml:lang="fr">Montserrat</familyname>
+    <familyname xml:lang="ja">モンセラート</familyname>
+
+
 ``<location>`` element (source)
 -------------------------------
 

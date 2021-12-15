@@ -52,6 +52,13 @@
   </sources>
   <instances>
     <instance name="instance.ufo1" familyname="InstanceFamilyName" stylename="InstanceStyleName" filename="instances/instanceTest1.ufo" postscriptfontname="InstancePostscriptName" stylemapfamilyname="InstanceStyleMapFamilyName" stylemapstylename="InstanceStyleMapStyleName">
+      <stylename xml:lang="fr">Demigras</stylename>
+      <stylename xml:lang="ja">半ば</stylename>
+      <familyname xml:lang="fr">Montserrat</familyname>
+      <familyname xml:lang="ja">モンセラート</familyname>
+      <stylemapstylename xml:lang="de">Standard</stylemapstylename>
+      <stylemapfamilyname xml:lang="de">Montserrat Halbfett</stylemapfamilyname>
+      <stylemapfamilyname xml:lang="ja">モンセラート SemiBold</stylemapfamilyname>
       <location>
         <dimension name="weight" xvalue="500"/>
         <dimension name="width" xvalue="20"/>

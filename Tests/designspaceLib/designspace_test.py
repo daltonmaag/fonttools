@@ -31,11 +31,11 @@ def _axesAsDict(axes):
 
 
 def assert_equals_test_file(path, test_filename):
-    with open(path) as fp:
+    with open(path, encoding="utf-8") as fp:
         actual = fp.read()
 
     test_path = os.path.join(os.path.dirname(__file__), test_filename)
-    with open(test_path) as fp:
+    with open(test_path, encoding="utf-8") as fp:
         expected = fp.read()
         expected = re.sub(r"<!--(.|\n)*?-->", "", expected)
         expected = re.sub(r"\s*\n+", "\n", expected)
@@ -125,6 +125,10 @@ def test_fill_document(tmpdir):
     i1.postScriptFontName = "InstancePostscriptName"
     i1.styleMapFamilyName = "InstanceStyleMapFamilyName"
     i1.styleMapStyleName = "InstanceStyleMapStyleName"
+    i1.localisedStyleName = dict(fr="Demigras", ja="半ば")
+    i1.localisedFamilyName = dict(fr="Montserrat", ja="モンセラート")
+    i1.localisedStyleMapStyleName = dict(de="Standard")
+    i1.localisedStyleMapFamilyName = dict(de="Montserrat Halbfett", ja="モンセラート SemiBold")
     glyphData = dict(name="arrow", mute=True, unicodes=[0x123, 0x124, 0x125])
     i1.glyphs['arrow'] = glyphData
     i1.lib['com.coolDesignspaceApp.binaryData'] = plistlib.Data(b'<binary gunk>')

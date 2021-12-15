@@ -162,6 +162,13 @@ def test_read_v5_document_simple(datadir):
             postScriptFontName="InstancePostscriptName",
             styleMapFamilyName="InstanceStyleMapFamilyName",
             styleMapStyleName="InstanceStyleMapStyleName",
+            localisedFamilyName={"fr": "Montserrat", "ja": "モンセラート"},
+            localisedStyleName={"fr": "Demigras", "ja": "半ば"},
+            localisedStyleMapFamilyName={
+                "de": "Montserrat Halbfett",
+                "ja": "モンセラート SemiBold",
+            },
+            localisedStyleMapStyleName={"de": "Standard"},
             glyphs={"arrow": {"mute": True, "unicodes": [291, 292, 293]}},
             lib={
                 "com.coolDesignspaceApp.binaryData": b"<binary gunk>",

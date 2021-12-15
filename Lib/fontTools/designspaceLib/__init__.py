@@ -122,6 +122,7 @@ class SourceDescriptor(SimpleDescriptor):
         s1.location = dict(weight=0)
         s1.familyName = "MasterFamilyName"
         s1.styleName = "MasterStyleNameOne"
+        s1.localisedFamilyName = dict(fr="Caractère")
         s1.mutedGlyphNames.append("A")
         s1.mutedGlyphNames.append("Z")
         doc.addSource(s1)
@@ -133,7 +134,7 @@ class SourceDescriptor(SimpleDescriptor):
               'copyGroups', 'copyFeatures',
               'muteKerning', 'muteInfo',
               'mutedGlyphNames',
-              'familyName', 'styleName']
+              'familyName', 'styleName', 'localisedFamilyName']
 
     filename = posixpath_property("_filename")
     path = posixpath_property("_path")
@@ -150,6 +151,7 @@ class SourceDescriptor(SimpleDescriptor):
         layerName=None,
         familyName=None,
         styleName=None,
+        localisedFamilyName=None,
         copyLib=False,
         copyInfo=False,
         copyGroups=False,
@@ -210,6 +212,14 @@ class SourceDescriptor(SimpleDescriptor):
         here.
 
         Varlib.
+        """
+        self.localisedFamilyName = localisedFamilyName or {}
+        """dict. A dictionary of localised family name strings, keyed by
+        language code.
+
+        If present, will be used to build localized names for all instances.
+
+        .. versionadded:: 5.0
         """
 
         self.copyLib = copyLib
@@ -286,6 +296,20 @@ class SourceDescriptor(SimpleDescriptor):
     @location.setter
     def location(self, location: Optional[AnisotropicLocationDict]):
         self.designLocation = location or {}
+
+    def setFamilyName(self, familyName, languageCode="en"):
+        """Setter for :attr:`localisedFamilyName`
+
+        .. versionadded:: 5.0
+        """
+        self.localisedFamilyName[languageCode] = tostr(familyName)
+
+    def getFamilyName(self, languageCode="en"):
+        """Getter for :attr:`localisedFamilyName`
+
+        .. versionadded:: 5.0
+        """
+        return self.localisedFamilyName.get(languageCode)
 
 
 class RuleDescriptor(SimpleDescriptor):
@@ -1322,6 +1346,10 @@ class BaseDocWriter(object):
                 for axis in self.documentObject.axes
             ) or
             self.documentObject.locationLabels or
+            any(
+                source.localisedFamilyName
+                for source in self.documentObject.sources
+            ) or
             self.documentObject.variableFonts or
             any(
                 instance.locationLabel or
@@ -1584,6 +1612,16 @@ class BaseDocWriter(object):
             sourceElement.attrib['stylename'] = sourceObject.styleName
         if sourceObject.layerName is not None:
             sourceElement.attrib['layer'] = sourceObject.layerName
+        if sourceObject.localisedFamilyName:
+            languageCodes = list(sourceObject.localisedFamilyName.keys())
+            languageCodes.sort()
+            for code in languageCodes:
+                if code == "en":
+                    continue  # already stored in the element attribute
+                localisedFamilyNameElement = ET.Element('familyname')
+                localisedFamilyNameElement.attrib[XML_LANG] = code
+                localisedFamilyNameElement.text = sourceObject.getFamilyName(code)
+                sourceElement.append(localisedFamilyNameElement)
         if sourceObject.copyLib:
             libElement = ET.Element('lib')
             libElement.attrib['copy'] = "1"
@@ -2003,6 +2041,11 @@ class BaseDocReader(LogMixin):
             styleName = sourceElement.attrib.get("stylename")
             if styleName is not None:
                 sourceObject.styleName = styleName
+            for familyNameElement in sourceElement.findall('familyname'):
+                for key, lang in familyNameElement.items():
+                    if key == XML_LANG:
+                        familyName = familyNameElement.text
+                        sourceObject.setFamilyName(familyName, lang)
             designLocation, userLocation = self.locationFromElement(sourceElement)
             if userLocation:
                 raise DesignSpaceDocumentError(f'<source> element "{sourceName}" must only have design locations (using xvalue="").')
