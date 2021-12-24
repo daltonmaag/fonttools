@@ -4,7 +4,7 @@ from fontTools.designspaceLib.statNames import StatNames
 from .fixtures import datadir
 
 
-def test_instance_get_stat_names(datadir):
+def test_instance_getStatNames(datadir):
     doc = DesignSpaceDocument.fromfile(datadir / "test_v5_sourceserif.designspace")
 
     # TODO (Jany)

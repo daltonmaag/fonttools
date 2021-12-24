@@ -22,81 +22,77 @@ from fontTools.designspaceLib import (
     SimpleLocationDict,
     SourceDescriptor,
 )
-from fontTools.designspaceLib.statNames import RibbiStyle
 
 LOGGER = logging.getLogger(__name__)
 
 
 def convert5to4(
     self: DesignSpaceDocument,
-    ribbi_mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = None,
 ) -> Dict[str, DesignSpaceDocument]:
-    if ribbi_mapping is None:
-        ribbi_mapping = self.getRibbiMapping()
-
     # Make one DesignspaceDoc v4 for each variable font
-    variable_fonts = {}
+    variableFonts = {}
     for vf in self.variableFonts:
-        vf_doc = DesignSpaceDocument()
+        vfDoc = DesignSpaceDocument()
+        vfDoc.formatVersion = "4.1"
 
         # For each axis, 2 cases:
         #  - it has a range = it's an axis in the VF DS
         #  - it's a single location = write in the lib org.statmake.additionalLocations of VF DS
-        axes_with_range: Dict[str, AxisDescriptor] = {}
-        axes_with_single_location: Dict[str, float] = {}
-        for axis_subset in vf.axisSubsets:
-            axis = self.getAxis(axis_subset.name)
-            if isinstance(axis_subset, RangeAxisSubsetDescriptor):
-                vf_axis = AxisDescriptor(
+        axesWithRange: Dict[str, AxisDescriptor] = {}
+        axesWithSingleLocation: Dict[str, float] = {}
+        for axesSubset in vf.axisSubsets:
+            axis = self.getAxis(axesSubset.name)
+            if isinstance(axesSubset, RangeAxisSubsetDescriptor):
+                vfAxis = AxisDescriptor(
                     # Same info
                     tag=axis.tag,
                     name=axis.name,
                     labelNames=axis.labelNames,
                     hidden=axis.hidden,
                     # Subset range
-                    minimum=max(axis_subset.userMinimum, axis.minimum),
-                    default=axis_subset.userDefault or axis.default,
-                    maximum=min(axis_subset.userMaximum, axis.maximum),
+                    minimum=max(axesSubset.userMinimum, axis.minimum),
+                    default=axesSubset.userDefault or axis.default,
+                    maximum=min(axesSubset.userMaximum, axis.maximum),
                     map=[
                         (user, design)
                         for user, design in axis.map
-                        if axis_subset.userMinimum <= user <= axis_subset.userMaximum
+                        if axesSubset.userMinimum <= user <= axesSubset.userMaximum
                     ],
                     # Don't include any new-in-DS5 info
                     axisOrdering=None,
                     axisLabels=None,
                 )
-                axes_with_range[axis.name] = vf_axis
-                vf_doc.addAxis(vf_axis)
+                axesWithRange[axis.name] = vfAxis
+                vfDoc.addAxis(vfAxis)
             else:
-                axes_with_single_location[axis.name] = axis_subset.userValue
+                axesWithSingleLocation[axis.name] = axesSubset.userValue
         # Any axis not mentioned explicitly has a single location = default value
         for axis in self.axes:
             if (
-                axis.name not in axes_with_range
-                and axis.name not in axes_with_single_location
+                axis.name not in axesWithRange
+                and axis.name not in axesWithSingleLocation
             ):
-                axes_with_single_location[axis.name] = axis.default
+                axesWithSingleLocation[axis.name] = axis.default
 
-        region_selection: RegionSelection = _region_selection_from(
-            axes_with_range, axes_with_single_location
+        regionSelection: RegionSelection = _regionSelectionFrom(
+            axesWithRange, axesWithSingleLocation
         )
         # Rules: subset them based on conditions
-        vf_doc.rules = _subset_rules_based_on_conditions(self.rules, region_selection)
-        vf_doc.rulesProcessingLast = self.rulesProcessingLast
+        vfDoc.rules = _subsetRulesBasedOnConditions(self.rules, regionSelection)
+        vfDoc.rulesProcessingLast = self.rulesProcessingLast
 
         # Sources: keep only the ones that fall within the kept axis ranges
         for source in self.sources:
-            if not location_in_selection(source.location, region_selection):
+            if not _locationInSelection(source.location, regionSelection):
                 continue
 
-            vf_doc.addSource(
+            vfDoc.addSource(
                 SourceDescriptor(
                     filename=source.filename,
                     path=source.path,
                     font=source.font,
                     name=source.name,
-                    location=_filter_location(axes_with_range, source.location),
+                    location=_filter_location(axesWithRange, source.location),
                     layerName=source.layerName,
                     familyName=source.familyName,
                     styleName=source.styleName,
@@ -112,42 +108,33 @@ def convert5to4(
 
         # Instances: same as Sources + compute missing names
         for instance in self.instances:
-            if not location_in_selection(instance.location, region_selection):
+            if not _locationInSelection(instance.location, regionSelection):
                 continue
 
-            stat_names = instance.getStatNames(self, ribbi_mapping)
-            vf_doc.addInstance(
+            statNames = instance.getStatNames(self)
+            vfDoc.addInstance(
                 InstanceDescriptor(
                     filename=instance.filename,
                     path=instance.path,
                     font=instance.font,
                     name=instance.name,
-                    location=_filter_location(axes_with_range, instance.location),
-                    familyName=(instance.familyName or stat_names.familyName or None),
-                    styleName=instance.styleName or stat_names.styleName or None,
-                    postScriptFontName=(
-                        instance.postScriptFontName
-                        or stat_names.postScriptFontName
-                        or None
-                    ),
-                    styleMapFamilyName=(
-                        instance.styleMapFamilyName
-                        or stat_names.styleMapFamilyName
-                        or None
-                    ),
-                    styleMapStyleName=(
-                        instance.styleMapStyleName
-                        or stat_names.styleMapStyleName
-                        or None
-                    ),
-                    # localisedFamilyName=instance.localisedFamilyName
-                    # or vf_instance_names.localisedFamilyName,
-                    # localisedStyleName=instance.localisedStyleName
-                    # or vf_instance_names.localisedStyleName,
-                    # localisedStyleMapFamilyName=instance.localisedStyleMapFamilyName
-                    # or vf_instance_names.localisedStyleMapFamilyName,
-                    # localisedStyleMapStyleName=instance.localisedStyleMapStyleName
-                    # or vf_instance_names.localisedStyleMapStyleName,
+                    location=_filter_location(axesWithRange, instance.location),
+                    familyName=instance.familyName or statNames.familyNames.get("en"),
+                    styleName=instance.styleName or statNames.styleNames.get("en"),
+                    postScriptFontName=instance.postScriptFontName
+                    or statNames.postScriptFontName,
+                    styleMapFamilyName=instance.styleMapFamilyName
+                    or statNames.styleMapFamilyNames.get("en"),
+                    styleMapStyleName=instance.styleMapStyleName
+                    or statNames.styleMapStyleName,
+                    localisedFamilyName=instance.localisedFamilyName
+                    or statNames.familyNames,
+                    localisedStyleName=instance.localisedStyleName
+                    or statNames.styleNames,
+                    localisedStyleMapFamilyName=instance.localisedStyleMapFamilyName
+                    or statNames.styleMapFamilyNames,
+                    localisedStyleMapStyleName=instance.localisedStyleMapStyleName
+                    or {},
                     # Deprecated
                     # glyphs=None,
                     # kerning=True,
@@ -158,22 +145,22 @@ def convert5to4(
                 )
             )
 
-        vf_doc.lib = {
+        vfDoc.lib = {
             **self.lib,
             **vf.lib,
         }
 
-        variable_fonts[vf.filename] = vf_doc
+        variableFonts[vf.filename] = vfDoc
 
-    return variable_fonts
+    return variableFonts
 
 
-def _region_selection_from(
-    axes_with_range: Dict[str, AxisDescriptor],
-    axes_with_single_location: Dict[str, float],
+def _regionSelectionFrom(
+    axesWithRange: Dict[str, AxisDescriptor],
+    axesWithSingleLocation: Dict[str, float],
 ) -> RegionSelection:
     region: RegionSelection = {}
-    for axis_name, axis in axes_with_range.items():
+    for axis_name, axis in axesWithRange.items():
         minimum = axis.minimum
         if minimum is not None:
             minimum = axis.map_forward(minimum)
@@ -185,22 +172,22 @@ def _region_selection_from(
         else:
             maximum = math.inf
         region[axis_name] = Range(minimum, maximum)
-    for axis_name, axis_value in axes_with_single_location.items():
+    for axis_name, axis_value in axesWithSingleLocation.items():
         region[axis_name] = axis_value
     return region
 
 
-def _condition_set_from(condition_set: List[Dict[str, Any]]) -> ConditionSet:
+def _conditionSetFrom(conditionSet: List[Dict[str, Any]]) -> ConditionSet:
     c: ConditionSet = {}
-    for condition in condition_set:
+    for condition in conditionSet:
         c[condition["name"]] = Range(
             condition.get("minimum") or -math.inf, condition.get("maximum") or math.inf
         )
     return c
 
 
-def _subset_rules_based_on_conditions(
-    rules: List[RuleDescriptor], region_selection: RegionSelection
+def _subsetRulesBasedOnConditions(
+    rules: List[RuleDescriptor], regionSelection: RegionSelection
 ) -> List[RuleDescriptor]:
     # What rules to keep:
     #  - Keep the rule if any conditionset is relevant.
@@ -217,57 +204,57 @@ def _subset_rules_based_on_conditions(
     #         keep the condition with the smaller range (= intersection)
     #       - (C-AR-none) else, whole conditionset can be discarded
 
-    new_rules: List[RuleDescriptor] = []
+    newRules: List[RuleDescriptor] = []
     for rule in rules:
-        new_rule: RuleDescriptor = RuleDescriptor(
+        newRule: RuleDescriptor = RuleDescriptor(
             name=rule.name, conditionSets=[], subs=rule.subs
         )
         for conditionset in rule.conditionSets:
-            cs = _condition_set_from(conditionset)
-            new_conditionset: List[Dict[str, Any]] = []
-            discard_conditionset = False
-            for selection_name, selection_value in region_selection.items():
-                # TODO: Ensure that all(key in conditionset for key in region_selection.keys())?
-                if selection_name not in cs:
+            cs = _conditionSetFrom(conditionset)
+            newConditionset: List[Dict[str, Any]] = []
+            discardConditionset = False
+            for selectionName, selectionValue in regionSelection.items():
+                # TODO: Ensure that all(key in conditionset for key in regionSelection.keys())?
+                if selectionName not in cs:
                     # raise Exception("Selection has different axes than the rules")
                     continue
-                if isinstance(selection_value, (float, int)):  # is point
+                if isinstance(selectionValue, (float, int)):  # is point
                     # Case C-AP-in
-                    if selection_value in cs[selection_name]:
+                    if selectionValue in cs[selectionName]:
                         pass  # always matches, conditionset can stay empty for this one.
                     # Case C-AP-out
                     else:
-                        discard_conditionset = True
+                        discardConditionset = True
                 else:  # is range
                     # Case C-AR-all
-                    if selection_value in cs[selection_name]:
+                    if selectionValue in cs[selectionName]:
                         pass  # always matches, conditionset can stay empty for this one.
                     # Case C-AR-inter
-                    elif cs[selection_name].intersection(selection_value) is not None:
-                        intersection = cs[selection_name].intersection(selection_value)
-                        new_conditionset.append(
+                    elif cs[selectionName].intersection(selectionValue) is not None:
+                        intersection = cs[selectionName].intersection(selectionValue)
+                        newConditionset.append(
                             {
-                                "name": selection_name,
+                                "name": selectionName,
                                 "minimum": intersection.start,
                                 "maximum": intersection.end,
                             }
                         )
                     # Case C-AR-none
                     else:
-                        discard_conditionset = True
-            if not discard_conditionset:
-                new_rule.conditionSets.append(new_conditionset)
-        if new_rule.conditionSets:
-            new_rules.append(new_rule)
+                        discardConditionset = True
+            if not discardConditionset:
+                newRule.conditionSets.append(newConditionset)
+        if newRule.conditionSets:
+            newRules.append(newRule)
 
-    return new_rules
+    return newRules
 
 
 def _filter_location(
-    axes_with_range: Dict[str, AxisDescriptor],
+    axesWithRange: Dict[str, AxisDescriptor],
     location: Dict[str, float],
 ) -> Dict[str, float]:
-    return {k: v for k, v in location.items() if k in axes_with_range}
+    return {k: v for k, v in location.items() if k in axesWithRange}
 
 
 @dataclass
@@ -288,12 +275,12 @@ class Range:
         return self.start <= value <= self.end
 
     def intersection(self, other: Range) -> Optional[Range]:
-        self_start, self_end = sorted((self.start, self.end))
-        other_start, other_end = sorted((other.start, other.end))
-        if self_end < other_start or self_start > other_end:
+        selfStart, selfEnd = sorted((self.start, self.end))
+        otherStart, otherEnd = sorted((other.start, other.end))
+        if selfEnd < otherStart or selfStart > otherEnd:
             return None
         else:
-            return Range(max(self_start, other_start), min(self_end, other_end))
+            return Range(max(selfStart, otherStart), min(selfEnd, otherEnd))
 
 
 @dataclass
@@ -326,25 +313,17 @@ Rule = List[ConditionSet]
 Rules = Dict[str, Rule]
 
 
-def in_region(
-    value: Union[SimpleLocationDict, RegionSelection, Region], region: Region
-) -> bool:
-    return value.keys() == region.keys() and all(
-        value in region[name] for name, value in value.items()
-    )
-
-
-def location_in_selection(
+def _locationInSelection(
     location: SimpleLocationDict, selection: RegionSelection
 ) -> bool:
     if location.keys() != selection.keys():
         return False
     for name, value in location.items():
-        selection_value = selection[name]
-        if isinstance(selection_value, (float, int)):
-            if value != selection_value:
+        selectionValue = selection[name]
+        if isinstance(selectionValue, (float, int)):
+            if value != selectionValue:
                 return False
         else:
-            if value not in selection_value:
+            if value not in selectionValue:
                 return False
     return True

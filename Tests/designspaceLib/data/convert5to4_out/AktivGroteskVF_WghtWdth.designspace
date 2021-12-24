@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<designspace format="5.0">
+<designspace format="4.1">
   <axes>
     <axis tag="wght" name="Weight" minimum="100" maximum="900" default="400">
       <map input="100" output="22"/>
@@ -49,7 +49,7 @@
         <dimension name="Width" xvalue="75"/>
       </location>
     </source>
-    <source filename="../AktivGrotesk_Rg.ufo" name="Aktiv Grotesk Regular">
+    <source filename="../AktivGrotesk_Rg.ufo" name="Aktiv Grotesk Regular" familyname="Aktiv Grotesk">
       <location>
         <dimension name="Weight" xvalue="84"/>
         <dimension name="Width" xvalue="100"/>
@@ -87,167 +87,221 @@
     </source>
   </sources>
   <instances>
-    <instance name="Aktiv Grotesk Cd Hair" stylename="Cd Hair" filename="../instances/AktivGroteskCd_Hair.ufo" stylemapfamilyname="Aktiv Grotesk Cd Hair">
+    <instance familyname="Aktiv Grotesk" stylename="Cd Hair" filename="../instances/AktivGroteskCd_Hair.ufo" postscriptfontname="AktivGrotesk-CdHair" stylemapfamilyname="Aktiv Grotesk Cd Hair" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="22"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Hair" stylename="Hair" filename="../instances/AktivGrotesk_Hair.ufo" stylemapfamilyname="Aktiv Grotesk Hair">
+    <instance familyname="Aktiv Grotesk" stylename="Hair" filename="../instances/AktivGrotesk_Hair.ufo" postscriptfontname="AktivGrotesk-Hair" stylemapfamilyname="Aktiv Grotesk Hair" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="22"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex Hair" stylename="Ex Hair" filename="../instances/AktivGroteskEx_Hair.ufo" stylemapfamilyname="Aktiv Grotesk Ex Hair">
+    <instance familyname="Aktiv Grotesk" stylename="Ex Hair" filename="../instances/AktivGroteskEx_Hair.ufo" postscriptfontname="AktivGrotesk-ExHair" stylemapfamilyname="Aktiv Grotesk Ex Hair" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="22"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd Thin" stylename="Cd Thin" filename="../instances/AktivGroteskCd_Th.ufo" stylemapfamilyname="Aktiv Grotesk Cd Thin">
+    <instance familyname="Aktiv Grotesk" stylename="Cd Thin" filename="../instances/AktivGroteskCd_Th.ufo" postscriptfontname="AktivGrotesk-CdThin" stylemapfamilyname="Aktiv Grotesk Cd Thin" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="38"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Thin" stylename="Thin" filename="../instances/AktivGrotesk_Th.ufo" stylemapfamilyname="Aktiv Grotesk Thin">
+    <instance familyname="Aktiv Grotesk" stylename="Thin" filename="../instances/AktivGrotesk_Th.ufo" postscriptfontname="AktivGrotesk-Thin" stylemapfamilyname="Aktiv Grotesk Thin" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="38"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex Thin" stylename="Ex Thin" filename="../instances/AktivGroteskEx_Th.ufo" stylemapfamilyname="Aktiv Grotesk Ex Thin">
+    <instance familyname="Aktiv Grotesk" stylename="Ex Thin" filename="../instances/AktivGroteskEx_Th.ufo" postscriptfontname="AktivGrotesk-ExThin" stylemapfamilyname="Aktiv Grotesk Ex Thin" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="38"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd Light" stylename="Cd Light" filename="../instances/AktivGroteskCd_Lt.ufo" stylemapfamilyname="Aktiv Grotesk Cd Light">
+    <instance familyname="Aktiv Grotesk" stylename="Cd Light" filename="../instances/AktivGroteskCd_Lt.ufo" postscriptfontname="AktivGrotesk-CdLight" stylemapfamilyname="Aktiv Grotesk Cd Light" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="57"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Light" stylename="Light" filename="../instances/AktivGrotesk_Lt.ufo" stylemapfamilyname="Aktiv Grotesk Light">
+    <instance familyname="Aktiv Grotesk" stylename="Light" filename="../instances/AktivGrotesk_Lt.ufo" postscriptfontname="AktivGrotesk-Light" stylemapfamilyname="Aktiv Grotesk Light" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="57"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex Light" stylename="Ex Light" filename="../instances/AktivGroteskEx_Lt.ufo" stylemapfamilyname="Aktiv Grotesk Ex Light">
+    <instance familyname="Aktiv Grotesk" stylename="Ex Light" filename="../instances/AktivGroteskEx_Lt.ufo" postscriptfontname="AktivGrotesk-ExLight" stylemapfamilyname="Aktiv Grotesk Ex Light" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="57"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd" stylename="Cd" filename="../instances/AktivGroteskCd_Rg.ufo" stylemapfamilyname="Aktiv Grotesk Cd">
+    <instance familyname="Aktiv Grotesk" stylename="Cd" filename="../instances/AktivGroteskCd_Rg.ufo" postscriptfontname="AktivGrotesk-Cd" stylemapfamilyname="Aktiv Grotesk Cd" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="84"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Regular" stylename="Regular" filename="../instances/AktivGrotesk_Rg.ufo" stylemapfamilyname="Aktiv Grotesk" stylemapstylename="regular">
+    <instance familyname="Aktiv Grotesk" stylename="" filename="../instances/AktivGrotesk_Rg.ufo" postscriptfontname="AktivGrotesk-" stylemapfamilyname="Aktiv Grotesk" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="84"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex" stylename="Ex" filename="../instances/AktivGroteskEx_Rg.ufo" stylemapfamilyname="Aktiv Grotesk Ex">
+    <instance familyname="Aktiv Grotesk" stylename="Ex" filename="../instances/AktivGroteskEx_Rg.ufo" postscriptfontname="AktivGrotesk-Ex" stylemapfamilyname="Aktiv Grotesk Ex" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="84"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd Medium" stylename="Cd Medium" filename="../instances/AktivGroteskCd_Md.ufo" stylemapfamilyname="Aktiv Grotesk Cd Medium">
+    <instance familyname="Aktiv Grotesk" stylename="Cd Medium" filename="../instances/AktivGroteskCd_Md.ufo" postscriptfontname="AktivGrotesk-CdMedium" stylemapfamilyname="Aktiv Grotesk Cd Medium" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="98"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Medium" stylename="Medium" filename="../instances/AktivGrotesk_Md.ufo" stylemapfamilyname="Aktiv Grotesk Medium">
+    <instance familyname="Aktiv Grotesk" stylename="Medium" filename="../instances/AktivGrotesk_Md.ufo" postscriptfontname="AktivGrotesk-Medium" stylemapfamilyname="Aktiv Grotesk Medium" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="98"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex Medium" stylename="Ex Medium" filename="../instances/AktivGroteskEx_Md.ufo" stylemapfamilyname="Aktiv Grotesk Ex Medium">
+    <instance familyname="Aktiv Grotesk" stylename="Ex Medium" filename="../instances/AktivGroteskEx_Md.ufo" postscriptfontname="AktivGrotesk-ExMedium" stylemapfamilyname="Aktiv Grotesk Ex Medium" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="98"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd SemiBold" stylename="Cd SemiBold" filename="../../build/instances/AktivGroteskCd_SBd.ufo" stylemapfamilyname="Aktiv Grotesk Cd SemiBold">
+    <instance familyname="Aktiv Grotesk" stylename="Cd SemiBold" filename="../../build/instances/AktivGroteskCd_SBd.ufo" postscriptfontname="AktivGrotesk-CdSemiBold" stylemapfamilyname="Aktiv Grotesk Cd SemiBold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="115"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk SemiBold" stylename="SemiBold" filename="../../build/instances/AktivGrotesk_SBd.ufo" stylemapfamilyname="Aktiv Grotesk SemiBold">
+    <instance familyname="Aktiv Grotesk" stylename="SemiBold" filename="../../build/instances/AktivGrotesk_SBd.ufo" postscriptfontname="AktivGrotesk-SemiBold" stylemapfamilyname="Aktiv Grotesk SemiBold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="115"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex SemiBold" stylename="Ex SemiBold" filename="../../build/instances/AktivGroteskEx_SBd.ufo" stylemapfamilyname="Aktiv Grotesk Ex SemiBold">
+    <instance familyname="Aktiv Grotesk" stylename="Ex SemiBold" filename="../../build/instances/AktivGroteskEx_SBd.ufo" postscriptfontname="AktivGrotesk-ExSemiBold" stylemapfamilyname="Aktiv Grotesk Ex SemiBold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="115"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd Bold" stylename="Cd Bold" filename="../instances/AktivGroteskCd_Bd.ufo" stylemapfamilyname="Aktiv Grotesk Cd" stylemapstylename="bold">
+    <instance familyname="Aktiv Grotesk" stylename="Cd Bold" filename="../instances/AktivGroteskCd_Bd.ufo" postscriptfontname="AktivGrotesk-CdBold" stylemapfamilyname="Aktiv Grotesk Cd" stylemapstylename="bold">
       <location>
         <dimension name="Weight" xvalue="133"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Bold" stylename="Bold" filename="../instances/AktivGrotesk_Bd.ufo" stylemapfamilyname="Aktiv Grotesk" stylemapstylename="bold">
+    <instance familyname="Aktiv Grotesk" stylename="Bold" filename="../instances/AktivGrotesk_Bd.ufo" postscriptfontname="AktivGrotesk-Bold" stylemapfamilyname="Aktiv Grotesk" stylemapstylename="bold">
       <location>
         <dimension name="Weight" xvalue="133"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex Bold" stylename="Ex Bold" filename="../instances/AktivGroteskEx_Bd.ufo" stylemapfamilyname="Aktiv Grotesk Ex" stylemapstylename="bold">
+    <instance familyname="Aktiv Grotesk" stylename="Ex Bold" filename="../instances/AktivGroteskEx_Bd.ufo" postscriptfontname="AktivGrotesk-ExBold" stylemapfamilyname="Aktiv Grotesk Ex" stylemapstylename="bold">
       <location>
         <dimension name="Weight" xvalue="133"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd XBold" stylename="Cd XBold" filename="../instances/AktivGroteskCd_XBd.ufo" stylemapfamilyname="Aktiv Grotesk Cd XBold">
+    <instance familyname="Aktiv Grotesk" stylename="Cd XBold" filename="../instances/AktivGroteskCd_XBd.ufo" postscriptfontname="AktivGrotesk-CdXBold" stylemapfamilyname="Aktiv Grotesk Cd XBold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="158"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk XBold" stylename="XBold" filename="../instances/AktivGrotesk_XBd.ufo" stylemapfamilyname="Aktiv Grotesk XBold">
+    <instance familyname="Aktiv Grotesk" stylename="XBold" filename="../instances/AktivGrotesk_XBd.ufo" postscriptfontname="AktivGrotesk-XBold" stylemapfamilyname="Aktiv Grotesk XBold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="158"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex XBold" stylename="Ex XBold" filename="../instances/AktivGroteskEx_XBd.ufo" stylemapfamilyname="Aktiv Grotesk Ex XBold">
+    <instance familyname="Aktiv Grotesk" stylename="Ex XBold" filename="../instances/AktivGroteskEx_XBd.ufo" postscriptfontname="AktivGrotesk-ExXBold" stylemapfamilyname="Aktiv Grotesk Ex XBold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="158"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Cd Black" stylename="Cd Black" filename="../instances/AktivGroteskCd_Blk.ufo" stylemapfamilyname="Aktiv Grotesk Cd Black">
+    <instance familyname="Aktiv Grotesk" stylename="Cd Black" filename="../instances/AktivGroteskCd_Blk.ufo" postscriptfontname="AktivGrotesk-CdBlack" stylemapfamilyname="Aktiv Grotesk Cd Black" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="185"/>
         <dimension name="Width" xvalue="75"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Black" stylename="Black" filename="../instances/AktivGrotesk_Blk.ufo" stylemapfamilyname="Aktiv Grotesk Black">
+    <instance familyname="Aktiv Grotesk" stylename="Black" filename="../instances/AktivGrotesk_Blk.ufo" postscriptfontname="AktivGrotesk-Black" stylemapfamilyname="Aktiv Grotesk Black" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="185"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance name="Aktiv Grotesk Ex Black" stylename="Ex Black" filename="../instances/AktivGroteskEx_Blk.ufo" stylemapfamilyname="Aktiv Grotesk Ex Black">
+    <instance familyname="Aktiv Grotesk" stylename="Ex Black" filename="../instances/AktivGroteskEx_Blk.ufo" postscriptfontname="AktivGrotesk-ExBlack" stylemapfamilyname="Aktiv Grotesk Ex Black" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="185"/>
         <dimension name="Width" xvalue="125"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
   </instances>
 </designspace>

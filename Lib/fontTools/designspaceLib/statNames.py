@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Tuple, Union
 import logging
 
 from fontTools.designspaceLib import (
@@ -16,203 +16,196 @@ from fontTools.designspaceLib import (
     DesignSpaceDocument,
     DesignSpaceDocumentError,
     DiscreteAxisDescriptor,
-    InstanceDescriptor,
     SimpleLocationDict,
     SourceDescriptor,
 )
 
 LOGGER = logging.getLogger(__name__)
 
+# TODO(Python 3.8): use Literal
+# RibbiStyleName = Union[Literal["regular"], Literal["bold"], Literal["italic"], Literal["bold italic"]]
+RibbiStyle = str
+BOLD_ITALIC_TO_RIBBI_STYLE = {
+    (False, False): "regular",
+    (False, True): "italic",
+    (True, False): "bold",
+    (True, True): "bold italic",
+}
+
 
 @dataclass
 class StatNames:
     familyNames: Dict[str, str]
     styleNames: Dict[str, str]
-    styleMapFamilyNames: Dict[str, str]
-    styleMapStyleNames: Dict[str, str]
     postScriptFontName: Optional[str]
+    styleMapFamilyNames: Dict[str, str]
+    styleMapStyleName: Optional[RibbiStyle]
 
 
-# TODO: Deal with anisotropic locations.
-# TODO: Deal with localization.
-# TODO: Decide how to deal with familyName, for which there would need to be a
-#       new localized familyname element in sources, unless it's ok to query the
-#       source UFO directly (but what about source TTFs?)
-# TODO: Deal with STAT format 2 ranges.
+UserLocationTuple = Tuple[Tuple[str, float], ...]
+
+
 def getStatNames(
-    self: InstanceDescriptor,
-    doc: DesignSpaceDocument,
-    ribbi_mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = None,
+    doc: DesignSpaceDocument, userLocation: SimpleLocationDict
 ) -> StatNames:
-    """Compute names, including localizations, using only STAT data, for this instance.
-
-    If not enough STAT data is available for a given name, either its dict of
-    localized names will be empty (family and style names), or the name will be
-    None (PostScript name).
+    """Compute the family, style, PostScript names of the given ``userLocation``
+    using the document's STAT information.
 
     .. versionadded:: 5.0
     """
-    if ribbi_mapping is None:
-        ribbi_mapping = doc.getRibbiMapping()
-    user_location = self.getFullUserLocation(doc)
-
-    family_names: Dict[str, str] = {}
-    default_source: Optional[SourceDescriptor] = doc.findDefault()
-    if default_source is None:
+    familyNames: Dict[str, str] = {}
+    defaultSource: Optional[SourceDescriptor] = doc.findDefault()
+    if defaultSource is None:
         LOGGER.warning("Cannot determine default source to look up family name.")
-    elif default_source.familyName is None:
+    elif defaultSource.familyName is None:
         LOGGER.warning(
             "Cannot look up family name, assign the 'familyname' attribute to the default source."
         )
     else:
-        family_names["en"] = default_source.familyName
+        familyNames = {
+            "en": defaultSource.familyName,
+            **defaultSource.localisedFamilyName,
+        }
 
-    style_names: Dict[str, str] = None
+    styleNames: Dict[str, str] = {}
     # If a free-standing label matches the location, use it for name generation.
-    label = doc.labelForUserLocation(user_location)
+    label = doc.labelForUserLocation(userLocation)
     if label is not None:
-        style_names = {'en': label.name, **label.labelNames}
+        styleNames = {"en": label.name, **label.labelNames}
     # Otherwise, scour the axis labels for matches.
     else:
         # Gather all languages in which at least one translation is provided
         # Then build names for all these languages, but fallback to English
         # whenever a translation is missing.
-        # TODO (Jany)
-        labels = get_axis_labels_for_user_location(doc.axes, user_location)
-        style_names = " ".join(
-            label.defaultName for label in labels if not label.elidable
-        )
-        if not style_names and doc.elidedFallbackName is not None:
-            style_names = doc.elidedFallbackName
+        labels = _getAxisLabelsForUserLocation(doc.axes, userLocation)
+        languages = set(language for label in labels for language in label.labelNames)
+        languages.add("en")
+        for language in languages:
+            styleName = " ".join(
+                label.labelNames.get(language, label.defaultName)
+                for label in labels
+                if not label.elidable
+            )
+            if not styleName and doc.elidedFallbackName is not None:
+                styleName = doc.elidedFallbackName
+            styleNames[language] = styleName
 
-    # if not style_names:
-    #     instance_id: str = self.name or repr(self.location)
-    #     raise DesignSpaceDocumentError(
-    #         f"Cannot infer style name for instance '{instance_id}' because all "
-    #         "labels are elided. Please fill in the 'stylename' attribute yourself."
-    #     )
+    postScriptFontName = None
+    if "en" in familyNames and "en" in styleNames:
+        postScriptFontName = f"{familyNames['en']}-{styleNames['en']}".replace(" ", "")
 
-    if family_names is None:
-        post_script_font_names = None
-    else:
-        post_script_font_names = f"{family_names}-{style_names}".replace(" ", "")
+    styleMapStyleName, regularUserLocation = _getRibbiStyle(doc, userLocation)
 
-    # TODO: look at how ufo2ft generates style_map_family_names
-    style_map_family_names = None
-    style_map_style_names = ribbi_mapping.get(tuple(self.location.items()))
+    styleNamesForStyleMap = styleNames
+    if regularUserLocation != userLocation:
+        regularStatNames = getStatNames(doc, regularUserLocation)
+        styleNamesForStyleMap = regularStatNames.styleNames
+
+    styleMapFamilyNames = {}
+    for language, familyName in familyNames.items():
+        styleName = styleNamesForStyleMap.get(language, styleNames["en"])
+        styleMapFamilyNames[language] = (familyName + " " + styleName).strip()
 
     return StatNames(
-        familyName=family_names,
-        styleName=style_names,
-        postScriptFontName=post_script_font_names,
-        styleMapFamilyName=style_map_family_names,
-        styleMapStyleName=style_map_style_names,
+        familyNames=familyNames,
+        styleNames=styleNames,
+        postScriptFontName=postScriptFontName,
+        styleMapFamilyNames=styleMapFamilyNames,
+        styleMapStyleName=styleMapStyleName,
     )
 
 
-def get_sorted_axis_labels(
+def _getSortedAxisLabels(
     axes: list[AxisDescriptor],
-) -> dict[str, list[AxisLabelDescriptor]]:
+) -> Dict[str, list[AxisLabelDescriptor]]:
     """Returns axis labels sorted by their ordering, with unordered ones appended as
     they are listed."""
 
     # First, get the axis labels with explicit ordering...
-    sorted_axes = sorted(
+    sortedAxes = sorted(
         (axis for axis in axes if axis.axisOrdering is not None),
         key=lambda a: a.axisOrdering,
     )
-    sorted_labels: dict[str, list[AxisLabelDescriptor]] = {
-        axis.name: axis.axisLabels for axis in sorted_axes
+    sortedLabels: Dict[str, list[AxisLabelDescriptor]] = {
+        axis.name: axis.axisLabels for axis in sortedAxes
     }
 
     # ... then append the others in the order they appear.
     # NOTE: This relies on Python 3.7+ dict's preserved insertion order.
     for axis in axes:
         if axis.axisOrdering is None:
-            sorted_labels[axis.name] = axis.axisLabels
+            sortedLabels[axis.name] = axis.axisLabels
 
-    return sorted_labels
+    return sortedLabels
 
 
-def get_axis_labels_for_user_location(
+def _getAxisLabelsForUserLocation(
     axes: list[Union[AxisDescriptor, DiscreteAxisDescriptor]],
-    user_location: SimpleLocationDict,
+    userLocation: SimpleLocationDict,
 ) -> list[AxisLabelDescriptor]:
     labels: list[AxisLabelDescriptor] = []
 
-    all_axis_labels = get_sorted_axis_labels(axes)
-    if all_axis_labels.keys() != user_location.keys():
+    allAxisLabels = _getSortedAxisLabels(axes)
+    if allAxisLabels.keys() != userLocation.keys():
         raise DesignSpaceDocumentError(
-            f"Mismatch between user location '{user_location.keys()}' and available "
-            f"labels for '{all_axis_labels.keys()}'."
+            f"Mismatch between user location '{userLocation.keys()}' and available "
+            f"labels for '{allAxisLabels.keys()}'."
         )
 
-    for axis_name, axis_labels in all_axis_labels.items():
-        user_value = user_location[axis_name]
+    for axisName, axisLabels in allAxisLabels.items():
+        userValue = userLocation[axisName]
         label: Optional[AxisLabelDescriptor] = next(
-            (l for l in axis_labels if l.userValue == user_value), None
+            (
+                l
+                for l in axisLabels
+                if l.userValue == userValue
+                or (
+                    l.userMinimum is not None
+                    and l.userMaximum is not None
+                    and l.userMinimum <= userValue <= l.userMaximum
+                )
+            ),
+            None,
         )
         if label is None:
             raise DesignSpaceDocumentError(
-                f"Document needs a label for axis '{axis_name}', user value '{user_value}'."
+                f"Document needs a label for axis '{axisName}', user value '{userValue}'."
             )
         labels.append(label)
 
     return labels
 
 
-# TODO(Python 3.8): use Literal
-# RibbiStyle = Union[Literal["regular"], Literal["bold"], Literal["italic"], Literal["bold italic"]]
-RibbiStyle = str
-
-
-# TODO: Also grab labels when no linkedUserValue is set? I.e. from well-known axis positions?
-def getRibbiMapping(
-    self: DesignSpaceDocument,
-) -> dict[tuple[tuple[str, float], ...], RibbiStyle]:
-    """Compute the RIBBI style name of each design space location for which a linkedUserValue is provided.
+def _getRibbiStyle(
+    self: DesignSpaceDocument, userLocation: SimpleLocationDict
+) -> Tuple[RibbiStyle, SimpleLocationDict]:
+    """Compute the RIBBI style name of the given user location.
 
     .. versionadded:: 5.0
     """
-    default_location = self.newDefaultLocation()
-    if default_location is None:
-        raise DesignSpaceDocumentError("Cannot determine default location.")
-    mapping: dict[tuple[tuple[str, float], ...], RibbiStyle] = {}
+    regularUserLocation = {}
+    axes_by_tag = {axis.tag: axis for axis in self.axes}
 
-    bold_value: tuple[str, float] | None = None
-    italic_value: tuple[str, float] | None = None
+    bold: bool = False
+    italic: bool = False
 
-    axes_by_tag = {a.tag: a for a in self.axes}
     axis = axes_by_tag.get("wght")
     if axis is not None:
-        rg_label = next(
-            (label for label in axis.axisLabels if label.userValue == 400), None
-        )
-        if rg_label is not None:
-            rg_value = axis.map_forward(400)
-            rg_location = {**default_location, axis.name: rg_value}
-            mapping[tuple(rg_location.items())] = "regular"
-            if rg_label.linkedUserValue is not None:
-                bd_value = axis.map_forward(rg_label.linkedUserValue)
-                bd_location = {**default_location, axis.name: bd_value}
-                mapping[tuple(bd_location.items())] = "bold"
-                bold_value = (axis.name, bd_value)
+        for regular_label in axis.axisLabels:
+            if regular_label.linkedUserValue == userLocation[axis.name]:
+                regularUserLocation[axis.name] = regular_label.userValue
+                bold = True
+                break
 
     axis = axes_by_tag.get("ital") or axes_by_tag.get("slnt")
     if axis is not None:
-        rg_label = next(
-            (label for label in axis.axisLabels if label.userValue == 0), None
-        )
-        if rg_label is not None and rg_label.linkedUserValue is not None:
-            it_value = axis.map_forward(rg_label.linkedUserValue)
-            it_location = {**default_location, axis.name: it_value}
-            mapping[tuple(it_location.items())] = "italic"
-            italic_value = (axis.name, it_value)
+        for urpright_label in axis.axisLabels:
+            if urpright_label.linkedUserValue == userLocation[axis.name]:
+                regularUserLocation[axis.name] = urpright_label.userValue
+                italic = True
+                break
 
-    if bold_value is not None and italic_value is not None:
-        bd_name, bd_value = bold_value
-        it_name, it_value = italic_value
-        bd_it_location = {**default_location, bd_name: bd_value, it_name: it_value}
-        mapping[tuple(bd_it_location.items())] = "bold italic"
-
-    return mapping
+    return BOLD_ITALIC_TO_RIBBI_STYLE[bold, italic], {
+        **userLocation,
+        **regularUserLocation,
+    }

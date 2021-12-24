@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<designspace format="5.0">
+<designspace format="4.1">
   <axes>
     <axis tag="wght" name="weight" minimum="200" maximum="900" default="400">
       <map input="200" output="0"/>
@@ -68,185 +68,245 @@
     </source>
   </sources>
   <instances>
-    <instance stylename="Caption ExtraLight Italic" postscriptfontname="SourceSerif4Italic-CaptionExtraLight">
+    <instance familyname="Source Serif 4" stylename="Caption ExtraLight Italic" postscriptfontname="SourceSerif4Italic-CaptionExtraLight" stylemapfamilyname="Source Serif 4 Caption ExtraLight Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="0"/>
         <dimension name="optical" xvalue="8"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Caption Light Italic" postscriptfontname="SourceSerif4Italic-CaptionLight">
+    <instance familyname="Source Serif 4" stylename="Caption Light Italic" postscriptfontname="SourceSerif4Italic-CaptionLight" stylemapfamilyname="Source Serif 4 Caption Light Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="145"/>
         <dimension name="optical" xvalue="8"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Caption Italic" postscriptfontname="SourceSerif4Italic-CaptionRegular">
+    <instance familyname="Source Serif 4" stylename="Caption Italic" postscriptfontname="SourceSerif4Italic-CaptionRegular" stylemapfamilyname="Source Serif 4 Caption Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="394"/>
         <dimension name="optical" xvalue="8"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Caption Semibold Italic" postscriptfontname="SourceSerif4Italic-CaptionSemibold">
+    <instance familyname="Source Serif 4" stylename="Caption Semibold Italic" postscriptfontname="SourceSerif4Italic-CaptionSemibold" stylemapfamilyname="Source Serif 4 Caption Semibold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="594"/>
         <dimension name="optical" xvalue="8"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Caption Bold Italic" postscriptfontname="SourceSerif4Italic-CaptionBold">
+    <instance familyname="Source Serif 4" stylename="Caption Bold Italic" postscriptfontname="SourceSerif4Italic-CaptionBold" stylemapfamilyname="Source Serif 4 Caption Bold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="823"/>
         <dimension name="optical" xvalue="8"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Caption Black Italic" postscriptfontname="SourceSerif4Italic-CaptionBlack">
+    <instance familyname="Source Serif 4" stylename="Caption Black Italic" postscriptfontname="SourceSerif4Italic-CaptionBlack" stylemapfamilyname="Source Serif 4 Caption Black Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="1000"/>
         <dimension name="optical" xvalue="8"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="SmText ExtraLight Italic" postscriptfontname="SourceSerif4Italic-SmTextExtraLight">
+    <instance familyname="Source Serif 4" stylename="SmText ExtraLight Italic" postscriptfontname="SourceSerif4Italic-SmTextExtraLight" stylemapfamilyname="Source Serif 4 SmallText ExtraLight Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="0"/>
         <dimension name="optical" xvalue="16"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="SmText Light Italic" postscriptfontname="SourceSerif4Italic-SmTextLight">
+    <instance familyname="Source Serif 4" stylename="SmText Light Italic" postscriptfontname="SourceSerif4Italic-SmTextLight" stylemapfamilyname="Source Serif 4 SmallText Light Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="145"/>
         <dimension name="optical" xvalue="16"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="SmText Italic" postscriptfontname="SourceSerif4Italic-SmTextRegular">
+    <instance familyname="Source Serif 4" stylename="SmText Italic" postscriptfontname="SourceSerif4Italic-SmTextRegular" stylemapfamilyname="Source Serif 4 SmallText Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="394"/>
         <dimension name="optical" xvalue="16"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="SmText Semibold Italic" postscriptfontname="SourceSerif4Italic-SmTextSemibold">
+    <instance familyname="Source Serif 4" stylename="SmText Semibold Italic" postscriptfontname="SourceSerif4Italic-SmTextSemibold" stylemapfamilyname="Source Serif 4 SmallText Semibold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="594"/>
         <dimension name="optical" xvalue="16"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="SmText Bold Italic" postscriptfontname="SourceSerif4Italic-SmTextBold">
+    <instance familyname="Source Serif 4" stylename="SmText Bold Italic" postscriptfontname="SourceSerif4Italic-SmTextBold" stylemapfamilyname="Source Serif 4 SmallText Bold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="823"/>
         <dimension name="optical" xvalue="16"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="SmText Black Italic" postscriptfontname="SourceSerif4Italic-SmTextBlack">
+    <instance familyname="Source Serif 4" stylename="SmText Black Italic" postscriptfontname="SourceSerif4Italic-SmTextBlack" stylemapfamilyname="Source Serif 4 SmallText Black Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="1000"/>
         <dimension name="optical" xvalue="16"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="ExtraLight Italic" postscriptfontname="SourceSerif4Italic-ExtraLight">
+    <instance familyname="Source Serif 4" stylename="ExtraLight Italic" postscriptfontname="SourceSerif4Italic-ExtraLight" stylemapfamilyname="Source Serif 4 ExtraLight Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="0"/>
         <dimension name="optical" xvalue="20"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Light Italic" postscriptfontname="SourceSerif4Italic-Light">
+    <instance familyname="Source Serif 4" stylename="Light Italic" postscriptfontname="SourceSerif4Italic-Light" stylemapfamilyname="Source Serif 4 Light Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="145"/>
         <dimension name="optical" xvalue="20"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Italic" postscriptfontname="SourceSerif4Italic-Regular">
+    <instance familyname="Source Serif 4" stylename="Italic" postscriptfontname="SourceSerif4Italic-Regular" stylemapfamilyname="Source Serif 4 Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="394"/>
         <dimension name="optical" xvalue="20"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Semibold Italic" postscriptfontname="SourceSerif4Italic-Semibold">
+    <instance familyname="Source Serif 4" stylename="Semibold Italic" postscriptfontname="SourceSerif4Italic-Semibold" stylemapfamilyname="Source Serif 4 Semibold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="594"/>
         <dimension name="optical" xvalue="20"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Bold Italic" postscriptfontname="SourceSerif4Italic-Bold">
+    <instance familyname="Source Serif 4" stylename="Bold Italic" postscriptfontname="SourceSerif4Italic-Bold" stylemapfamilyname="Source Serif 4 Bold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="823"/>
         <dimension name="optical" xvalue="20"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Black Italic" postscriptfontname="SourceSerif4Italic-Black">
+    <instance familyname="Source Serif 4" stylename="Black Italic" postscriptfontname="SourceSerif4Italic-Black" stylemapfamilyname="Source Serif 4 Black Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="1000"/>
         <dimension name="optical" xvalue="20"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Subhead ExtraLight Italic" postscriptfontname="SourceSerif4Italic-SubheadExtraLight">
+    <instance familyname="Source Serif 4" stylename="Subhead ExtraLight Italic" postscriptfontname="SourceSerif4Italic-SubheadExtraLight" stylemapfamilyname="Source Serif 4 Subhead ExtraLight Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="0"/>
         <dimension name="optical" xvalue="32"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Subhead Light Italic" postscriptfontname="SourceSerif4Italic-SubheadLight">
+    <instance familyname="Source Serif 4" stylename="Subhead Light Italic" postscriptfontname="SourceSerif4Italic-SubheadLight" stylemapfamilyname="Source Serif 4 Subhead Light Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="145"/>
         <dimension name="optical" xvalue="32"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Subhead Italic" postscriptfontname="SourceSerif4Italic-SubheadRegular">
+    <instance familyname="Source Serif 4" stylename="Subhead Italic" postscriptfontname="SourceSerif4Italic-SubheadRegular" stylemapfamilyname="Source Serif 4 Subhead Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="394"/>
         <dimension name="optical" xvalue="32"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Subhead Semibold Italic" postscriptfontname="SourceSerif4Italic-SubheadSemibold">
+    <instance familyname="Source Serif 4" stylename="Subhead Semibold Italic" postscriptfontname="SourceSerif4Italic-SubheadSemibold" stylemapfamilyname="Source Serif 4 Subhead Semibold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="594"/>
         <dimension name="optical" xvalue="32"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Subhead Bold Italic" postscriptfontname="SourceSerif4Italic-SubheadBold">
+    <instance familyname="Source Serif 4" stylename="Subhead Bold Italic" postscriptfontname="SourceSerif4Italic-SubheadBold" stylemapfamilyname="Source Serif 4 Subhead Bold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="823"/>
         <dimension name="optical" xvalue="32"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Subhead Black Italic" postscriptfontname="SourceSerif4Italic-SubheadBlack">
+    <instance familyname="Source Serif 4" stylename="Subhead Black Italic" postscriptfontname="SourceSerif4Italic-SubheadBlack" stylemapfamilyname="Source Serif 4 Subhead Black Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="1000"/>
         <dimension name="optical" xvalue="32"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Display ExtraLight Italic" postscriptfontname="SourceSerif4Italic-DisplayExtraLight">
+    <instance familyname="Source Serif 4" stylename="Display ExtraLight Italic" postscriptfontname="SourceSerif4Italic-DisplayExtraLight" stylemapfamilyname="Source Serif 4 Display ExtraLight Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="0"/>
         <dimension name="optical" xvalue="60"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Display Light Italic" postscriptfontname="SourceSerif4Italic-DisplayLight">
+    <instance familyname="Source Serif 4" stylename="Display Light Italic" postscriptfontname="SourceSerif4Italic-DisplayLight" stylemapfamilyname="Source Serif 4 Display Light Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="145"/>
         <dimension name="optical" xvalue="60"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Display Italic" postscriptfontname="SourceSerif4Italic-DisplayRegular">
+    <instance familyname="Source Serif 4" stylename="Display Italic" postscriptfontname="SourceSerif4Italic-DisplayRegular" stylemapfamilyname="Source Serif 4 Display Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="394"/>
         <dimension name="optical" xvalue="60"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Display Semibold Italic" postscriptfontname="SourceSerif4Italic-DisplaySemibold">
+    <instance familyname="Source Serif 4" stylename="Display Semibold Italic" postscriptfontname="SourceSerif4Italic-DisplaySemibold" stylemapfamilyname="Source Serif 4 Display Semibold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="594"/>
         <dimension name="optical" xvalue="60"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Display Bold Italic" postscriptfontname="SourceSerif4Italic-DisplayBold">
+    <instance familyname="Source Serif 4" stylename="Display Bold Italic" postscriptfontname="SourceSerif4Italic-DisplayBold" stylemapfamilyname="Source Serif 4 Display Bold Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="823"/>
         <dimension name="optical" xvalue="60"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
-    <instance stylename="Display Black Italic" postscriptfontname="SourceSerif4Italic-DisplayBlack">
+    <instance familyname="Source Serif 4" stylename="Display Black Italic" postscriptfontname="SourceSerif4Italic-DisplayBlack" stylemapfamilyname="Source Serif 4 Display Black Italic" stylemapstylename="regular">
       <location>
         <dimension name="weight" xvalue="1000"/>
         <dimension name="optical" xvalue="60"/>
       </location>
+      <kerning/>
+      <info/>
     </instance>
   </instances>
   <lib>

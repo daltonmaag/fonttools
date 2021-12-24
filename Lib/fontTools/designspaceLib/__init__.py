@@ -750,6 +750,17 @@ class InstanceDescriptor(SimpleDescriptor):
         """
         return doc.map_backward(self.getFullDesignLocation(doc))
 
+    def getStatNames(self: InstanceDescriptor, doc: DesignSpaceDocument) -> StatNames:
+        """Compute names, including localizations, using only STAT data, for this instance.
+
+        If not enough STAT data is available for a given name, either its dict of
+        localized names will be empty (family and style names), or the name will be
+        None (PostScript name).
+
+        .. versionadded:: 5.0
+        """
+        return getStatNames(doc, self.getFullUserLocation(doc))
+
 
 def tagForAxisName(name):
     # try to find or make a tag name for this axis name
@@ -2859,16 +2870,26 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         minor = next(numbers, 0)
         return (major, minor)
 
+    def buildStatTable(self: DesignSpaceDocument, ttFont) -> None:
+        """Build the STAT table defined by this document and add it to the given font.
+
+        .. versionadded:: 5.0
+
+        .. seealso::
+        - :meth:`designspaceLib.stat.getStatAxes()`
+        - :meth:`designspaceLib.stat.getStatLocations()`
+        - :fun:`fontTools.otlLib.builder.buildStatTable()`
+        """
+        from fontTools.otlLib.builder import buildStatTable
+
+        return buildStatTable(
+            ttFont, getStatAxes(), getStatLocations(), self.elidedFallbackName
+        )
 
 # Add STAT-related methods after all class definitions to prevent issues with
 # circular imports
-from .stat import getStatAxes, getStatLocations, buildStatTable
-from .statNames import getRibbiMapping, getStatNames
 from .convert5to4 import convert5to4
+from .stat import getStatAxes, getStatLocations
+from .statNames import getStatNames, StatNames
 
-DesignSpaceDocument.getStatAxes = getStatAxes
-DesignSpaceDocument.getStatLocations = getStatLocations
-DesignSpaceDocument.buildStatTable = buildStatTable
-DesignSpaceDocument.getRibbiMapping = getRibbiMapping
 DesignSpaceDocument.convert5to4 = convert5to4
-InstanceDescriptor.getStatNames = getStatNames

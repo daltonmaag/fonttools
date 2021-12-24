@@ -83,8 +83,6 @@
 
   <sources>
     <source filename="masters/masterTest1.ufo" name="master.ufo1" familyname="MasterFamilyName" stylename="MasterStyleNameOne">
-      <stylename xml:lang="fr">Demigras</stylename>
-      <stylename xml:lang="ja">半ば</stylename>
       <familyname xml:lang="fr">Montserrat</familyname>
       <familyname xml:lang="ja">モンセラート</familyname>
       <lib copy="1"/>

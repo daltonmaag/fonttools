@@ -6,6 +6,8 @@ from fontTools.designspaceLib import DesignSpaceDocument
 
 from .fixtures import datadir
 
+UPDATE_REFERENCE_OUT_FILES_INSTEAD_OF_TESTING = False
+
 
 @pytest.mark.parametrize(
     "test_ds,expected_vfs",
@@ -44,6 +46,9 @@ def test_convert5to4(datadir, tmpdir, test_ds, expected_vfs):
         temp_out.parent.mkdir(exist_ok=True)
         vf.write(temp_out)
 
-        assert data_out.read_text(encoding="utf-8") == temp_out.read_text(
-            encoding="utf-8"
-        )
+        if UPDATE_REFERENCE_OUT_FILES_INSTEAD_OF_TESTING:
+            data_out.write_text(temp_out.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            assert data_out.read_text(encoding="utf-8") == temp_out.read_text(
+                encoding="utf-8"
+            )

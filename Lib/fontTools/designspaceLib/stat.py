@@ -23,9 +23,7 @@ def getStatAxes(self: DesignSpaceDocument) -> List[Dict]:
             tag=axis.tag,
             name={"en": axis.name, **axis.labelNames},
             ordering=axis.axisOrdering,
-            locations=[
-                _axis_label_to_STAT_location(label) for label in axis.axisLabels
-            ],
+            locations=[_axisLabelToStatLocation(label) for label in axis.axisLabels],
         )
         for axis in self.axes
     ]
@@ -47,28 +45,13 @@ def getStatLocations(self: DesignSpaceDocument) -> List[Dict]:
                 axesByName[name].tag: value
                 for name, value in label.getFullUserLocation(self).items()
             },
-            flags=_label_to_flags(label),
+            flags=_labelToFlags(label),
         )
         for label in self.locationLabels
     ]
 
 
-def buildStatTable(self: DesignSpaceDocument, ttFont: TTFont) -> None:
-    """Build the STAT table defined by this document and add it to the given font.
-
-    .. versionadded:: 5.0
-
-    .. seealso::
-       - :meth:`getStatAxes()`
-       - :meth:`getStatLocations()`
-       - :fun:`fontTools.otlLib.builder.buildStatTable()`
-    """
-    return fontTools.otlLib.builder.buildStatTable(
-        ttFont, self.getStatAxes(), self.getStatLocations(), self.elidedFallbackName
-    )
-
-
-def _label_to_flags(label: Union[AxisLabelDescriptor, LocationLabelDescriptor]) -> int:
+def _labelToFlags(label: Union[AxisLabelDescriptor, LocationLabelDescriptor]) -> int:
     flags = 0
     if label.olderSibling:
         flags |= 1
@@ -77,12 +60,12 @@ def _label_to_flags(label: Union[AxisLabelDescriptor, LocationLabelDescriptor]) 
     return flags
 
 
-def _axis_label_to_STAT_location(
+def _axisLabelToStatLocation(
     label: AxisLabelDescriptor,
 ) -> Dict:
     label_format = label.getFormat()
     name = {"en": label.name, **label.labelNames}
-    flags = _label_to_flags(label)
+    flags = _labelToFlags(label)
     if label_format == 1:
         return dict(name=name, value=label.userValue, flags=flags)
     if label_format == 3:

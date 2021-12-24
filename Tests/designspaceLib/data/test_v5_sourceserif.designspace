@@ -64,7 +64,7 @@
         <dimension name="italic" xvalue="0"/>
       </location>
     </source>
-    <source filename="text/master_1/SourceSerif_1.ufo">
+    <source filename="text/master_1/SourceSerif_1.ufo" familyname="Source Serif 4">
       <location>
         <dimension name="weight" xvalue="394"/>
         <dimension name="optical" xvalue="20"/>
