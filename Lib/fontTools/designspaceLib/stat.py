@@ -8,34 +8,42 @@ from fontTools.ttLib import TTFont
 from fontTools.designspaceLib import (
     AxisLabelDescriptor,
     DesignSpaceDocument,
+    DesignSpaceDocumentError,
     LocationLabelDescriptor,
 )
 
 
-def getStatAxes(self: DesignSpaceDocument) -> List[Dict]:
+def getStatAxes(doc: DesignSpaceDocument) -> List[Dict]:
     """Return a list of axis dicts suitable for use as the ``axes``
     argument to :fun:`fontTools.otlLib.builder.buildStatTable()`.
 
     .. versionadded:: 5.0
     """
+    axisOrderings = [axis.axisOrdering for axis in doc.axes]
+    if all(o is None for o in axisOrderings):
+        axisOrderings = list(range(len(doc.axes)))
+    elif any(o is None for o in axisOrderings):
+        raise DesignSpaceDocumentError(
+            "getStatAxes: all or none of the axes must specify a STAT ordering."
+        )
     return [
         dict(
             tag=axis.tag,
             name={"en": axis.name, **axis.labelNames},
-            ordering=axis.axisOrdering,
+            ordering=ordering,
             locations=[_axisLabelToStatLocation(label) for label in axis.axisLabels],
         )
-        for axis in self.axes
+        for axis, ordering in zip(doc.axes, axisOrderings)
     ]
 
 
-def getStatLocations(self: DesignSpaceDocument) -> List[Dict]:
+def getStatLocations(doc: DesignSpaceDocument) -> List[Dict]:
     """Return a list of location dicts suitable for use as the ``locations``
     argument to :fun:`fontTools.otlLib.builder.buildStatTable()`.
 
     .. versionadded:: 5.0
     """
-    axesByName = {axis.name: axis for axis in self.axes}
+    axesByName = {axis.name: axis for axis in doc.axes}
     return [
         dict(
             name={"en": label.name, **label.labelNames},
@@ -43,11 +51,11 @@ def getStatLocations(self: DesignSpaceDocument) -> List[Dict]:
             # Location in buildStatTable by axis tag
             location={
                 axesByName[name].tag: value
-                for name, value in label.getFullUserLocation(self).items()
+                for name, value in label.getFullUserLocation(doc).items()
             },
             flags=_labelToFlags(label),
         )
-        for label in self.locationLabels
+        for label in doc.locationLabels
     ]
 
 

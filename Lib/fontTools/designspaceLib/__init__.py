@@ -4,14 +4,16 @@ import math
 from textwrap import indent
 from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
-from fontTools.misc.loggingTools import LogMixin
-from fontTools.misc.textTools import tobytes, tostr
 import collections
 from io import BytesIO, StringIO
 import os
 import posixpath
+
+from fontTools.misc.loggingTools import LogMixin
+from fontTools.misc.textTools import tobytes, tostr
 from fontTools.misc import etree as ET
 from fontTools.misc import plistlib
+from fontTools.ttLib import TTFont
 
 """
     designSpaceDocument
@@ -100,8 +102,13 @@ class SimpleDescriptor(AsDictMixin):
     def __eq__(self, other):
         if other.__class__ is not self.__class__:
             return NotImplemented
-
-        return all(getattr(self, attr) == getattr(other, attr) for attr in self._attrs)
+        # Using a for loop instead of all() so it's easy to breakpoint
+        for attr in self._attrs:
+            if getattr(self, attr) != getattr(other, attr):
+                print(f"not equal: {attr}")
+                raise ValueError()
+                return False
+        return True
 
     def __repr__(self):
         attrs = [f"{a}={repr(getattr(self, a))}," for a in self._attrs]
@@ -2870,7 +2877,7 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         minor = next(numbers, 0)
         return (major, minor)
 
-    def buildStatTable(self: DesignSpaceDocument, ttFont) -> None:
+    def buildStatTable(self, ttFont: TTFont) -> None:
         """Build the STAT table defined by this document and add it to the given font.
 
         .. versionadded:: 5.0
@@ -2883,8 +2890,20 @@ class DesignSpaceDocument(LogMixin, AsDictMixin):
         from fontTools.otlLib.builder import buildStatTable
 
         return buildStatTable(
-            ttFont, getStatAxes(), getStatLocations(), self.elidedFallbackName
+            ttFont,
+            getStatAxes(self),
+            getStatLocations(self),
+            self.elidedFallbackName if self.elidedFallbackName is not None else 2
         )
+
+    def convert5to4(self) -> Dict[str, DesignSpaceDocument]:
+        """Convert each variable font listed in this document into a standalone
+        format 4 designspace. This can be used to compile all the variable fonts
+        from a format 5 designspace using tools that only know about format 4.
+
+        .. versionadded:: 5.0
+        """
+        return convert5to4(self)
 
 # Add STAT-related methods after all class definitions to prevent issues with
 # circular imports
@@ -2892,4 +2911,3 @@ from .convert5to4 import convert5to4
 from .stat import getStatAxes, getStatLocations
 from .statNames import getStatNames, StatNames
 
-DesignSpaceDocument.convert5to4 = convert5to4

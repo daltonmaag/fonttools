@@ -198,19 +198,11 @@ def _add_avar(font, axes):
 
 	return avar
 
-def _add_stat(font, axes):
-	# for now we just get the axis tags and nameIDs from the fvar,
-	# so we can reuse the same nameIDs which were defined in there.
-	# TODO make use of 'axes' once it adds style attributes info:
-	# https://github.com/LettError/designSpaceDocument/issues/8
-
+def _add_stat(font, doc: DesignSpaceDocument):
 	if "STAT" in font:
 		return
 
-	from ..otlLib.builder import buildStatTable
-	fvarTable = font['fvar']
-	axes = [dict(tag=a.axisTag, name=a.axisNameID) for a in fvarTable.axes]
-	buildStatTable(font, axes)
+	doc.buildStatTable(font)
 
 _MasterData = namedtuple('_MasterData', ['glyf', 'hMetrics', 'vMetrics'])
 
@@ -693,6 +685,7 @@ _DesignSpaceData = namedtuple(
 		"rules",
 		"rulesProcessingLast",
 		"lib",
+		"doc",
 	],
 )
 
@@ -823,6 +816,7 @@ def load_designspace(designspace):
 		ds.rules,
 		ds.rulesProcessingLast,
 		ds.lib,
+		ds
 	)
 
 
@@ -898,7 +892,7 @@ def build(designspace, master_finder=lambda s:s, exclude=[], optimize=True):
 	# TODO append masters as named-instances as well; needs .designspace change.
 	fvar = _add_fvar(vf, ds.axes, ds.instances)
 	if 'STAT' not in exclude:
-		_add_stat(vf, ds.axes)
+		_add_stat(vf, ds.doc)
 	if 'avar' not in exclude:
 		_add_avar(vf, ds.axes)
 

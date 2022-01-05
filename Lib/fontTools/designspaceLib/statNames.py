@@ -179,7 +179,8 @@ def _getAxisLabelsForUserLocation(
 def _getRibbiStyle(
     self: DesignSpaceDocument, userLocation: SimpleLocationDict
 ) -> Tuple[RibbiStyle, SimpleLocationDict]:
-    """Compute the RIBBI style name of the given user location.
+    """Compute the RIBBI style name of the given user location,
+    return the location of the matching Regular in the RIBBI group.
 
     .. versionadded:: 5.0
     """
