@@ -106,7 +106,6 @@ dependencies = [
 ]
 features = [
     "interpolatable",
-    "lxml",
     "pathops",
     "plot",
     "repacker",
@@ -123,3 +122,25 @@ no-cov = "pytest"
 
 [[tool.hatch.envs.test.matrix]]
 python = ["37", "38", "39", "310"]
+
+[tool.hatch.envs.test-pypy]
+python = "pypy3"
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pytest-randomly",
+    "freetype-py",
+    "ufoLib2",
+]
+features = [
+    "interpolatable",
+    "pathops",
+    "repacker",
+    "ufo",
+    "unicode",
+    "woff",
+]
+
+[tool.hatch.envs.test-pypy.scripts]
+cov = "pytest --cov-config=.coveragerc --cov"
+no-cov = "pytest"
