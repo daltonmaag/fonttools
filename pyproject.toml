@@ -41,7 +41,7 @@ interpolatable = [
     "scipy; platform_python_implementation != 'PyPy'",
 ]
 lxml = [
-    "lxml >= 4.0, < 5",
+    "lxml >= 4.0",
 ]
 pathops = [
     "skia-pathops >= 0.5.0",
@@ -59,7 +59,7 @@ type1 = [
     "xattr; sys_platform == 'darwin'",
 ]
 ufo = [
-    "fs >= 2.2.0, < 3",
+    "fs >= 2.2.0",
 ]
 unicode = [
     "unicodedata2 >= 14.0.0; python_version < '3.11'",
