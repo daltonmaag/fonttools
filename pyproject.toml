@@ -122,6 +122,12 @@ no-cov = "pytest"
 
 [[tool.hatch.envs.test.matrix]]
 python = ["37", "38", "39", "310"]
+use-lxml = ["lxml", "no-lxml"]
+
+[tool.hatch.envs.test.overrides]
+matrix.use-lxml.features = [
+  { value = "lxml", if = ["lxml"] },
+]
 
 [tool.hatch.envs.test-pypy]
 python = "pypy3"
