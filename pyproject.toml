@@ -150,3 +150,34 @@ features = [
 [tool.hatch.envs.test-pypy.scripts]
 cov = "pytest --cov-config=.coveragerc --cov"
 no-cov = "pytest"
+
+[tool.hatch.envs.lint]
+skip-install = true
+dependencies = [
+    "mypy>=0.942",
+]
+
+[tool.hatch.envs.lint.scripts]
+typing = "mypy"
+
+[tool.hatch.envs.docs]
+dependencies = [
+    "sphinx>=4.3.2",
+    "sphinx_rtd_theme>=1.0.0",
+    "reportlab>=3.6.5",
+    "freetype-py>=2.2.0",
+]
+features = [
+    "interpolatable",
+    "pathops",
+    "plot",
+    "repacker",
+    "symfont",
+    "type1",
+    "ufo",
+    "unicode",
+    "woff",
+]
+
+[tool.hatch.envs.docs.scripts]
+make = "sphinx-build -b html Doc/source Doc/build"
