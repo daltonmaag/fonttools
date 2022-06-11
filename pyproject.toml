@@ -117,7 +117,10 @@ features = [
 ]
 
 [tool.hatch.envs.test.scripts]
-cov = "pytest --cov-config=.coveragerc --cov"
+cov = [
+    "pytest --cov",
+    "coverage html",
+]
 no-cov = "pytest"
 
 [[tool.hatch.envs.test.matrix]]
@@ -148,17 +151,26 @@ features = [
 ]
 
 [tool.hatch.envs.test-pypy.scripts]
-cov = "pytest --cov-config=.coveragerc --cov"
+cov = [
+    "pytest --cov",
+    "coverage html",
+]
 no-cov = "pytest"
 
 [tool.hatch.envs.lint]
 skip-install = true
 dependencies = [
     "mypy>=0.942",
+    "interrogate>=1.5.0",
 ]
 
 [tool.hatch.envs.lint.scripts]
 typing = "mypy"
+docstrings = "interrogate -v Lib/fontTools"
+all = [
+    "typing",
+    "docstrings",
+]
 
 [tool.hatch.envs.docs]
 dependencies = [
@@ -181,3 +193,63 @@ features = [
 
 [tool.hatch.envs.docs.scripts]
 make = "sphinx-build -b html Doc/source Doc/build"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = [
+    "fontTools",
+    "Tests",
+]
+
+[tool.coverage.paths]
+source = [
+    "Lib/fontTools",
+    "*/site-packages/fontTools",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    # keywords to use in inline comments to skip coverage
+    "pragma: no cover",
+
+    # don't complain if tests don't hit defensive assertion code
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # don't complain if non-runnable code isn't run
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-r a",
+	"--doctest-modules",
+	"--doctest-ignore-import-errors",
+	"--pyargs",
+]
+testpaths = [
+    "Tests",
+    "Lib/fontTools",
+]
+python_files = ["*_test.py"]
+python_classes = ["*Test"]
+doctest_optionflags = [
+	"ALLOW_UNICODE",
+	"ELLIPSIS",
+]
+filterwarnings = [
+	"ignore:readPlist:DeprecationWarning:plistlib_test",
+	"ignore:writePlist:DeprecationWarning:plistlib_test",
+	"ignore:some_function:DeprecationWarning:fontTools.ufoLib.utils",
+	"ignore::DeprecationWarning:fontTools.varLib.designspace",
+]
+
+[tool.interrogate]
+ignore-semiprivate = true
+ignore-private = true
+ignore-nested-functions = true
+ignore-regex = "^(from|to)XML$,^(de)?compile$"
+ignore-module = true
