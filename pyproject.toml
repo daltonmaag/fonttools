@@ -253,3 +253,18 @@ ignore-private = true
 ignore-nested-functions = true
 ignore-regex = "^(from|to)XML$,^(de)?compile$"
 ignore-module = true
+
+[tool.mypy]
+python_version = "3.7"
+files = [
+    "Lib/fontTools/misc/plistlib",
+]
+follow_imports = "silent"
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "fontTools.misc.plistlib"
+strict = true
