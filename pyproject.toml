@@ -104,17 +104,6 @@ dependencies = [
     "freetype-py",
     "ufoLib2",
 ]
-features = [
-    "interpolatable",
-    "pathops",
-    "plot",
-    "repacker",
-    "symfont",
-    "type1",
-    "ufo",
-    "unicode",
-    "woff",
-]
 
 [tool.hatch.envs.test.scripts]
 cov = [
@@ -124,38 +113,22 @@ cov = [
 no-cov = "pytest"
 
 [[tool.hatch.envs.test.matrix]]
-python = ["37", "38", "39", "310"]
-use-lxml = ["lxml", "no-lxml"]
+python = ["37", "38", "39", "310", "pypy3"]
 
 [tool.hatch.envs.test.overrides]
-matrix.use-lxml.features = [
-  { value = "lxml", if = ["lxml"] },
-]
-
-[tool.hatch.envs.test-pypy]
-python = "pypy3"
-dependencies = [
-    "pytest",
-    "pytest-cov",
-    "pytest-randomly",
-    "freetype-py",
-    "ufoLib2",
-]
-features = [
+matrix.python.set-features = [
+    { value = "graphite", if = ["37", "38", "39", "310"] },
     "interpolatable",
     "pathops",
+    { value = "plot", if = ["37", "38", "39", "310"] },
     "repacker",
+    "symfont",
+    "type1",
     "ufo",
     "unicode",
     "woff",
+    { value = "lxml", if = ["37", "38", "39", "310"] },
 ]
-
-[tool.hatch.envs.test-pypy.scripts]
-cov = [
-    "pytest --cov",
-    "coverage html",
-]
-no-cov = "pytest"
 
 [tool.hatch.envs.lint]
 skip-install = true
